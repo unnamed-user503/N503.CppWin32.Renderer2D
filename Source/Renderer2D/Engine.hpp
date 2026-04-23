@@ -5,6 +5,7 @@
 #include "Device/Context.hpp"
 #include "Processor.hpp"
 #include "Resource/Container.hpp"
+#include "Texture/Registry.hpp"
 
 // 2. Project Dependencies
 #include <N503/Diagnostics/Sink.hpp>
@@ -69,6 +70,11 @@ namespace N503::Renderer2D
             return *m_BatchProcessor;
         }
 
+        auto GetTextureRegistry() -> Texture::Registry&
+        {
+            return *m_TextureRegistry;
+        }
+
         auto GetDiagnosticsSink() -> Diagnostics::Sink&
         {
             return m_DiagnosticsSink;
@@ -85,6 +91,8 @@ namespace N503::Renderer2D
         wil::unique_event m_StartedEvent{ ::CreateEventW(nullptr, TRUE, FALSE, L"Local\\N503.CppWin32.Renderer2D.Event.EngineStarted") };
 
         std::unique_ptr<Command::Queue> m_CommandQueue;
+
+        std::unique_ptr<Texture::Registry> m_TextureRegistry;
 
         std::unique_ptr<Renderer2D::Processor> m_BatchProcessor;
 

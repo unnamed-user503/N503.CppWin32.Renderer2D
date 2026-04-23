@@ -172,13 +172,15 @@ namespace N503::Renderer2D
         m_DeviceContext     = std::make_unique<Device::Context>();
         m_ResourceContainer = std::make_unique<Resource::Container>();
         m_BatchProcessor    = std::make_unique<Renderer2D::Processor>();
+        m_TextureRegistry   = std::make_unique<Texture::Registry>();
 
         auto CleanupResources = wil::scope_exit(
             [&]
             {
+                m_BatchProcessor.reset();
+                m_TextureRegistry.reset();
                 m_DeviceContext.reset();
                 m_ResourceContainer.reset();
-                m_BatchProcessor.reset();
 
                 m_IsRunning.store(false, std::memory_order_release);
             }
@@ -235,8 +237,19 @@ namespace N503::Renderer2D
             if (m_DeviceContext->BeginDraw())
             {
                 isAnyActive = m_BatchProcessor->Process(*m_DeviceContext);
-                m_DeviceContext->EndDraw();
-                m_DeviceContext->Present();
+
+                const auto endDrawResult = m_DeviceContext->EndDraw();
+                const auto presentResult = m_DeviceContext->Present();
+
+                if (endDrawResult == D2DERR_RECREATE_TARGET || presentResult == DXGI_ERROR_DEVICE_REMOVED || presentResult == DXGI_ERROR_DEVICE_RESET)
+                {
+                    // デバイスがリセットされた場合、リソースを全て破棄して再作成する必要がある
+                    m_TextureRegistry->Clear();
+
+                    // デバイスコンテキストを破棄して再作成する
+                    m_DeviceContext.reset();
+                    m_DeviceContext = std::make_unique<Device::Context>();
+                }
             }
 
 #ifdef _DEBUG

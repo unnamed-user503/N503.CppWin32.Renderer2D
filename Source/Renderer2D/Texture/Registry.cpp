@@ -34,4 +34,10 @@ namespace N503::Renderer2D::Texture
         return m_Cache[handle];
     }
 
+    auto Registry::Clear() -> void
+    {
+        ++m_CurrentGeneration;
+        m_Cache.clear();
+    }
+
 } // namespace N503::Renderer2D::Texture

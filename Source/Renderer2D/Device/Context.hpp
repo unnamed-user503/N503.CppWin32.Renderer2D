@@ -41,7 +41,7 @@ namespace N503::Renderer2D::Device
 
         auto EndDraw() const noexcept -> HRESULT;
 
-        auto Present() const noexcept -> void;
+        auto Present() const noexcept -> HRESULT;
 
         auto Destroy() noexcept -> void;
 

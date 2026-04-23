@@ -103,14 +103,14 @@ namespace N503::Renderer2D::Device
         return m_D2DContext->EndDraw();
     }
 
-    auto Context::Present() const noexcept -> void
+    auto Context::Present() const noexcept -> HRESULT
     {
         if (!m_RenderTarget || !m_D2DContext)
         {
-            return;
+            return E_FAIL;
         }
 
-        m_RenderTarget->Present();
+        return m_RenderTarget->Present();
     }
 
     auto Context::Destroy() noexcept -> void

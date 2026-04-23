@@ -1,7 +1,6 @@
 #pragma once
 
 // 1. Project Headers
-#include "../Texture/Registry.hpp"
 
 // 2. Project Dependencies
 #include <N503/Renderer2D/Types.hpp>
@@ -31,15 +30,9 @@ namespace N503::Renderer2D::Batch
 
         float Opacity{ 1.0f };
 
-        auto Execute(ID2D1DeviceContext* context, Texture::Registry& textureRegistry) -> void
-        {
-            if (!Bitmap)
-            {
-                Bitmap = textureRegistry.GetOrCreateBitmap(Handle);
-            }
+        std::uint64_t Generation{ 0 };
 
-            context->DrawBitmap(Bitmap.get(), TargetRect, Opacity, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, SourceRect);
-        }
+        auto Execute(ID2D1DeviceContext* context) -> void;
     };
 
 } // namespace N503::Renderer2D::Batch

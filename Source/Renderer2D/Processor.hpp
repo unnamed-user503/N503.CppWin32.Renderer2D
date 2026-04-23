@@ -42,8 +42,6 @@ namespace N503::Renderer2D
         std::array<BatchVariant, MaxBatchSize> m_BatchArray;
 
         std::size_t m_CurrentBatchCount{ 0 };
-
-        Texture::Registry m_TextureRegistry;
     };
 
 } // namespace N503::Renderer2D

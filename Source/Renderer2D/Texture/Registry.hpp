@@ -27,10 +27,20 @@ namespace N503::Renderer2D::Texture
     public:
         auto GetOrCreateBitmap(Renderer2D::AssetHandle handle) -> wil::com_ptr<ID2D1Bitmap1>;
 
+        auto Clear() -> void;
+
+        [[nodiscard]]
+        auto GetCurrentGeneration() const noexcept -> std::uint64_t
+        {
+            return m_CurrentGeneration;
+        }
+
     private:
+        Texture::Factory m_Factory;
+
         std::unordered_map<Renderer2D::AssetHandle, wil::com_ptr<ID2D1Bitmap1>> m_Cache;
 
-        Texture::Factory m_Factory;
+        std::uint64_t m_CurrentGeneration{ 1 };
     };
 
 } // namespace N503::Renderer2D::Texture

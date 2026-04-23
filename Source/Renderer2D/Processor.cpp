@@ -59,16 +59,7 @@ namespace N503::Renderer2D
             std::visit(
                 [this, d2d](auto&& batch)
                 {
-                    using T = std::decay_t<decltype(batch)>;
-
-                    if constexpr (std::is_same_v<T, Batch::SpriteBatch>)
-                    {
-                        batch.Execute(d2d, m_TextureRegistry);
-                    }
-                    else
-                    {
-                        //batch.Execute(d2d);
-                    }
+                    batch.Execute(d2d);
                 },
                 variantBatch
             );
