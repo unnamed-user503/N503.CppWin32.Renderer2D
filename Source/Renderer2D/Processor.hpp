@@ -6,6 +6,7 @@
 #include "Batch/SpriteBatch.hpp"
 #include "Batch/TextBatch.hpp"
 #include "Device/Context.hpp"
+#include "Texture/Registry.hpp"
 
 // 2. Project Dependencies
 #include <N503/Renderer2D/Types.hpp>
@@ -37,14 +38,12 @@ namespace N503::Renderer2D
 
         auto Process(Device::Context& context) -> bool;
 
-        auto GetOrCreateBitmap(AssetHandle handle) -> wil::com_ptr<ID2D1Bitmap1>;
-
     private:
         std::array<BatchVariant, MaxBatchSize> m_BatchArray;
 
-        std::unordered_map<AssetHandle, wil::com_ptr<ID2D1Bitmap1>> m_BitmapMap;
-
         std::size_t m_CurrentBatchCount{ 0 };
+
+        Texture::Registry m_TextureRegistry;
     };
 
 } // namespace N503::Renderer2D

@@ -3,7 +3,6 @@
 
 // 1. Project Headers
 #include "Command/Dispatcher.hpp"
-#include "Command/Packets/DestroyResourceCommand.hpp"
 #include "Command/Queue.hpp"
 #include "Device/Context.hpp"
 

@@ -27,17 +27,26 @@ namespace N503::Renderer2D::Command::Packets
         {
             auto asset = Renderer2D::Engine::Instance().GetResourceContainer().GetAsset(assetHandle);
 
-            float x = 0.0f;
-            float y = 0.0f;
-            float width = static_cast<float>(asset->Pixels.Width);
+            float x      = 0.0f;
+            float y      = 0.0f;
+            float width  = static_cast<float>(asset->Pixels.Width);
             float height = static_cast<float>(asset->Pixels.Height);
 
-            auto batch = Batch::SpriteBatch
-            {
+            auto batch = Batch::SpriteBatch{
                 .Handle = assetHandle,
-                .TargetRect = { .left = x, .top = y, .right = x + width, .bottom = y + height },
-                .SourceRect = { .left = 0, .top = 0, .right = width, .bottom = height },
-                .Opacity    = 1.0f,
+                .TargetRect = {
+                    .left   = x,
+                    .top    = y,
+                    .right  = x + width,
+                    .bottom = y + height,
+                },
+                .SourceRect = {
+                    .left   = 0.0f,
+                    .top    = 0.0f,
+                    .right  = width,
+                    .bottom = height,
+                },
+                .Opacity = 1.0f,
             };
 
             Renderer2D::Engine::Instance().GetBatchProcessor().AddBatch(batch);

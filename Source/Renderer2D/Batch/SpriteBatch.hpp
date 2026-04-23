@@ -1,6 +1,7 @@
 #pragma once
 
 // 1. Project Headers
+#include "../Texture/Registry.hpp"
 
 // 2. Project Dependencies
 #include <N503/Renderer2D/Types.hpp>
@@ -22,20 +23,22 @@ namespace N503::Renderer2D::Batch
     {
         Renderer2D::AssetHandle Handle;
 
-        D2D1_RECT_F TargetRect;
+        wil::com_ptr<ID2D1Bitmap1> Bitmap;
 
-        D2D1_RECT_F SourceRect;
+        D2D1_RECT_F TargetRect{};
+
+        D2D1_RECT_F SourceRect{};
 
         float Opacity{ 1.0f };
 
-        void Execute(ID2D1DeviceContext* context, ID2D1Bitmap1* bitmap) const
+        auto Execute(ID2D1DeviceContext* context, Texture::Registry& textureRegistry) -> void
         {
-            if (!bitmap)
+            if (!Bitmap)
             {
-                return; // Bitmapがない場合は描画できないので早期リターン
+                Bitmap = textureRegistry.GetOrCreateBitmap(Handle);
             }
 
-            context->DrawBitmap(bitmap, TargetRect, Opacity, D2D1_INTERPOLATION_MODE_LINEAR, SourceRect);
+            context->DrawBitmap(Bitmap.get(), TargetRect, Opacity, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, SourceRect);
         }
     };
 

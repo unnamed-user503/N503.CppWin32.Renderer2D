@@ -12,18 +12,18 @@
 
 // 5. Windows Headers
 #include <d2d1_1.h>
-#include <wincodec.h>
 
 // 6. C++ Standard Libraries
+#include <memory>
+#include <string>
 
-namespace N503::Renderer2D::Batch
+namespace N503::Renderer2D::Texture
 {
 
-    struct RectangleBatch
+    class Factory final
     {
-        auto Execute(ID2D1DeviceContext* context, ID2D1Bitmap1* bitmap) -> void
-        {
-        }
+    public:
+        auto CreateTextureFromHandle(Renderer2D::AssetHandle handle) -> wil::com_ptr<ID2D1Bitmap1>;
     };
 
-} // namespace N503::Renderer2D::Batch
+}

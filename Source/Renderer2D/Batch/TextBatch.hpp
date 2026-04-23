@@ -21,7 +21,7 @@ namespace N503::Renderer2D::Batch
 
     struct TextBatch
     {
-        auto Execute(ID2D1DeviceContext* context, ID2D1Bitmap1* bitmap)
+        auto Execute(ID2D1DeviceContext* context) -> void
         {
         }
     };
