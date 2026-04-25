@@ -11,7 +11,9 @@
 #include "Resource/Container.hpp"
 
 // 2. Project Dependencies
+#include <N503/Diagnostics/ConsoleSink.hpp>
 #include <N503/Diagnostics/Entry.hpp>
+#include <N503/Diagnostics/Reporter.hpp>
 #include <N503/Diagnostics/Severity.hpp>
 #include <N503/Diagnostics/Sink.hpp>
 
@@ -118,21 +120,25 @@ namespace N503::Renderer2D
 
     auto Engine::Run(const std::stop_token stopToken) -> void
     {
+        Diagnostics::Reporter diagnosticsReporter;
+        diagnosticsReporter.AddSink(std::make_shared<Diagnostics::ConsoleSink>());
+
         std::unique_ptr<Device::Context> deviceContext     = std::make_unique<Device::Context>();
         std::unique_ptr<Device::RenderTarget> renderTarget = nullptr;
-        std::unique_ptr<Device::CommandList> commandList = std::make_unique<Device::CommandList>();
-        
+        std::unique_ptr<Device::CommandList> commandList   = std::make_unique<Device::CommandList>();
+
         // メッセージ ディスパッチャーを初期化する
         Message::Dispatcher messageDispatcher;
 
         // レンダラースレッドの終了時にリソースをクリーンアップするためのスコープ ガード
         auto cleanupResources = wil::scope_exit(
             [&]
-        {
-            renderTarget.reset();
-            deviceContext.reset();
+            {
+                renderTarget.reset();
+                deviceContext.reset();
                 commandList.reset();
-        });
+            }
+        );
 
         // OS メッセージをディスパッチするラムダ式
         auto OSMessageDispatch = []() -> bool
@@ -207,6 +213,8 @@ namespace N503::Renderer2D
                     deviceContext->SetTarget(*renderTarget);
                 }
             }
+
+            diagnosticsReporter.Submit(m_DiagnosticsSink);
         }
     }
 

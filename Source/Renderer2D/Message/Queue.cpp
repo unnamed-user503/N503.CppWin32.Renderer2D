@@ -2,10 +2,14 @@
 #include "Queue.hpp"
 
 // 1. Project Headers
+#include "../Engine.hpp"
 #include "Envelope.hpp"
 #include "Packet.hpp"
 
 // 2. Project Dependencies
+#include <N503/Diagnostics/Entry.hpp>
+#include <N503/Diagnostics/Severity.hpp>
+#include <N503/Diagnostics/Sink.hpp>
 
 // 3. WIL (Windows Implementation Library)
 
@@ -15,6 +19,7 @@
 #include <Windows.h>
 
 // 6. C++ Standard Libraries
+#include <format>
 #include <semaphore>
 #include <utility>
 
@@ -30,9 +35,15 @@ namespace N503::Renderer2D::Message
             const std::size_t currentSize = m_Buffer[m_BufferIndex].Container.size();
             const std::size_t capacity    = MaxMessageQueued; // プールのサイズ
 
-            if (currentSize >= capacity * 0.95) // 95%を超えたら警告
+            if (currentSize >= capacity * 0.8) // 80%を超えたら警告
             {
-                ::OutputDebugStringW(L"EventQueue is congesting!\n");
+                Engine::GetInstance().GetDiagnosticsSink().AddEntry(
+                    Diagnostics::Entry{
+                        .Severity = Diagnostics::Severity::Warning,
+                        .Expected = std::format("EventQueue is congesting: CurrentSize={}, Capacity={}\n", currentSize, capacity).data(),
+                        .Position = 0
+                    }
+                );
             }
         }
 #endif
@@ -66,6 +77,23 @@ namespace N503::Renderer2D::Message
     {
         std::binary_semaphore signal{ 0 };
 
+#ifdef _DEBUG
+        {
+            const std::size_t currentSize = m_Buffer[m_BufferIndex].Container.size();
+            const std::size_t capacity    = MaxMessageQueued; // プールのサイズ
+
+            if (currentSize >= capacity * 0.8) // 80%を超えたら警告
+            {
+                Engine::GetInstance().GetDiagnosticsSink().AddEntry(
+                    Diagnostics::Entry{
+                        .Severity = Diagnostics::Severity::Warning,
+                        .Expected = std::format("EventQueue is congesting: CurrentSize={}, Capacity={}\n", currentSize, capacity).data(),
+                        .Position = 0
+                    }
+                );
+            }
+        }
+#endif
         {
             const std::lock_guard lock{ m_Mutex };
 

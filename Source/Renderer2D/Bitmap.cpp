@@ -3,8 +3,8 @@
 
 // 1. Project Headers
 #include "Engine.hpp"
-#include "Message/Packets/CreateBitmap.hpp"
 #include "Message/Packets/AddCommandList.hpp"
+#include "Message/Packets/CreateBitmap.hpp"
 #include "Message/Packets/UpdateBitmapOpacity.hpp"
 #include "Message/Packets/UpdateBitmapPoint.hpp"
 
@@ -40,7 +40,7 @@ namespace N503::Renderer2D
         Engine::GetInstance().GetMessageQueue().EnqueueSync(std::move(packet));
 
         auto packet2 = Message::Packets::AddCommandList{
-            .Result = &m_Entity->CommandHandle,
+            .Result         = &m_Entity->CommandHandle,
             .ResourceHandle = m_Entity->ResourceHandle,
         };
 

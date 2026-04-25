@@ -1,11 +1,11 @@
 #pragma once
 
 // 1. Project Headers
+#include "Packets/AddCommandList.hpp"
 #include "Packets/CreateBitmap.hpp"
 #include "Packets/DeleteBitmap.hpp"
 #include "Packets/UpdateBitmapOpacity.hpp"
 #include "Packets/UpdateBitmapPoint.hpp"
-#include "Packets/AddCommandList.hpp"
 
 // 2. Project Dependencies
 
