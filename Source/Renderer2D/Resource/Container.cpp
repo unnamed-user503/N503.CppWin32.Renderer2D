@@ -62,7 +62,7 @@ namespace N503::Renderer2D::Resource
 
         if (address == nullptr)
         {
-            ::DebugBreak(); // メモリ確保に失敗した場合は、デバッグブレークポイントをトリガーします。
+            return {}; // メモリ確保に失敗した場合は、無効なハンドルを返します。
         }
 
         // 呼び出し元に書き込み可能なバッファの位置を伝えるため、Pixels構造体のBytesにアドレスをセットします。
