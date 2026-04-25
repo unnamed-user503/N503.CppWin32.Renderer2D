@@ -11,14 +11,8 @@
 // 5. Windows Headers
 
 // 6. C++ Standard Libraries
-#include <string>
 
-namespace N503::Renderer2D::Resource
+namespace N503::Renderer2D::Codec
 {
 
-    struct Metadata
-    {
-        std::string Path;
-    };
-
-} // namespace N503::Renderer2D::Resource
+} // namespace N503::Renderer2D::Codec

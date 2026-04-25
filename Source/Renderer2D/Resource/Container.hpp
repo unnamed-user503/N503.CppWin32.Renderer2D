@@ -1,7 +1,8 @@
 #pragma once
 
 // 1. Project Headers
-#include "Asset.hpp"
+#include "../Pixels/Buffer.hpp"
+#include "Entry.hpp"
 
 // 2. Project Dependencies
 #include <N503/Memory/Storage/Arena.hpp>
@@ -15,39 +16,43 @@
 
 // 6. C++ Standard Libraries
 #include <array>
+#include <cstddef>
+#include <cstdint>
+#include <string>
 #include <string_view>
+#include <unordered_map>
 #include <vector>
 
 namespace N503::Renderer2D::Resource
 {
 
-    class Container final
+    class Container
     {
+        static constexpr auto MaxEntries = 1024;
+
     public:
-        static constexpr std::size_t MaxAssets = 1024;
+        Container();
 
-        explicit Container(std::size_t initialArenaSize = 1024 * 1024 * 16);
+        auto Add(const std::string_view path, Pixels::Buffer& pixels) -> ResourceHandle;
 
-        ~Container();
+        auto Remove(const ResourceHandle handle) -> bool;
 
-        Container(const Container&) = delete;
+        auto Get(const ResourceHandle handle) const -> const Entry*;
 
-        auto operator=(const Container&) -> Container& = delete;
+        auto Get(const std::string_view path) const -> const Entry*;
 
-        auto Store(Renderer2D::Type type, std::string_view path) -> Renderer2D::AssetHandle;
+        auto GetHandle(const std::string_view path) const -> ResourceHandle;
 
-        auto GetAsset(Renderer2D::AssetHandle handle) const noexcept -> const Resource::Asset*;
-
-        auto Remove(Renderer2D::AssetHandle handle) -> void;
-
-        auto Reset() -> void;
+        auto Clear() -> void;
 
     private:
-        N503::Memory::Storage::Arena m_Storage;
+        N503::Memory::Storage::Arena m_Storage{ MaxEntries * 32768 };
 
-        std::array<Resource::Asset*, MaxAssets + 1> m_AssetSlots{};
+        std::array<Entry, MaxEntries> m_Entries;
 
-        std::vector<Renderer2D::AssetHandle> m_AvailableHandles;
+        std::vector<ResourceHandle> m_AvailableHandles;
+
+        std::unordered_map<std::string_view, ResourceHandle, std::hash<std::string_view>, std::equal_to<>> m_Indexes;
     };
 
 } // namespace N503::Renderer2D::Resource

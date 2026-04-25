@@ -8,22 +8,19 @@
 
 // 3. WIL (Windows Implementation Library)
 #include <wil/com.h>
-#include <wil/result_macros.h>
+#include <wil/resource.h>
 
 // 4. Third-party Libraries
 
 // 5. Windows Headers
 #include <d2d1.h>
 #include <d2d1_1.h>
-#include <d2d1helper.h>
 #include <d3d11.h>
-#include <d3dcommon.h>
 #include <dwrite.h>
 #include <dxgi.h>
 #include <windows.h>
 
 // 6. C++ Standard Libraries
-#include <memory>
 
 namespace N503::Renderer2D::Device
 {
@@ -49,8 +46,8 @@ namespace N503::Renderer2D::Device
 #endif
         D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0 };
 
-        wil::com_ptr<ID3D11Device> baseDevice;
-        wil::com_ptr<ID3D11DeviceContext> baseContext;
+        wil::com_ptr<ID3D11Device> d3d11Device;
+        wil::com_ptr<ID3D11DeviceContext> d3d11Context;
 
         THROW_IF_FAILED(::D3D11CreateDevice(
             nullptr,
@@ -60,13 +57,13 @@ namespace N503::Renderer2D::Device
             featureLevels,
             ARRAYSIZE(featureLevels),
             D3D11_SDK_VERSION,
-            baseDevice.put(),
+            d3d11Device.put(),
             nullptr,
-            baseContext.put()
+            d3d11Context.put()
         ));
 
-        m_D3DDevice  = baseDevice;
-        m_D3DContext = baseContext;
+        m_D3DDevice  = d3d11Device;
+        m_D3DContext = d3d11Context;
 
         // Direct3D11のリソースからDirect2Dのリソースを作成する
         auto dxgiDevice = m_D3DDevice.query<IDXGIDevice>();
@@ -75,96 +72,93 @@ namespace N503::Renderer2D::Device
         THROW_IF_FAILED(m_D2DDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, m_D2DContext.put()));
     }
 
-    Context::~Context()
+    auto Context::GetRenderTargetWindow() const noexcept -> HWND
     {
-        Destroy();
+        wil::unique_event_nothrow createWindowCompletion;
+
+        if (!createWindowCompletion.try_open(L"Local\\N503.CppWin32.Event.Core.CreateWindowCompletion", SYNCHRONIZE | EVENT_MODIFY_STATE))
+        {
+            return {};
+        }
+
+        if (::WaitForSingleObject(createWindowCompletion.get(), 0) != WAIT_OBJECT_0)
+        {
+            return {};
+        }
+
+        struct Context
+        {
+            HWND Result{};
+            DWORD TargetPID{};
+        };
+
+        Context context{ nullptr, ::GetCurrentProcessId() };
+
+        auto callback = [](HWND handle, LPARAM lParam) -> BOOL
+        {
+            auto pContext = reinterpret_cast<Context*>(lParam);
+
+            DWORD pid{};
+            ::GetWindowThreadProcessId(handle, &pid);
+
+            if (pid == pContext->TargetPID)
+            {
+                wchar_t className[256]{};
+                ::GetClassNameW(handle, className, 256);
+
+                if (std::wcscmp(className, L"N503.CppWin32.Core.Window") == 0)
+                {
+                    pContext->Result = handle;
+                    return FALSE;
+                }
+            }
+
+            return TRUE;
+        };
+
+        ::EnumWindows(callback, reinterpret_cast<LPARAM>(&context));
+
+        if (!context.Result)
+        {
+            return {};
+        }
+        else
+        {
+            // 成功したので旗を下ろす
+            createWindowCompletion.ResetEvent();
+        }
+
+        return context.Result;
     }
 
     auto Context::BeginDraw() const noexcept -> bool
     {
-        if (!m_RenderTarget || !m_D2DContext)
+        if (!m_D2DContext)
         {
             return false;
         }
 
-        m_D2DContext->SetTarget(m_RenderTarget->GetTargetBitmap());
         m_D2DContext->BeginDraw();
-        m_D2DContext->Clear(D2D1::ColorF(0.1f, 0.15f, 0.3f, 1.0f));
+        m_D2DContext->Clear(D2D1::ColorF(0.1f, 0.2, 0.4f));
         return true;
     }
 
     auto Context::EndDraw() const noexcept -> HRESULT
     {
-        if (!m_D2DContext)
+        // D2D の描画命令を確定させる
+        HRESULT hr = m_D2DContext->EndDraw();
+
+        if (hr == D2DERR_RECREATE_TARGET)
         {
-            return E_FAIL;
+            // デバイスロスト発生。外部に通知してコンテキストを再構築させる
         }
 
-        return m_D2DContext->EndDraw();
+        return hr;
     }
 
-    auto Context::Present() const noexcept -> HRESULT
+    auto Context::SetTarget(const RenderTarget& renderTarget) const noexcept -> void
     {
-        if (!m_RenderTarget || !m_D2DContext)
-        {
-            return E_FAIL;
-        }
-
-        return m_RenderTarget->Present();
-    }
-
-    auto Context::Destroy() noexcept -> void
-    {
-        if (m_RenderTarget)
-        {
-            m_RenderTarget.reset();
-        }
-
-        if (m_D2DContext)
-        {
-            m_D2DContext->SetTarget(nullptr);
-            m_D2DContext.reset();
-        }
-
-        if (m_D2DDevice)
-        {
-            m_D2DDevice.reset();
-        }
-
-        if (m_D3DContext)
-        {
-            m_D3DContext.reset();
-        }
-
-        if (m_D3DDevice)
-        {
-            m_D3DDevice.reset();
-        }
-
-        if (m_DWriteFactory)
-        {
-            m_DWriteFactory.reset();
-        }
-
-        if (m_D2DFactory)
-        {
-            m_D2DFactory.reset();
-        }
-    }
-
-    auto Context::SetRenderTarget(HWND hwnd) -> void
-    {
-        if (!hwnd || m_RenderTarget)
-        {
-            return;
-        }
-
-        if (m_D2DContext)
-        {
-            m_D2DContext->SetTarget(nullptr);
-        }
-
-        m_RenderTarget = std::make_unique<RenderTarget>(hwnd, *this);
+        m_D2DContext->SetTarget(renderTarget.GetTargetBitmap().get());
     }
 
 } // namespace N503::Renderer2D::Device

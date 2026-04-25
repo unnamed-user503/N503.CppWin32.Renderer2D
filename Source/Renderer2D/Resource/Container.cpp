@@ -2,9 +2,8 @@
 #include "Container.hpp"
 
 // 1. Project Headers
-#include "../Codec/WicImageDecoder.hpp"
-#include "Asset.hpp"
-#include "Metadata.hpp"
+#include "../Pixels/Buffer.hpp"
+#include "Entry.hpp"
 
 // 2. Project Dependencies
 #include <N503/Renderer2D/Types.hpp>
@@ -16,122 +15,146 @@
 // 5. Windows Headers
 
 // 6. C++ Standard Libraries
-#include <algorithm>
-#include <chrono>
+#include <array>
 #include <cstddef>
 #include <cstdint>
-#include <iterator>
-#include <memory>
-#include <ranges>
-#include <span>
 #include <string>
 #include <string_view>
+#include <unordered_map>
+#include <vector>
 
 namespace N503::Renderer2D::Resource
 {
 
-    Container::Container(std::size_t initialArenaSize) : m_Storage(initialArenaSize)
+    Container::Container()
     {
-        Reset();
+        Clear();
     }
 
-    Container::~Container()
+    auto Container::Add(const std::string_view path, Pixels::Buffer& pixels) -> ResourceHandle
     {
-    }
-    auto Container::Store(Renderer2D::Type type, std::string_view path) -> Renderer2D::AssetHandle
-    {
-        // 1. ハンドルの空き確認と払い出し (Audio と共通の管理ロジック)
+        // すでに同じパスのリソースが存在する場合は、そのハンドルを返します。
+        if (auto it = m_Indexes.find(path); it != m_Indexes.end())
+        {
+            return it->second;
+        }
+
+        // 利用可能なハンドルがない場合は、無効なハンドルを返します。
         if (m_AvailableHandles.empty())
         {
-            return { Renderer2D::Handle::ResourceID::InvalidValue };
+            return { .ID = Handle::ResourceID::Invalid };
         }
 
-        const auto handle = m_AvailableHandles.back();
-        const auto index  = static_cast<std::size_t>(handle.ResourceID);
-
-        // 2. Arena から Asset 構造体自体のメモリを確保
-        auto* assetMemory = m_Storage.AllocateBytes(sizeof(Resource::Asset), alignof(Resource::Asset));
-        auto* asset       = new (assetMemory) Resource::Asset();
-
-        // 3. 基本情報のセット
-        asset->Handle        = handle;
-        asset->Metadata.Path = std::string(path);
-        // asset->Metadata.Type = type; // Metadata に Type を持たせる場合
-
-        // 4. Type に応じたデコードとメモリ切り出し
-        if (type == Renderer2D::Type::Bitmap)
-        {
-            // デコーダーのインスタンス化
-            Codec::WicImageDecoder decoder(path);
-
-            // アロケータを渡して Arena にピクセルを直接展開 (Audio::MediaFoundationDecoder と同じフロー)
-            asset->Pixels = decoder.Decode(
-                [this](std::size_t size)
-                {
-                    // 16バイトアライメントで Arena から切り出し
-                    auto* ptr = m_Storage.AllocateBytes(size, 16);
-                    return std::span<std::byte>(static_cast<std::byte*>(ptr), size);
-                }
-            );
-        }
-        else if (type == Renderer2D::Type::Movie)
-        {
-            // 将来的なストリーミング実装用の分岐
-        }
-
-        // 5. スロットへの登録とハンドル管理の更新
-        m_AssetSlots[index] = asset;
+        // 利用可能なハンドルのリストからハンドルを取得します。
+        ResourceHandle handle = m_AvailableHandles.back();
         m_AvailableHandles.pop_back();
+
+        // ハンドルのIDをインデックスとして使用します。これにより、O(1)でエントリにアクセスできます。
+        const auto index = static_cast<std::uint64_t>(handle.ID);
+
+        // 画像データのバイトサイズに基づいて、アリメントを16バイトとした生のバイト列としてメモリを確保します。
+        void* address = m_Storage.AllocateBytes(pixels.Size, 16);
+
+        // 呼び出し元に書き込み可能なバッファの位置を伝えるため、Pixels構造体のBytesにアドレスをセットします。
+        pixels.Bytes = static_cast<std::byte*>(address);
+
+        // エントリを作成して保存します。
+        m_Entries[index] = Entry{
+            .Handle   = handle,
+            .Pixels   = pixels,
+            .Metadata = { .Path = std::string(path) },
+        };
+
+        // パスとハンドルの対応を保存します。
+        m_Indexes[m_Entries[index].Metadata.Path] = handle;
 
         return handle;
     }
 
-    auto Container::GetAsset(Renderer2D::AssetHandle handle) const noexcept -> const Resource::Asset*
+    auto Container::Remove(const ResourceHandle handle) -> bool
     {
-        auto index = static_cast<std::size_t>(handle.ResourceID);
+        // ハンドルのIDをインデックスとして使用します。
+        const auto index = static_cast<std::uint64_t>(handle.ID);
 
-        if (index == 0 || index > MaxAssets)
+        if (index >= MaxEntries)
+        {
+            return false;
+        }
+
+        // ハンドルの世代がエントリの世代と一致しない場合は、すでに無効であるか、あるいは世代が古いとみなします。
+        if (m_Entries[index].Handle.Generation != handle.Generation)
+        {
+            return false; // すでに無効、あるいは世代が古い
+        }
+
+        // パスとハンドルの対応を削除します。
+        m_Indexes.erase(m_Entries[index].Metadata.Path);
+
+        // エントリを空にして、次の世代のハンドルを利用可能なハンドルのリストに追加します。
+        ResourceHandle nextGenerationHandle = handle;
+        nextGenerationHandle.Generation     = static_cast<Handle::Generation>(static_cast<std::uint64_t>(handle.Generation) + 1);
+
+        // エントリを空にします。
+        m_Entries[index] = {};
+
+        // 次の世代のハンドルを利用可能なハンドルのリストに追加します。
+        m_AvailableHandles.push_back(nextGenerationHandle);
+
+        return true;
+    }
+
+    auto Container::Get(const ResourceHandle handle) const -> const Entry*
+    {
+        const auto index = static_cast<std::uint64_t>(handle.ID);
+
+        if (index >= MaxEntries)
         {
             return nullptr;
         }
 
-        return m_AssetSlots[index];
-    }
-
-    auto Container::Remove(Renderer2D::AssetHandle handle) -> void
-    {
-        auto index = static_cast<std::size_t>(handle.ResourceID);
-
-        if (index == 0 || index > MaxAssets)
+        if (m_Entries[index].Handle.Generation != handle.Generation)
         {
-            return;
+            return nullptr; // 無効、あるいは世代が古い
         }
 
-        if (m_AssetSlots[index])
-        {
-            m_AssetSlots[index] = nullptr;
-            m_AvailableHandles.push_back(handle);
-        }
+        return &m_Entries[index];
     }
 
-    auto Container::Reset() -> void
+    auto Container::Get(const std::string_view path) const -> const Entry*
     {
-        m_Storage.Reset();
-        m_AssetSlots.fill(nullptr);
+        if (auto it = m_Indexes.find(path); it != m_Indexes.end())
+        {
+            return Get(it->second);
+        }
 
+        return nullptr;
+    }
+
+    auto Container::GetHandle(const std::string_view path) const -> ResourceHandle
+    {
+        if (auto it = m_Indexes.find(path); it != m_Indexes.end())
+        {
+            return it->second;
+        }
+
+        return { .ID = Handle::ResourceID::Invalid };
+    }
+
+    auto Container::Clear() -> void
+    {
+        // すべてのエントリをクリアし、利用可能なハンドルのリストを初期化します。
+        m_Indexes.clear();
+        m_Entries.fill({});
         m_AvailableHandles.clear();
-        m_AvailableHandles.reserve(MaxAssets);
 
-        auto resourceIds = std::views::iota(0ULL, static_cast<unsigned long long>(MaxAssets));
+        // Arenaの状態をリセットします。これにより、すべての確保されたメモリが解放され、次の確保は最初のブロックから始まります。
+        m_Storage.Reset();
 
-        // clang-format off
-        auto handleView = resourceIds | std::views::transform([](auto i)
+        // 利用可能なハンドルのリストを初期化します。これにより、最初のMaxEntries個のリソースIDが利用可能になります。
+        for (std::uint64_t i = 0; i < MaxEntries; ++i)
         {
-            return Renderer2D::AssetHandle{ .ResourceID = static_cast<Renderer2D::Handle::ResourceID>(i) };
-        });
-        // clang-format on
-
-        std::ranges::copy(handleView, std::back_inserter(m_AvailableHandles));
+            m_AvailableHandles.push_back({ .ID = static_cast<Handle::ResourceID>(i), .Generation = Handle::Generation::Default });
+        }
     }
 
 } // namespace N503::Renderer2D::Resource

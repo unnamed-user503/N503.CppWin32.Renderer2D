@@ -1,25 +1,30 @@
 #pragma once
 
 // 1. Project Headers
+#include "Pixels/Buffer.hpp"
 
 // 2. Project Dependencies
-#include <N503/Renderer2D/Bitmap.hpp>
 
 // 3. WIL (Windows Implementation Library)
+#include <N503/Renderer2D/Bitmap.hpp>
+#include <N503/Renderer2D/Types.hpp>
 
 // 4. Third-party Libraries
 
 // 5. Windows Headers
-#include <Windows.h>
 
 // 6. C++ Standard Libraries
-#include <memory>
 
 namespace N503::Renderer2D
 {
 
-    struct Bitmap::Entity final
+    struct Bitmap::Entity
     {
+        ResourceHandle ResourceHandle{};
+
+        CommandHandle CommandHandle{};
+
+        Pixels::Buffer Pixels{};
     };
 
 } // namespace N503::Renderer2D

@@ -1,6 +1,7 @@
 #pragma once
 
 // 1. Project Headers
+#include "Packet.hpp"
 
 // 2. Project Dependencies
 
@@ -11,14 +12,16 @@
 // 5. Windows Headers
 
 // 6. C++ Standard Libraries
-#include <string>
+#include <semaphore>
 
-namespace N503::Renderer2D::Resource
+namespace N503::Renderer2D::Message
 {
 
-    struct Metadata
+    struct Envelope
     {
-        std::string Path;
+        Packet Packet;
+
+        std::binary_semaphore* Signal;
     };
 
-} // namespace N503::Renderer2D::Resource
+} // namespace N503::Renderer2D::Message

@@ -12,111 +12,165 @@
 
 // 6. C++ Standard Libraries
 #include <cstdint>
-#include <type_traits>
 
 namespace N503::Renderer2D
 {
 
-    enum class Type : std::uint16_t
+    struct RectF
     {
-        None,
-        Bitmap,
-        Movie,
+        float X;
+
+        float Y;
+
+        float Width;
+
+        float Height;
     };
+
+    struct PointF
+    {
+        float X;
+
+        float Y;
+    };
+
+    struct SizeF
+    {
+        float Width;
+
+        float Height;
+    };
+
+    struct ColorF
+    {
+        float Red;
+
+        float Green;
+
+        float Blue;
+
+        float Alpha;
+    };
+
+    struct Transform
+    {
+        float ScaleX;
+
+        float ScaleY;
+
+        float Rotation;
+
+        float TranslationX;
+
+        float TranslationY;
+    };
+
+    enum class PixelFormat
+    {
+        Unknown = 0,
+
+        B8G8R8A8_UNORM,
+    };
+
+    // struct Vertex
+    //{
+    //     PointF Position;
+
+    //    ColorF Color;
+
+    //    PointF TextureCoord;
+    //};
+
+    // struct Sprite
+    //{
+    //     RectF TargetRect;
+
+    //    RectF SourceRect;
+
+    //    ColorF Color;
+    //};
 
     namespace Handle
     {
-        enum class Ticket : std::uint64_t
-        {
-            InvalidValue = std::uint64_t(-1)
-        };
 
-        enum class Tag : std::uint64_t
+        enum class Generation : std::uint64_t
         {
-            InvalidValue = std::uint64_t(-1)
+            Default = 0,
         };
 
         enum class ResourceID : std::uint64_t
         {
-            InvalidValue = 0
+            Invalid = std::uint64_t(-1),
         };
 
-        enum class Generation : std::uint32_t
+        enum class ResourceType : std::uint8_t
         {
-            InitialValue = 0
+            None = 0,
+            Bitmap,
+            Movie,
+            Text,
         };
+
+        enum class CommandID : std::uint64_t
+        {
+            Invalid = std::uint64_t(-1),
+        };
+
+        enum class CommandType : std::uint8_t
+        {
+            None = 0,
+            Draw,
+            System,
+        };
+
     } // namespace Handle
 
-    struct ProcessHandle final
+    struct ResourceHandle
     {
-        Handle::Tag Tag{ Handle::Tag::InvalidValue };
+        Handle::ResourceID ID{ Handle::ResourceID::Invalid };
 
-        Handle::Ticket Ticket{ Handle::Ticket::InvalidValue };
+        Handle::ResourceType Type;
 
-        Handle::Generation Generation{ Handle::Generation::InitialValue };
+        Handle::Generation Generation;
 
         [[nodiscard]]
         explicit operator bool() const noexcept
         {
-            return Ticket != Handle::Ticket::InvalidValue;
+            return ID != Handle::ResourceID::Invalid;
         }
 
         [[nodiscard]]
         bool operator!() const noexcept
         {
-            return Ticket == Handle::Ticket::InvalidValue;
+            return ID == Handle::ResourceID::Invalid;
         }
+
+        [[nodiscard]]
+        bool operator==(const ResourceHandle&) const = default;
     };
 
-    struct AssetHandle final
+    struct CommandHandle
     {
-        Handle::ResourceID ResourceID{ Handle::ResourceID::InvalidValue };
+        Handle::CommandID ID{ Handle::CommandID::Invalid };
+
+        Handle::CommandType Type;
+
+        Handle::Generation Generation;
 
         [[nodiscard]]
         explicit operator bool() const noexcept
         {
-            return ResourceID != Handle::ResourceID::InvalidValue;
+            return ID != Handle::CommandID::Invalid;
         }
 
         [[nodiscard]]
         bool operator!() const noexcept
         {
-            return ResourceID == Handle::ResourceID::InvalidValue;
+            return ID == Handle::CommandID::Invalid;
         }
 
-        // 比較演算子（map のキーには必須）
         [[nodiscard]]
-        bool operator==(const AssetHandle&) const = default;
+        bool operator==(const CommandHandle&) const = default;
     };
-
-    inline auto operator++(Renderer2D::Handle::Tag& tag) noexcept -> Renderer2D::Handle::Tag&
-    {
-        using T = std::underlying_type_t<Renderer2D::Handle::Tag>;
-        tag     = static_cast<Renderer2D::Handle::Tag>(static_cast<T>(tag) + 1);
-        return tag;
-    }
-
-    inline auto operator++(Renderer2D::Handle::Generation& generation) noexcept -> Renderer2D::Handle::Generation&
-    {
-        using T    = std::underlying_type_t<Renderer2D::Handle::Generation>;
-        generation = static_cast<Renderer2D::Handle::Generation>(static_cast<T>(generation) + 1);
-        return generation;
-    }
 
 } // namespace N503::Renderer2D
-
-// ハッシュ関数の定義
-namespace std
-{
-
-    template <> struct hash<N503::Renderer2D::AssetHandle>
-    {
-        size_t operator()(const N503::Renderer2D::AssetHandle& handle) const noexcept
-        {
-            // ResourceID が enum class なら underlying_type でキャスト
-            using T = std::underlying_type_t<N503::Renderer2D::Handle::ResourceID>;
-            return std::hash<T>{}(static_cast<T>(handle.ResourceID));
-        }
-    };
-
-} // namespace std

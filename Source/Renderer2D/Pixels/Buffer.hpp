@@ -3,6 +3,7 @@
 // 1. Project Headers
 
 // 2. Project Dependencies
+#include <N503/Renderer2D/Types.hpp>
 
 // 3. WIL (Windows Implementation Library)
 
@@ -17,7 +18,7 @@
 namespace N503::Renderer2D::Pixels
 {
 
-    struct Buffer final
+    struct Buffer
     {
         std::byte* Bytes{ nullptr };
 
@@ -28,6 +29,8 @@ namespace N503::Renderer2D::Pixels
         std::uint32_t Height{ 0 };
 
         std::uint32_t Pitch{ 0 };
+
+        PixelFormat Format{ PixelFormat::Unknown };
     };
 
 } // namespace N503::Renderer2D::Pixels

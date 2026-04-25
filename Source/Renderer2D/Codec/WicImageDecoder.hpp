@@ -2,7 +2,6 @@
 
 // 1. Project Headers
 #include "../Pixels/Buffer.hpp"
-#include "Decoder.hpp"
 
 // 2. Project Dependencies
 
@@ -15,27 +14,35 @@
 #include <wincodec.h>
 
 // 6. C++ Standard Libraries
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <span>
+#include <string>
+#include <string_view>
 
 namespace N503::Renderer2D::Codec
 {
 
-    class WicImageDecoder : public Decoder
+    class WicImageDecoder final
     {
     public:
-        WicImageDecoder(std::string_view path);
+        WicImageDecoder(const std::string_view path);
 
-        virtual ~WicImageDecoder() = default;
+        auto Decode(std::function<std::span<std::byte>(std::size_t)> allocate) -> Pixels::Buffer;
 
-        virtual auto Decode(Allocator allocator) -> Pixels::Buffer override;
+        auto GetWidth() const -> std::uint32_t;
 
-        virtual auto GetWidth() const -> std::uint32_t override;
+        auto GetHeight() const -> std::uint32_t;
 
-        virtual auto GetHeight() const -> std::uint32_t override;
+        auto GetPitch() const -> std::uint32_t;
 
-        virtual auto GetPitch() const -> std::uint32_t override;
+        auto GetPath() const -> std::string_view;
 
     private:
-        wil::com_ptr<IWICBitmapDecoder> m_decoder;
+        wil::com_ptr<IWICBitmapDecoder> m_Decoder;
+
+        std::string m_Path;
     };
 
 } // namespace N503::Renderer2D::Codec

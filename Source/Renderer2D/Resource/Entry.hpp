@@ -1,8 +1,11 @@
 #pragma once
 
 // 1. Project Headers
+#include "../Pixels/Buffer.hpp"
+#include "Metadata.hpp"
 
 // 2. Project Dependencies
+#include <N503/Renderer2D/Types.hpp>
 
 // 3. WIL (Windows Implementation Library)
 
@@ -16,9 +19,13 @@
 namespace N503::Renderer2D::Resource
 {
 
-    struct Metadata
+    struct Entry
     {
-        std::string Path;
+        ResourceHandle Handle;
+
+        Pixels::Buffer Pixels;
+
+        Metadata Metadata;
     };
 
 } // namespace N503::Renderer2D::Resource

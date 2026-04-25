@@ -1,13 +1,12 @@
 #pragma once
 
 // 1. Project Headers
-#include "Command/Queue.hpp"
-#include "Device/Context.hpp"
-#include "Processor.hpp"
+#include "Message/Queue.hpp"
 #include "Resource/Container.hpp"
-#include "Texture/Registry.hpp"
 
 // 2. Project Dependencies
+#include <N503/Diagnostics/Entry.hpp>
+#include <N503/Diagnostics/Severity.hpp>
 #include <N503/Diagnostics/Sink.hpp>
 
 // 3. WIL (Windows Implementation Library)
@@ -21,7 +20,6 @@
 // 6. C++ Standard Libraries
 #include <atomic>
 #include <memory>
-#include <stop_token>
 #include <thread>
 
 namespace N503::Renderer2D
@@ -30,18 +28,10 @@ namespace N503::Renderer2D
     class Engine final
     {
     public:
-        static auto Instance() -> Engine&;
+        static Engine& GetInstance() noexcept;
 
     public:
-        ~Engine();
-
-        Engine(const Engine&) = delete;
-
-        auto operator=(const Engine&) -> Engine& = delete;
-
-        Engine(Engine&&) = delete;
-
-        auto operator=(Engine&&) -> Engine& = delete;
+        Engine();
 
     public:
         auto Start() -> void;
@@ -50,29 +40,22 @@ namespace N503::Renderer2D
 
         auto Wait() -> void;
 
-        auto GetCommandQueue() -> Command::Queue&
-        {
-            return *m_CommandQueue;
-        }
+        auto Run(const std::stop_token stopToken) -> void;
 
-        auto GetDeviceContext() -> Device::Context&
-        {
-            return *m_DeviceContext;
-        }
-
-        auto GetResourceContainer() -> Resource::Container&
+    public:
+        auto GetResourceContainer() const -> Resource::Container&
         {
             return *m_ResourceContainer;
         }
 
-        auto GetBatchProcessor() -> Renderer2D::Processor&
+        auto GetMessageQueue() const -> Message::Queue&
         {
-            return *m_BatchProcessor;
+            return *m_MessageQueue;
         }
 
-        auto GetTextureRegistry() -> Texture::Registry&
+        auto GetDiagnosticsSink() const -> const Diagnostics::Sink&
         {
-            return *m_TextureRegistry;
+            return m_DiagnosticsSink;
         }
 
         auto GetDiagnosticsSink() -> Diagnostics::Sink&
@@ -81,28 +64,17 @@ namespace N503::Renderer2D
         }
 
     private:
-        Engine();
-
-        auto Run(std::stop_token stopToken) -> void;
-
-    private:
         std::atomic<bool> m_IsRunning{ false };
 
         wil::unique_event m_StartedEvent{ ::CreateEventW(nullptr, TRUE, FALSE, L"Local\\N503.CppWin32.Renderer2D.Event.EngineStarted") };
 
-        std::unique_ptr<Command::Queue> m_CommandQueue;
-
-        std::unique_ptr<Texture::Registry> m_TextureRegistry;
-
-        std::unique_ptr<Renderer2D::Processor> m_BatchProcessor;
+        Diagnostics::Sink m_DiagnosticsSink;
 
         std::unique_ptr<Resource::Container> m_ResourceContainer;
 
-        std::unique_ptr<Device::Context> m_DeviceContext;
+        std::unique_ptr<Message::Queue> m_MessageQueue;
 
-        Diagnostics::Sink m_DiagnosticsSink;
-
-        std::jthread m_RenderThread;
+        std::jthread m_RendererThread;
     };
 
 } // namespace N503::Renderer2D
