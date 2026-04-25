@@ -42,6 +42,7 @@ namespace N503::Renderer2D
         auto packet2 = Message::Packets::AddCommandList{
             .Result         = &m_Entity->CommandHandle,
             .ResourceHandle = m_Entity->ResourceHandle,
+            .ResourceType   = ResourceType::Bitmap,
         };
 
         Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet2));

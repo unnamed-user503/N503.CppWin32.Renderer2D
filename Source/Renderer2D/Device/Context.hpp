@@ -41,6 +41,11 @@ namespace N503::Renderer2D::Device
         auto SetTarget(const RenderTarget& renderTarget) const noexcept -> void;
 
     public:
+        auto GetDWriteFactory() const noexcept -> wil::com_ptr<IDWriteFactory>
+        {
+            return m_DWriteFactory;
+        }
+
         auto GetD3DDevice() const noexcept -> wil::com_ptr<ID3D11Device>
         {
             return m_D3DDevice;

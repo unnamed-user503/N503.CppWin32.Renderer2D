@@ -2,6 +2,8 @@
 
 // 1. Project Headers
 #include "Commands/DrawBitmap.hpp"
+#include "Commands/DrawString.hpp"
+#include "Commands/DrawTextLayout.hpp"
 
 // 2. Project Dependencies
 
@@ -19,6 +21,6 @@ namespace N503::Renderer2D::Device
 
     using namespace Commands;
 
-    using Command = std::variant<std::monostate, DrawBitmap>;
+    using Command = std::variant<std::monostate, DrawBitmap, DrawString, DrawTextLayout>;
 
 } // namespace N503::Renderer2D::Device

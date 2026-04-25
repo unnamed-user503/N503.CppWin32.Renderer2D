@@ -207,7 +207,7 @@ namespace N503::Renderer2D
 
                 if (endDrawResult == D2DERR_RECREATE_TARGET || presentResult == DXGI_ERROR_DEVICE_REMOVED || presentResult == DXGI_ERROR_DEVICE_RESET)
                 {
-                    // デバイスロスト発生。リソースをクリーンアップしてコンテキストを再構築する
+                    // デバイスが削除されたかリセットされた場合は、デバイス コンテキストとレンダリング ターゲットを再作成する
                     deviceContext = std::make_unique<Device::Context>();
                     renderTarget  = std::make_unique<Device::RenderTarget>(deviceContext.get(), renderTarget->GetTargetWindow());
                     deviceContext->SetTarget(*renderTarget);

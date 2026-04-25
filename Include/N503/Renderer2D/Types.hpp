@@ -72,6 +72,15 @@ namespace N503::Renderer2D
         B8G8R8A8_UNORM,
     };
 
+    enum class ResourceType
+    {
+        None = 0,
+        Bitmap,
+        Movie,
+        String,
+        TextLayout,
+    };
+
     // struct Vertex
     //{
     //     PointF Position;

@@ -12,6 +12,7 @@
 // 5. Windows Headers
 
 // 6. C++ Standard Libraries
+#include <string_view>
 
 namespace N503::Renderer2D::Message
 {
@@ -26,6 +27,18 @@ namespace N503::Renderer2D::Message::Packets
         CommandHandle* Result{};
 
         ResourceHandle ResourceHandle{};
+
+        ResourceType ResourceType{ ResourceType::None };
+
+        std::string_view Text;
+
+        struct
+        {
+            std::string_view Family;
+
+            float Size{};
+        }
+        Font;
 
         auto operator()(Context& context) const -> void;
     };
