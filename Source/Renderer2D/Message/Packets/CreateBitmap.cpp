@@ -39,7 +39,7 @@ namespace N503::Renderer2D::Message::Packets
         pixels.Bytes  = nullptr;
         pixels.Size   = static_cast<std::size_t>(pixels.Height) * pixels.Pitch;
 
-        auto handle = Engine::GetInstance().GetResourceContainer().Add(Path, pixels); // 書き込み可能なpixels.Bytesを設定
+        auto handle = context.ResourceContainer.Add(Path, pixels); // 書き込み可能なpixels.Bytesを設定
 
         if (!handle)
         {

@@ -36,6 +36,11 @@ namespace N503::Renderer2D::Resource
         // すでに同じパスのリソースが存在する場合は、そのハンドルを返します。
         if (auto it = m_Indexes.find(path); it != m_Indexes.end())
         {
+            if (auto* entry = Get(it->second))
+            {
+                pixels = entry->Pixels;
+            }
+
             return it->second;
         }
 
@@ -54,6 +59,11 @@ namespace N503::Renderer2D::Resource
 
         // 画像データのバイトサイズに基づいて、アリメントを16バイトとした生のバイト列としてメモリを確保します。
         void* address = m_Storage.AllocateBytes(pixels.Size, 16);
+
+        if (address == nullptr)
+        {
+            ::DebugBreak(); // メモリ確保に失敗した場合は、デバッグブレークポイントをトリガーします。
+        }
 
         // 呼び出し元に書き込み可能なバッファの位置を伝えるため、Pixels構造体のBytesにアドレスをセットします。
         pixels.Bytes = static_cast<std::byte*>(address);
