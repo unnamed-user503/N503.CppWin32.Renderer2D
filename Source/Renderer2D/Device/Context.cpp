@@ -2,42 +2,62 @@
 #include "Context.hpp"
 
 // 1. Project Headers
+#include "../Pixels/Buffer.hpp"
 #include "RenderTarget.hpp"
 
 // 2. Project Dependencies
 
 // 3. WIL (Windows Implementation Library)
 #include <wil/com.h>
-#include <wil/resource.h>
+#include <wil/result_macros.h>
 
 // 4. Third-party Libraries
 
 // 5. Windows Headers
 #include <d2d1.h>
 #include <d2d1_1.h>
-#include <d3d11.h>
 #include <dwrite.h>
-#include <dxgi.h>
-#include <windows.h>
 
 // 6. C++ Standard Libraries
+#include <memory>
+#include <string>
+#include <string_view>
 
 namespace N503::Renderer2D::Device
 {
 
+    namespace
+    {
+        auto TranscodeUtf8ToWide(const std::string_view utf8) -> std::wstring
+        {
+            if (utf8.empty())
+            {
+                return {};
+            }
+
+            int desired = ::MultiByteToWideChar(CP_UTF8, 0, utf8.data(), -1, nullptr, 0);
+            if (desired == 0)
+            {
+                return {};
+            }
+
+            std::wstring result(desired, 0);
+            ::MultiByteToWideChar(CP_UTF8, 0, utf8.data(), -1, &result[0], desired);
+
+            result.resize(desired - 1);
+            return result;
+        }
+    } // namespace
+
     Context::Context()
     {
-        // Direct2D Factory のリソースを作成
+        // D2D1FactoryとDWriteFactoryの作成
         D2D1_FACTORY_OPTIONS options{};
 #ifdef _DEBUG
         options.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
 #endif
         THROW_IF_FAILED(::D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory1), &options, m_D2DFactory.put_void()));
-
-        // DirectWrite Factory のリソースを作成
-        wil::com_ptr<IUnknown> dwriteFactory;
-        THROW_IF_FAILED(::DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), dwriteFactory.put()));
-        m_DWriteFactory = dwriteFactory.query<IDWriteFactory>();
+        THROW_IF_FAILED(::DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), m_DWriteFactory.put_unknown()));
 
         // Direct3D11のリソースを作成する
         UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
@@ -62,8 +82,8 @@ namespace N503::Renderer2D::Device
             d3d11Context.put()
         ));
 
-        m_D3DDevice  = d3d11Device;
-        m_D3DContext = d3d11Context;
+        m_D3DDevice  = std::move(d3d11Device);
+        m_D3DContext = std::move(d3d11Context);
 
         // Direct3D11のリソースからDirect2Dのリソースを作成する
         auto dxgiDevice = m_D3DDevice.query<IDXGIDevice>();
@@ -72,66 +92,102 @@ namespace N503::Renderer2D::Device
         THROW_IF_FAILED(m_D2DDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, m_D2DContext.put()));
     }
 
-    auto Context::GetRenderTargetWindow() const noexcept -> HWND
+    auto Context::CreateBitmap(const Pixels::Buffer& pixels) -> wil::com_ptr<ID2D1Bitmap1>
     {
-        wil::unique_event_nothrow createWindowCompletion;
+        wil::com_ptr<ID2D1Bitmap1> bitmap;
 
-        if (!createWindowCompletion.try_open(L"Local\\N503.CppWin32.Event.Core.CreateWindowCompletion", SYNCHRONIZE | EVENT_MODIFY_STATE))
+        auto hr = m_D2DContext->CreateBitmap(
+            D2D1::SizeU(static_cast<UINT32>(pixels.Width), static_cast<UINT32>(pixels.Height)),
+            pixels.Bytes,
+            pixels.Pitch,
+            D2D1::BitmapProperties1(D2D1_BITMAP_OPTIONS_NONE, D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED)),
+            bitmap.put()
+        );
+
+        if (FAILED(hr))
         {
-            return {};
+            return nullptr;
         }
 
-        if (::WaitForSingleObject(createWindowCompletion.get(), 0) != WAIT_OBJECT_0)
-        {
-            return {};
-        }
-
-        struct Context
-        {
-            HWND Result{};
-            DWORD TargetPID{};
-        };
-
-        Context context{ nullptr, ::GetCurrentProcessId() };
-
-        auto callback = [](HWND handle, LPARAM lParam) -> BOOL
-        {
-            auto pContext = reinterpret_cast<Context*>(lParam);
-
-            DWORD pid{};
-            ::GetWindowThreadProcessId(handle, &pid);
-
-            if (pid == pContext->TargetPID)
-            {
-                wchar_t className[256]{};
-                ::GetClassNameW(handle, className, 256);
-
-                if (std::wcscmp(className, L"N503.CppWin32.Core.Window") == 0)
-                {
-                    pContext->Result = handle;
-                    return FALSE;
-                }
-            }
-
-            return TRUE;
-        };
-
-        ::EnumWindows(callback, reinterpret_cast<LPARAM>(&context));
-
-        if (!context.Result)
-        {
-            return {};
-        }
-        else
-        {
-            // 成功したので旗を下ろす
-            createWindowCompletion.ResetEvent();
-        }
-
-        return context.Result;
+        return bitmap;
     }
 
-    auto Context::BeginDraw() const noexcept -> bool
+    auto Context::CreateSolidColorBrush(const Renderer2D::ColorF color) -> wil::com_ptr<ID2D1SolidColorBrush>
+    {
+        wil::com_ptr<ID2D1SolidColorBrush> solidBrush;
+
+        const auto d2dColor = D2D1::ColorF(color.Red, color.Green, color.Blue, color.Alpha);
+
+        auto hr = m_D2DContext->CreateSolidColorBrush(d2dColor, solidBrush.put());
+
+        if (FAILED(hr))
+        {
+            return nullptr;
+        }
+
+        return solidBrush;
+    }
+
+    auto Context::CreateTextFormat(const std::string_view fontName, const float fontSize) -> wil::com_ptr<IDWriteTextFormat>
+    {
+        wil::com_ptr<IDWriteTextFormat> textFormat;
+
+        auto hr = m_DWriteFactory->CreateTextFormat(
+            TranscodeUtf8ToWide(fontName).c_str(),
+            nullptr,
+            DWRITE_FONT_WEIGHT_NORMAL,
+            DWRITE_FONT_STYLE_NORMAL,
+            DWRITE_FONT_STRETCH_NORMAL,
+            fontSize,
+            L"", // locale
+            textFormat.put()
+        );
+
+        if (FAILED(hr))
+        {
+            return nullptr;
+        }
+
+        return textFormat;
+    }
+
+    auto Context::CreateTextLayout(const std::string_view text, wil::com_ptr<IDWriteTextFormat> textFormat) -> wil::com_ptr<IDWriteTextLayout>
+    {
+        wil::com_ptr<IDWriteTextLayout> textLayout;
+
+        auto hr = m_DWriteFactory->CreateTextLayout(
+            TranscodeUtf8ToWide(text).c_str(), // text
+            static_cast<UINT32>(text.size()),  // text length
+            textFormat.get(),
+            0.0f, // max width
+            0.0f, // max height
+            textLayout.put()
+        );
+
+        if (FAILED(hr))
+        {
+            return nullptr;
+        }
+
+        return textLayout;
+    }
+
+    auto Device::Context::DrawBitmap(wil::com_ptr<ID2D1Bitmap1> bitmap, const D2D1_RECT_F destination) -> void
+    {
+        m_D2DContext->DrawBitmap(bitmap.get(), destination);
+    }
+
+    auto Device::Context::DrawTextLayout(wil::com_ptr<IDWriteTextLayout> textLayout, wil::com_ptr<ID2D1SolidColorBrush> brush) -> void
+    {
+        m_D2DContext->DrawTextLayout(D2D1::Point2F(0.0f, 0.0f), textLayout.get(), brush.get());
+    }
+
+    auto Device::Context::SetTransform(const D2D1_MATRIX_3X2_F& transform) -> void
+    {
+        m_D2DContext->SetTransform(transform);
+    }
+
+    auto Context::BeginDraw(const Renderer2D::ColorF clearColor) -> bool
     {
         if (!m_D2DContext)
         {
@@ -139,11 +195,11 @@ namespace N503::Renderer2D::Device
         }
 
         m_D2DContext->BeginDraw();
-        m_D2DContext->Clear(D2D1::ColorF(0.1f, 0.2, 0.4f));
+        m_D2DContext->Clear(D2D1::ColorF(clearColor.Red, clearColor.Green, clearColor.Blue));
         return true;
     }
 
-    auto Context::EndDraw() const noexcept -> HRESULT
+    auto Context::EndDraw() -> HRESULT
     {
         // D2D の描画命令を確定させる
         HRESULT hr = m_D2DContext->EndDraw();
@@ -156,9 +212,17 @@ namespace N503::Renderer2D::Device
         return hr;
     }
 
-    auto Context::SetTarget(const RenderTarget& renderTarget) const noexcept -> void
+    auto Context::Reset() -> void
     {
-        m_D2DContext->SetTarget(renderTarget.GetTargetBitmap().get());
+        m_D2DContext.reset();
+        m_D2DDevice.reset();
+        m_D3DContext.reset();
+        m_D3DDevice.reset();
+    }
+
+    auto Device::Context::SetRenderTarget(RenderTarget* renderTarget) -> void
+    {
+        m_D2DContext->SetTarget(renderTarget->GetTargetBitmap().get());
     }
 
 } // namespace N503::Renderer2D::Device

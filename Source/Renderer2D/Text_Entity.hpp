@@ -1,7 +1,7 @@
 #pragma once
 
 // 1. Project Headers
-#include "Pixels/Buffer.hpp"
+#include "System/Entity.hpp"
 
 // 2. Project Dependencies
 
@@ -20,7 +20,7 @@ namespace N503::Renderer2D
 
     struct Text::Entity
     {
-        CommandHandle CommandHandle{};
+        System::Entity ID{};
     };
 
 } // namespace N503::Renderer2D

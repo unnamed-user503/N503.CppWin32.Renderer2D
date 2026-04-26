@@ -6,44 +6,41 @@
 
 // 3. WIL (Windows Implementation Library)
 #include <wil/com.h>
-#include <wil/resource.h>
 
 // 4. Third-party Libraries
 
 // 5. Windows Headers
+#include <Windows.h>
 #include <d2d1_1.h>
-#include <d3d11.h>
-#include <dwrite.h>
 #include <dxgi1_2.h>
-#include <windows.h>
 
 // 6. C++ Standard Libraries
 
 namespace N503::Renderer2D::Device
 {
-
     class Context;
+}
+
+namespace N503::Renderer2D::Device
+{
 
     class RenderTarget
     {
     public:
-        RenderTarget(const Context* context, HWND hwnd);
+        RenderTarget(Device::Context& context, HWND hwnd);
 
-        RenderTarget(const RenderTarget&) = delete;
+        auto Resize(const Device::Context& context, UINT width, UINT height) -> void;
 
-        auto operator=(const RenderTarget&) -> RenderTarget& = delete;
-
-    public:
         auto Present() const noexcept -> HRESULT;
 
-        auto GetTargetBitmap() const noexcept -> const wil::com_ptr<ID2D1Bitmap1>&
-        {
-            return m_TargetBitmap;
-        }
-
-        auto GetTargetWindow() const -> HWND
+        auto GetTargetWindow() const noexcept -> HWND
         {
             return m_TargetWindow;
+        }
+
+        auto GetTargetBitmap() const noexcept -> wil::com_ptr<ID2D1Bitmap1>
+        {
+            return m_TargetBitmap;
         }
 
     private:
@@ -51,7 +48,7 @@ namespace N503::Renderer2D::Device
 
         wil::com_ptr<ID2D1Bitmap1> m_TargetBitmap;
 
-        HWND m_TargetWindow{ nullptr };
+        HWND m_TargetWindow;
     };
 
 } // namespace N503::Renderer2D::Device

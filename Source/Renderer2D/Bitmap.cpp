@@ -3,10 +3,7 @@
 
 // 1. Project Headers
 #include "Engine.hpp"
-#include "Message/Packets/AddCommandList.hpp"
-#include "Message/Packets/CreateBitmap.hpp"
-#include "Message/Packets/UpdateBitmapOpacity.hpp"
-#include "Message/Packets/UpdateBitmapPoint.hpp"
+#include "Message/Packets/CreateSprite.hpp"
 
 // 2. Project Dependencies
 #include <N503/Renderer2D/Bitmap.hpp>
@@ -30,82 +27,36 @@ namespace N503::Renderer2D
     {
         m_Entity = std::make_unique<Entity>();
 
-        auto packet = Message::Packets::CreateBitmap{
-            .Result = &m_Entity->ResourceHandle,
-            .Pixels = &m_Entity->Pixels,
+        auto packet = Message::Packets::CreateSprite{
+            .Result = &m_Entity->ID,
             .Path   = path,
         };
 
         Engine::GetInstance().Start();
         Engine::GetInstance().GetMessageQueue().EnqueueSync(std::move(packet));
-
-        auto packet2 = Message::Packets::AddCommandList{
-            .Result         = &m_Entity->CommandHandle,
-            .ResourceHandle = m_Entity->ResourceHandle,
-            .ResourceType   = ResourceType::Bitmap,
-        };
-
-        Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet2));
     }
 
     auto Bitmap::SetPoint(float x, float y) -> void
     {
-        if (m_Entity == nullptr)
-        {
-            return;
-        }
-
-        auto packet = Message::Packets::UpdateBitmapPoint{
-            .CommandHandle = m_Entity->CommandHandle,
-            .Point         = PointF{ x, y },
-        };
-
-        Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
     }
 
     auto Bitmap::SetOpacity(float opacity) -> void
     {
-        if (m_Entity == nullptr)
-        {
-            return;
-        }
-
-        auto packet = Message::Packets::UpdateBitmapOpacity{
-            .CommandHandle = m_Entity->CommandHandle,
-            .Opacity       = opacity,
-        };
-
-        Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
     }
 
     auto Bitmap::GetWidth() const -> float
     {
-        if (m_Entity == nullptr)
-        {
-            return 0.0f;
-        }
-
-        return m_Entity->Pixels.Width;
+        return 0.0f;
     }
 
     auto Bitmap::GetHeight() const -> float
     {
-        if (m_Entity == nullptr)
-        {
-            return 0.0f;
-        }
-
-        return m_Entity->Pixels.Height;
+        return 0.0f;
     }
 
     auto Bitmap::GetPitch() const -> float
     {
-        if (m_Entity == nullptr)
-        {
-            return 0.0f;
-        }
-
-        return m_Entity->Pixels.Pitch;
+        return 0.0f;
     }
 
     Bitmap::~Bitmap() = default;

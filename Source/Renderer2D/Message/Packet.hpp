@@ -1,11 +1,9 @@
 #pragma once
 
 // 1. Project Headers
-#include "Packets/AddCommandList.hpp"
-#include "Packets/CreateBitmap.hpp"
-#include "Packets/DeleteBitmap.hpp"
-#include "Packets/UpdateBitmapOpacity.hpp"
-#include "Packets/UpdateBitmapPoint.hpp"
+#include "Packets/CreateSprite.hpp"
+#include "Packets/CreateText.hpp"
+#include "Packets/DestroyEntity.hpp"
 
 // 2. Project Dependencies
 
@@ -23,6 +21,6 @@ namespace N503::Renderer2D::Message
 
     using namespace Packets;
 
-    using Packet = std::variant<CreateBitmap, DeleteBitmap, UpdateBitmapPoint, UpdateBitmapOpacity, AddCommandList>;
+    using Packet = std::variant<CreateSprite, CreateText, DestroyEntity>;
 
 } // namespace N503::Renderer2D::Message

@@ -28,7 +28,7 @@ namespace N503::Renderer2D
     class Engine final
     {
     public:
-        static Engine& GetInstance() noexcept;
+        static auto GetInstance() noexcept -> Engine&;
 
     public:
         Engine();
@@ -43,11 +43,6 @@ namespace N503::Renderer2D
         auto Run(const std::stop_token stopToken) -> void;
 
     public:
-        auto GetResourceContainer() const -> Resource::Container&
-        {
-            return *m_ResourceContainer;
-        }
-
         auto GetMessageQueue() const -> Message::Queue&
         {
             return *m_MessageQueue;
@@ -69,8 +64,6 @@ namespace N503::Renderer2D
         wil::unique_event m_StartedEvent{ ::CreateEventW(nullptr, TRUE, FALSE, L"Local\\N503.CppWin32.Renderer2D.Event.EngineStarted") };
 
         Diagnostics::Sink m_DiagnosticsSink;
-
-        std::unique_ptr<Resource::Container> m_ResourceContainer;
 
         std::unique_ptr<Message::Queue> m_MessageQueue;
 

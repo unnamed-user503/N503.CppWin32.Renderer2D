@@ -156,6 +156,18 @@ namespace N503::Renderer2D
 
         [[nodiscard]]
         bool operator==(const ResourceHandle&) const = default;
+
+        [[nodiscard]]
+        bool operator==(const Handle::ResourceID) const
+        {
+            return ID == Handle::ResourceID::Invalid;
+        }
+
+        [[nodiscard]]
+        bool operator!=(const Handle::ResourceID) const
+        {
+            return ID != Handle::ResourceID::Invalid;
+        }
     };
 
     struct CommandHandle
@@ -180,6 +192,18 @@ namespace N503::Renderer2D
 
         [[nodiscard]]
         bool operator==(const CommandHandle&) const = default;
+
+        [[nodiscard]]
+        bool operator==(const Handle::CommandID) const
+        {
+            return ID == Handle::CommandID::Invalid;
+        }
+
+        [[nodiscard]]
+        bool operator!=(const Handle::CommandID) const
+        {
+            return ID != Handle::CommandID::Invalid;
+        }
     };
 
 } // namespace N503::Renderer2D

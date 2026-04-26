@@ -1,6 +1,7 @@
 #pragma once
 
 // 1. Project Headers
+#include "../../System/Entity.hpp"
 
 // 2. Project Dependencies
 #include <N503/Renderer2D/Types.hpp>
@@ -12,6 +13,7 @@
 // 5. Windows Headers
 
 // 6. C++ Standard Libraries
+#include <string_view>
 
 namespace N503::Renderer2D::Message
 {
@@ -21,11 +23,13 @@ namespace N503::Renderer2D::Message
 namespace N503::Renderer2D::Message::Packets
 {
 
-    struct DeleteBitmap
+    struct CreateSprite
     {
-        ResourceHandle ResourceHandle{};
+        System::Entity* Result{ nullptr };
 
-        auto operator()(Context& context) const -> void;
+        std::string_view Path{};
+
+        auto operator()(Message::Context& context) const -> void;
     };
 
 } // namespace N503::Renderer2D::Message::Packets

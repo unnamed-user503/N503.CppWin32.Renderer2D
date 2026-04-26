@@ -2,7 +2,6 @@
 
 // 1. Project Headers
 #include "../Device/Context.hpp"
-#include "Queue.hpp"
 
 // 2. Project Dependencies
 
@@ -17,7 +16,9 @@
 namespace N503::Renderer2D::Message
 {
     struct Context;
-}
+
+    class Queue;
+} // namespace N503::Renderer2D::Message
 
 namespace N503::Renderer2D::Message
 {
@@ -25,7 +26,7 @@ namespace N503::Renderer2D::Message
     class Dispatcher final
     {
     public:
-        auto Dispatch(Context& context) -> void;
+        auto Dispatch(Queue& queue, Context& context) -> void;
     };
 
 } // namespace N503::Renderer2D::Message

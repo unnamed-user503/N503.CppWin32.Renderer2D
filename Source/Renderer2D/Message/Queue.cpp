@@ -37,13 +37,10 @@ namespace N503::Renderer2D::Message
 
             if (currentSize >= capacity * 0.8) // 80%を超えたら警告
             {
-                Engine::GetInstance().GetDiagnosticsSink().AddEntry(
-                    Diagnostics::Entry{
-                        .Severity = Diagnostics::Severity::Warning,
-                        .Expected = std::format("EventQueue is congesting: CurrentSize={}, Capacity={}\n", currentSize, capacity).data(),
-                        .Position = 0
-                    }
-                );
+                Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{
+                    .Severity = Diagnostics::Severity::Warning,
+                    .Expected = std::format("EventQueue is congesting: CurrentSize={}, Capacity={}\n", currentSize, capacity).data(),
+                    .Position = 0 });
             }
         }
 #endif
@@ -84,13 +81,10 @@ namespace N503::Renderer2D::Message
 
             if (currentSize >= capacity * 0.8) // 80%を超えたら警告
             {
-                Engine::GetInstance().GetDiagnosticsSink().AddEntry(
-                    Diagnostics::Entry{
-                        .Severity = Diagnostics::Severity::Warning,
-                        .Expected = std::format("EventQueue is congesting: CurrentSize={}, Capacity={}\n", currentSize, capacity).data(),
-                        .Position = 0
-                    }
-                );
+                Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{
+                    .Severity = Diagnostics::Severity::Warning,
+                    .Expected = std::format("EventQueue is congesting: CurrentSize={}, Capacity={}\n", currentSize, capacity).data(),
+                    .Position = 0 });
             }
         }
 #endif

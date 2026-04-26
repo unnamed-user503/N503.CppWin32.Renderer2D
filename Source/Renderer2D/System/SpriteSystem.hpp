@@ -1,6 +1,8 @@
 #pragma once
 
 // 1. Project Headers
+#include "Entity.hpp"
+#include "Registry.hpp"
 
 // 2. Project Dependencies
 
@@ -12,6 +14,11 @@
 
 // 6. C++ Standard Libraries
 
+namespace N503::Renderer2D::Device
+{
+    class Context;
+}
+
 namespace N503::Renderer2D::Resource
 {
     class Container;
@@ -22,21 +29,13 @@ namespace N503::Renderer2D::System
     class Registry;
 }
 
-namespace N503::Renderer2D::Device
-{
-    class Context;
-}
-
-namespace N503::Renderer2D::Message
+namespace N503::Renderer2D::System
 {
 
-    struct Context
+    class SpriteSystem
     {
-        Resource::Container& ResourceContainer;
-
-        System::Registry& Registry;
-
-        Device::Context& DeviceContext;
+    public:
+        auto Update(Registry& registry, Device::Context& context, Resource::Container& container) -> void;
     };
 
-} // namespace N503::Renderer2D::Message
+} // namespace N503::Renderer2D::System

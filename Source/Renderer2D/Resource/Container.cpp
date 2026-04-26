@@ -2,6 +2,7 @@
 #include "Container.hpp"
 
 // 1. Project Headers
+#include "../Codec/WicImageDecoder.hpp"
 #include "../Pixels/Buffer.hpp"
 #include "Entry.hpp"
 
@@ -31,16 +32,11 @@ namespace N503::Renderer2D::Resource
         Clear();
     }
 
-    auto Container::Add(const std::string_view path, Pixels::Buffer& pixels) -> ResourceHandle
+    auto Container::Add(const std::string_view path) -> ResourceHandle
     {
         // すでに同じパスのリソースが存在する場合は、そのハンドルを返します。
         if (auto it = m_Indexes.find(path); it != m_Indexes.end())
         {
-            if (auto* entry = Get(it->second))
-            {
-                pixels = entry->Pixels;
-            }
-
             return it->second;
         }
 
@@ -57,6 +53,12 @@ namespace N503::Renderer2D::Resource
         // ハンドルのIDをインデックスとして使用します。これにより、O(1)でエントリにアクセスできます。
         const auto index = static_cast<std::uint64_t>(handle.ID);
 
+        // 画像をデコードして、確保したメモリにピクセルデータを書き込みます。
+        Codec::WicImageDecoder decoder(path);
+
+        Pixels::Buffer pixels;
+        pixels.Size = static_cast<std::size_t>(decoder.GetHeight()) * static_cast<std::size_t>(decoder.GetPitch());
+
         // 画像データのバイトサイズに基づいて、アリメントを16バイトとした生のバイト列としてメモリを確保します。
         void* address = m_Storage.AllocateBytes(pixels.Size, 16);
 
@@ -65,8 +67,16 @@ namespace N503::Renderer2D::Resource
             return {}; // メモリ確保に失敗した場合は、無効なハンドルを返します。
         }
 
-        // 呼び出し元に書き込み可能なバッファの位置を伝えるため、Pixels構造体のBytesにアドレスをセットします。
-        pixels.Bytes = static_cast<std::byte*>(address);
+        pixels = decoder.Decode(
+            [&](std::size_t size) -> std::span<std::byte>
+            {
+                if (size > pixels.Size)
+                {
+                    return {};
+                }
+                return std::span<std::byte>(static_cast<std::byte*>(address), size);
+            }
+        );
 
         // エントリを作成して保存します。
         m_Entries[index] = Entry{

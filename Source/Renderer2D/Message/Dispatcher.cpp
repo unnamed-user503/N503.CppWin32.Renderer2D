@@ -22,9 +22,9 @@
 namespace N503::Renderer2D::Message
 {
 
-    auto Dispatcher::Dispatch(Context& context) -> void
+    auto Dispatcher::Dispatch(Queue& queue, Context& context) -> void
     {
-        auto envelopes = context.MessageQueue.PopAll();
+        auto envelopes = queue.PopAll();
 
         while (!envelopes.empty())
         {

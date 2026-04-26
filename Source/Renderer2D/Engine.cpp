@@ -2,13 +2,19 @@
 #include "Engine.hpp"
 
 // 1. Project Headers
-#include "Device/CommandList.hpp"
 #include "Device/Context.hpp"
 #include "Device/RenderTarget.hpp"
+#include "Device/Viewport.hpp"
 #include "Message/Context.hpp"
 #include "Message/Dispatcher.hpp"
 #include "Message/Queue.hpp"
 #include "Resource/Container.hpp"
+
+#include "System/Entity.hpp"
+#include "System/Registry.hpp"
+#include "System/RendererSystem.hpp"
+#include "System/SpriteSystem.hpp"
+#include "System/TextSystem.hpp"
 
 // 2. Project Dependencies
 #include <N503/Diagnostics/ConsoleSink.hpp>
@@ -45,9 +51,6 @@ namespace N503::Renderer2D
 
     Engine::Engine()
     {
-        // リソース コンテナを初期化する
-        m_ResourceContainer = std::make_unique<Resource::Container>();
-        // メッセージ キューを初期化する
         m_MessageQueue = std::make_unique<Message::Queue>();
     }
 
@@ -82,7 +85,7 @@ namespace N503::Renderer2D
                 ::PeekMessageW(&msg, nullptr, WM_USER, WM_USER, PM_NOREMOVE);
 
                 // レンダラースレッドを開始する
-                Run(std::move(stopToken));
+                Run(stopToken);
 
                 // レンダラー スレッドが停止したことを示すイベントをリセット状態にする
                 m_IsRunning.store(false, std::memory_order_release);
@@ -123,9 +126,15 @@ namespace N503::Renderer2D
         Diagnostics::Reporter diagnosticsReporter;
         diagnosticsReporter.AddSink(std::make_shared<Diagnostics::ConsoleSink>());
 
-        std::unique_ptr<Device::Context> deviceContext     = std::make_unique<Device::Context>();
+        auto resources     = std::make_unique<Resource::Container>();
+        auto deviceContext = std::make_unique<Device::Context>();
+
+        auto registry       = std::make_unique<System::Registry>();
+        auto spriteSystem   = std::make_unique<System::SpriteSystem>();
+        auto textSystem     = std::make_unique<System::TextSystem>();
+        auto rendererSystem = std::make_unique<System::RendererSystem>();
+
         std::unique_ptr<Device::RenderTarget> renderTarget = nullptr;
-        std::unique_ptr<Device::CommandList> commandList   = std::make_unique<Device::CommandList>();
 
         // メッセージ ディスパッチャーを初期化する
         Message::Dispatcher messageDispatcher;
@@ -134,9 +143,12 @@ namespace N503::Renderer2D
         auto cleanupResources = wil::scope_exit(
             [&]
             {
+                spriteSystem.reset();
+                textSystem.reset();
+                rendererSystem.reset();
+
                 renderTarget.reset();
                 deviceContext.reset();
-                commandList.reset();
             }
         );
 
@@ -165,14 +177,15 @@ namespace N503::Renderer2D
 
         while (!stopToken.stop_requested())
         {
-            HWND hwnd{};
+            HWND hwnd = nullptr;
 
-            if (renderTarget == nullptr && (hwnd = deviceContext->GetRenderTargetWindow()))
+            if (renderTarget == nullptr && (hwnd = Device::Viewport::GetInstance().GetRenderTargetWindow()))
             {
-                renderTarget = std::make_unique<Device::RenderTarget>(deviceContext.get(), hwnd);
-                deviceContext->SetTarget(*renderTarget);
+                renderTarget = std::make_unique<Device::RenderTarget>(*deviceContext, hwnd);
+                deviceContext->SetRenderTarget(renderTarget.get());
             }
 
+            // メッセージキューのウェイクアップイベントとOSメッセージを待機する
             const auto count   = static_cast<DWORD>(waitHandles.size());
             const auto handles = waitHandles.begin();
             const auto timeout = isAnyActive ? 0 : INFINITE;
@@ -181,14 +194,8 @@ namespace N503::Renderer2D
 
             if (result >= WAIT_OBJECT_0 && result < (WAIT_OBJECT_0 + count))
             {
-                Message::Context context{
-                    .MessageQueue      = *m_MessageQueue,
-                    .DeviceContext     = *deviceContext,
-                    .CommandList       = *commandList,
-                    .ResourceContainer = *m_ResourceContainer,
-                };
-
-                messageDispatcher.Dispatch(context);
+                Message::Context context{ .ResourceContainer = *resources, .Registry = *registry, .DeviceContext = *deviceContext };
+                messageDispatcher.Dispatch(*m_MessageQueue, context);
             }
             else if (result == WAIT_OBJECT_0 + count)
             {
@@ -198,9 +205,13 @@ namespace N503::Renderer2D
                 }
             }
 
-            if (deviceContext->BeginDraw())
+            // コマンドリストにコマンドが存在する場合は、デバイスコンテキストを使用してコマンドを実行し、レンダリングターゲットを提示します。
+            if (deviceContext->BeginDraw({ 0.1f, 0.2f, 0.4f, 0.0f }))
             {
-                isAnyActive = commandList->Execute(*deviceContext);
+                spriteSystem->Update(*registry, *deviceContext, *resources);
+                textSystem->Update(*registry, *deviceContext);
+                rendererSystem->Update(*registry, *deviceContext);
+                // isAnyActive = commandList->Execute(*deviceContext);
 
                 const auto endDrawResult = deviceContext->EndDraw();
                 const auto presentResult = renderTarget->Present();
@@ -209,8 +220,7 @@ namespace N503::Renderer2D
                 {
                     // デバイスが削除されたかリセットされた場合は、デバイス コンテキストとレンダリング ターゲットを再作成する
                     deviceContext = std::make_unique<Device::Context>();
-                    renderTarget  = std::make_unique<Device::RenderTarget>(deviceContext.get(), renderTarget->GetTargetWindow());
-                    deviceContext->SetTarget(*renderTarget);
+                    renderTarget  = std::make_unique<Device::RenderTarget>(*deviceContext, renderTarget->GetTargetWindow());
                 }
             }
 

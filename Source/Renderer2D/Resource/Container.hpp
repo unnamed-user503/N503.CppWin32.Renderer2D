@@ -33,7 +33,7 @@ namespace N503::Renderer2D::Resource
     public:
         Container();
 
-        auto Add(const std::string_view path, Pixels::Buffer& pixels) -> ResourceHandle;
+        auto Add(const std::string_view path) -> ResourceHandle;
 
         auto Remove(const ResourceHandle handle) -> bool;
 

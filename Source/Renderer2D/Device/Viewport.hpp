@@ -9,20 +9,20 @@
 // 4. Third-party Libraries
 
 // 5. Windows Headers
+#include <Windows.h>
 
 // 6. C++ Standard Libraries
 
 namespace N503::Renderer2D::Device
 {
-    class Context;
-}
 
-namespace N503::Renderer2D::Device::Commands
-{
-
-    struct DrawLine
+    class Viewport
     {
-        auto Execute(Context& context) -> void;
+    public:
+        static auto GetInstance() noexcept -> Viewport&;
+
+    public:
+        auto GetRenderTargetWindow() const noexcept -> HWND;
     };
 
-} // namespace N503::Renderer2D::Device::Commands
+} // namespace N503::Renderer2D::Device

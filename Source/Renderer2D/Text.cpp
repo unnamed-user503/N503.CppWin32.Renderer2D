@@ -3,10 +3,7 @@
 
 // 1. Project Headers
 #include "Engine.hpp"
-#include "Message/Packets/AddCommandList.hpp"
-#include "Message/Packets/CreateBitmap.hpp"
-#include "Message/Packets/UpdateBitmapOpacity.hpp"
-#include "Message/Packets/UpdateBitmapPoint.hpp"
+#include "Message/Packets/CreateText.hpp"
 
 // 2. Project Dependencies
 #include <N503/Renderer2D/Text.hpp>
@@ -31,18 +28,12 @@ namespace N503::Renderer2D
     {
         m_Entity = std::make_unique<Entity>();
 
-        auto packet = Message::Packets::AddCommandList{
-            .Result       = &m_Entity->CommandHandle,
-            .ResourceType = ResourceType::String,
-            .Text = text,
-            .Font = {
-                .Family = "Segoe UI",
-                .Size   = 24.0f,
-            },
+        auto packet = Message::Packets::CreateText{
+            .Result = &m_Entity->ID,
         };
 
         Engine::GetInstance().Start();
-        Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
+        Engine::GetInstance().GetMessageQueue().EnqueueSync(std::move(packet));
     }
 
     Text::~Text() = default;

@@ -1,8 +1,12 @@
 #include "Pch.hpp"
-#include "UpdateBitmapOpacity.hpp"
+#include "DestroyEntity.hpp"
 
 // 1. Project Headers
+#include "../../Device/Context.hpp"
 #include "../../Message/Context.hpp"
+#include "../../Resource/Container.hpp"
+#include "../../System/Entity.hpp"
+#include "../../System/Registry.hpp"
 
 // 2. Project Dependencies
 
@@ -17,7 +21,7 @@
 namespace N503::Renderer2D::Message::Packets
 {
 
-    auto UpdateBitmapOpacity::operator()(Context& context) const -> void
+    auto DestroyEntity::operator()(Context& context) const -> void
     {
     }
 
