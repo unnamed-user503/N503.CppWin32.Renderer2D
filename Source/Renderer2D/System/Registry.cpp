@@ -64,6 +64,7 @@ namespace N503::Renderer2D::System
         m_World->ComponentMasks[index].reset();
 
         // コンポーネントをリセット
+        m_World->Transforms[index].Reset();
         m_World->Sprites[index].Reset();
         m_World->Texts[index].Reset();
 

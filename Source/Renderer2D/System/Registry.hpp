@@ -18,11 +18,41 @@
 namespace N503::Renderer2D::System
 {
 
+    // -----------------------------------
+    // ComponentTraits (single maintenance point)
+    // -----------------------------------
+    template<typename T>
+    struct ComponentTraits;
+
+    template<>
+    struct ComponentTraits<Transform>
+    {
+        static constexpr ComponentType Type = ComponentType::Transform;
+        static auto& Get(World& world, std::size_t index) { return world.Transforms[index]; }
+    };
+
+    template<>
+    struct ComponentTraits<Sprite>
+    {
+        static constexpr ComponentType Type = ComponentType::Sprite;
+        static auto& Get(World& world, std::size_t index) { return world.Sprites[index]; }
+    };
+
+    template<>
+    struct ComponentTraits<Text>
+    {
+        static constexpr ComponentType Type = ComponentType::Text;
+        static auto& Get(World& world, std::size_t index) { return world.Texts[index]; }
+    };
+
+    // -----------------------------------
+    // View
+    // -----------------------------------
     template <typename... Components> class View
     {
         World& m_World;
 
-        std::bitset<4> m_Mask;
+        std::bitset<MaxComponents> m_Mask;
 
     public:
         View(World& world) : m_World(world)
@@ -32,27 +62,27 @@ namespace N503::Renderer2D::System
 
         struct Iterator
         {
-            World& world;
-            std::bitset<4> mask;
-            std::size_t index;
+            World& World;
+            std::bitset<MaxComponents> Mask;
+            std::size_t Index;
 
             auto operator*() const -> Entity
             {
-                return static_cast<Entity>(index);
+                return static_cast<Entity>(Index);
             }
 
             auto operator++() -> Iterator&
             {
                 do
                 {
-                    index++;
-                } while (index < MaxEntities && (!world.AliveBits.test(index) || (world.ComponentMasks[index] & mask) != mask));
+                    Index++;
+                } while (Index < MaxEntities && (!World.AliveBits.test(Index) || (World.ComponentMasks[Index] & Mask) != Mask));
                 return *this;
             }
 
             auto operator!=(const Iterator& other) const -> bool
             {
-                return index != other.index;
+                return Index != other.Index;
             }
         };
 
@@ -89,6 +119,9 @@ namespace N503::Renderer2D::System
         }
     };
 
+    // -----------------------------------
+    // Registry
+    // -----------------------------------
     class Registry
     {
     public:
@@ -98,82 +131,34 @@ namespace N503::Renderer2D::System
 
         auto DestroyEntity(Entity entity) -> void;
 
-        template <typename T> auto AddComponent(Entity entity, T&& component) -> std::decay_t<T>&
+        template<typename T>
+        auto AddComponent(Entity entity, T&& component) -> T&
         {
             const auto index = ToArrayIndex(entity);
 
-            if constexpr (std::is_same_v<std::decay_t<T>, Transform>)
-            {
-                m_World->Transforms[index] = std::forward<T>(component);
-                m_World->ComponentMasks[index].set(static_cast<std::size_t>(ComponentType::Transform));
-                return m_World->Transforms[index];
-            }
-            else if constexpr (std::is_same_v<std::decay_t<T>, Sprite>)
-            {
-                m_World->Sprites[index] = std::forward<T>(component);
-                m_World->ComponentMasks[index].set(static_cast<std::size_t>(ComponentType::Sprite));
-                return m_World->Sprites[index];
-            }
-            else if constexpr (std::is_same_v<std::decay_t<T>, Text>)
-            {
-                m_World->Texts[index] = std::forward<T>(component);
-                m_World->ComponentMasks[index].set(static_cast<std::size_t>(ComponentType::Text));
-                return m_World->Texts[index];
-            }
+            auto& entry = ComponentTraits<T>::Get(*m_World, index);
+            entry = std::forward<T>(component);
+
+            m_World->ComponentMasks[index].set(static_cast<size_t>(ComponentTraits<T>::Type));
+            return entry;
         }
 
-        // コンポーネントへの参照を取得する
-        template <typename T> [[nodiscard]] auto GetComponent(Entity entity) -> T&
+        template<typename T>
+        auto GetComponent(Entity entity) -> T&
         {
-            const auto index = ToArrayIndex(entity);
-            if constexpr (std::is_same_v<T, Transform>)
-            {
-                return m_World->Transforms[index];
-            }
-            if constexpr (std::is_same_v<T, Sprite>)
-            {
-                return m_World->Sprites[index];
-            }
-            if constexpr (std::is_same_v<T, Text>)
-            {
-                return m_World->Texts[index];
-            }
+            return ComponentTraits<T>::Get(*m_World, ToArrayIndex(entity));
         }
 
-        // 特定のコンポーネントを持っているか確認
-        template <typename T> [[nodiscard]] auto HasComponent(Entity entity) const -> bool
+        template<typename T>
+        bool HasComponent(Entity entity) const
         {
-            const auto index = ToArrayIndex(entity);
-            if constexpr (std::is_same_v<T, Transform>)
-            {
-                return m_World->ComponentMasks[index].test(ComponentType::Transform);
-            }
-            if constexpr (std::is_same_v<T, Sprite>)
-            {
-                return m_World->ComponentMasks[index].test(ComponentType::Sprite);
-            }
-            if constexpr (std::is_same_v<T, Text>)
-            {
-                return m_World->ComponentMasks[index].test(ComponentType::Text);
-            }
-            return false;
+            return m_World->ComponentMasks[ToArrayIndex(entity)].test(static_cast<size_t>(ComponentTraits<T>::Type));
         }
 
-        template <typename T> auto RemoveComponent(Entity entity) -> void
+        template<typename T>
+        void RemoveComponent(Entity entity)
         {
-            const auto index = ToArrayIndex(entity);
-            if constexpr (std::is_same_v<T, Transform>)
-            {
-                m_World->ComponentMasks[index].reset(ComponentType::Transform);
-            }
-            if constexpr (std::is_same_v<T, Sprite>)
-            {
-                m_World->ComponentMasks[index].reset(ComponentType::Sprite);
-            }
-            if constexpr (std::is_same_v<T, Text>)
-            {
-                m_World->ComponentMasks[index].reset(ComponentType::Text);
-            }
+            m_World->ComponentMasks[ToArrayIndex(entity)].reset(static_cast<size_t>(ComponentTraits<T>::Type));
         }
 
         template <typename... Components> [[nodiscard]] auto GetView() -> View<Components...>

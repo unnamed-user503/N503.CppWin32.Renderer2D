@@ -25,9 +25,9 @@ namespace N503::Renderer2D::System
 
     static constexpr std::size_t MaxEntities = 32768;
 
-    enum class Entity : std::uint64_t
-    {
-    };
+    static constexpr std::size_t MaxComponents = 4;
+
+    using Entity = std::uint32_t;
 
     [[nodiscard]]
     constexpr std::size_t ToArrayIndex(Entity entity) noexcept
