@@ -83,7 +83,7 @@ namespace N503::Renderer2D::Message
 #ifdef _DEBUG
         {
             const std::size_t currentSize = m_Buffer[m_BufferIndex].Container.size();
-            const std::size_t capacity    = MaxMessageQueued; // プールのサイズ
+            const std::size_t capacity    = MaxMessageQueued;
 
             if (currentSize >= capacity * 0.8) // 80%を超えたら警告
             {
