@@ -76,7 +76,7 @@ namespace N503::Renderer2D
                 signal.release();
 
                 // レンダラー スレッドの初期化が完了したことを示すイベントをシグナル状態にする
-                m_StartedEvent.SetEvent();
+                // m_StartedEvent.SetEvent();
 
                 // COM を初期化する
                 auto coinit = wil::CoInitializeEx(COINIT_MULTITHREADED);
@@ -95,6 +95,9 @@ namespace N503::Renderer2D
 
         // スレッドが起動して初期化が完了するまで待機する
         signal.acquire();
+
+        // レンダラースレッドが描画可能な状態になるまで待機する
+        m_StartedEvent.wait();
 
         // エンジンが開始されたことを示すイベントをシグナル状態にする
         m_IsRunning.store(true, std::memory_order_release);
@@ -176,7 +179,7 @@ namespace N503::Renderer2D
 
         // レンダラー スレッドのメイン ループ
         auto waitHandles = { m_MessageQueue->GetWakeupEventHandle() };
-        auto isAnyActive = false;
+        auto isAnyActive = true;
 
         while (!stopToken.stop_requested())
         {
@@ -186,6 +189,7 @@ namespace N503::Renderer2D
             {
                 renderTarget = std::make_unique<Device::RenderTarget>(*deviceContext, hwnd);
                 deviceContext->SetRenderTarget(renderTarget.get());
+                m_StartedEvent.SetEvent();
             }
 
             // メッセージキューのウェイクアップイベントとOSメッセージを待機する
@@ -218,7 +222,6 @@ namespace N503::Renderer2D
                 spriteSystem->Update(*registry, *deviceContext, *resources);
                 textSystem->Update(*registry, *deviceContext);
                 rendererSystem->Update(*registry, *deviceContext);
-                // isAnyActive = commandList->Execute(*deviceContext);
 
                 const auto endDrawResult = deviceContext->EndDraw();
                 const auto presentResult = renderTarget->Present();

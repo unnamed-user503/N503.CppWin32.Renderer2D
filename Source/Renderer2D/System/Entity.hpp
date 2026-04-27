@@ -23,7 +23,7 @@
 namespace N503::Renderer2D::System
 {
 
-    static constexpr std::size_t MaxEntities = 4096;
+    static constexpr std::size_t MaxEntities = 32768;
 
     static constexpr std::size_t MaxComponents = 4;
 

@@ -1,5 +1,5 @@
 #include "Pch.hpp"
-#include "Bitmap_Entity.hpp"
+#include "Sprite_Entity.hpp"
 
 // 1. Project Headers
 #include "Engine.hpp"
@@ -10,7 +10,7 @@
 #include "System/Registry.hpp"
 
 // 2. Project Dependencies
-#include <N503/Renderer2D/Bitmap.hpp>
+#include <N503/Renderer2D/Sprite.hpp>
 #include <N503/Renderer2D/Types.hpp>
 
 // 3. WIL (Windows Implementation Library)
@@ -27,7 +27,7 @@
 namespace N503::Renderer2D
 {
 
-    Bitmap::Bitmap(const std::string_view path)
+    Sprite::Sprite(const std::string_view path)
     {
         m_Entity = std::make_unique<Entity>();
 
@@ -40,7 +40,7 @@ namespace N503::Renderer2D
         Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
     }
 
-    auto Bitmap::SetPoint(float x, float y, float z) -> void
+    auto Sprite::SetPoint(float x, float y, float z) -> void
     {
         if (!m_Entity)
         {
@@ -57,29 +57,29 @@ namespace N503::Renderer2D
         Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
     }
 
-    auto Bitmap::SetOpacity(float opacity) -> void
+    auto Sprite::SetOpacity(float opacity) -> void
     {
     }
 
-    auto Bitmap::GetWidth() const -> float
-    {
-        return 0.0f;
-    }
-
-    auto Bitmap::GetHeight() const -> float
+    auto Sprite::GetWidth() const -> float
     {
         return 0.0f;
     }
 
-    auto Bitmap::GetPitch() const -> float
+    auto Sprite::GetHeight() const -> float
     {
         return 0.0f;
     }
 
-    Bitmap::~Bitmap() = default;
+    auto Sprite::GetPitch() const -> float
+    {
+        return 0.0f;
+    }
 
-    Bitmap::Bitmap(Bitmap&& other) = default;
+    Sprite::~Sprite() = default;
 
-    auto Bitmap::operator=(Bitmap&& other) -> Bitmap& = default;
+    Sprite::Sprite(Sprite&& other) = default;
+
+    auto Sprite::operator=(Sprite&& other) -> Sprite& = default;
 
 } // namespace N503::Renderer2D

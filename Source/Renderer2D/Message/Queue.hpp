@@ -19,6 +19,7 @@
 // 6. C++ Standard Libraries
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <list>
@@ -34,7 +35,7 @@ namespace N503::Renderer2D::Message
     {
         static const std::size_t MaxMessageQueued = 4096;
 
-        static const std::size_t BufferCount = 2;
+        static const std::size_t BufferCount = 3;
 
     public:
         using Element = Envelope;
@@ -100,6 +101,10 @@ namespace N503::Renderer2D::Message
 
         auto EnqueueSync(Packet&&) -> void;
 
+        auto Enqueue(std::vector<Packet>&&) -> void;
+
+        auto EnqueueSync(std::vector<Packet>&&) -> void;
+
         [[nodiscard]]
         auto PopAll() -> Container;
 
@@ -134,6 +139,8 @@ namespace N503::Renderer2D::Message
         wil::unique_event_nothrow m_WakeupEvent{ ::CreateEventW(nullptr, FALSE, FALSE, nullptr) };
 
         std::mutex m_Mutex;
+
+        std::atomic_flag m_SpinLock = ATOMIC_FLAG_INIT;
     };
 
 } // namespace N503::Renderer2D::Message
