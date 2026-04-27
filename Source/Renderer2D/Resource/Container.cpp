@@ -3,15 +3,15 @@
 
 // 1. Project Headers
 #include "../Codec/WicImageDecoder.hpp"
-#include "../Pixels/Buffer.hpp"
 #include "../Engine.hpp"
+#include "../Pixels/Buffer.hpp"
 #include "Entry.hpp"
 
 // 2. Project Dependencies
-#include <N503/Renderer2D/Types.hpp>
 #include <N503/Diagnostics/Entry.hpp>
 #include <N503/Diagnostics/Severity.hpp>
 #include <N503/Diagnostics/Sink.hpp>
+#include <N503/Renderer2D/Types.hpp>
 // 3. WIL (Windows Implementation Library)
 
 // 4. Third-party Libraries
@@ -22,11 +22,11 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <format>
 #include <string>
 #include <string_view>
 #include <unordered_map>
 #include <vector>
-#include <format>
 
 namespace N503::Renderer2D::Resource
 {
@@ -90,7 +90,7 @@ namespace N503::Renderer2D::Resource
 
         // パスとハンドルの対応を保存します。
         m_Indexes[m_Entries[index].Metadata.Path] = handle;
-        
+
 #ifdef _DEBUG
         auto log = std::format("[Renderer2D] <Resource::Container>: Add to ResourceID={}", static_cast<std::uint64_t>(handle.ID));
         Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{ Diagnostics::Severity::Verbose, log });

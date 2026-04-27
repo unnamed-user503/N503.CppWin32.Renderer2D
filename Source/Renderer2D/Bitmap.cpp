@@ -37,7 +37,7 @@ namespace N503::Renderer2D
         };
 
         Engine::GetInstance().Start();
-        Engine::GetInstance().GetMessageQueue().EnqueueSync(std::move(packet));
+        Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
     }
 
     auto Bitmap::SetPoint(float x, float y, float z) -> void

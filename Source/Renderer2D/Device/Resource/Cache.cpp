@@ -2,14 +2,14 @@
 #include "Cache.hpp"
 
 // 1. Project Headers
-#include "../Context.hpp"
 #include "../../Engine.hpp"
+#include "../Context.hpp"
 
 // 2. Project Dependencies
-#include <N503/Renderer2D/Types.hpp>
 #include <N503/Diagnostics/Entry.hpp>
 #include <N503/Diagnostics/Severity.hpp>
 #include <N503/Diagnostics/Sink.hpp>
+#include <N503/Renderer2D/Types.hpp>
 
 // 3. WIL (Windows Implementation Library)
 

@@ -107,20 +107,9 @@ namespace N503::Renderer2D::System
         }
 
     private:
-        template <typename T> static constexpr ComponentType GetComponentType()
+        template <typename T> static constexpr auto GetComponentType() -> ComponentType
         {
-            if constexpr (std::is_same_v<T, Transform>)
-            {
-                return ComponentType::Transform;
-            }
-            if constexpr (std::is_same_v<T, Sprite>)
-            {
-                return ComponentType::Sprite;
-            }
-            if constexpr (std::is_same_v<T, Text>)
-            {
-                return ComponentType::Text;
-            }
+            return ComponentTraits<T>::Type;
         }
     };
 
