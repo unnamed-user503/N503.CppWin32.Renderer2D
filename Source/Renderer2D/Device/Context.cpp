@@ -195,7 +195,10 @@ namespace N503::Renderer2D::Device
         }
 
         m_D2DContext->BeginDraw();
+        // m_D2DContext->SetDpi(96.0f, 96.0f);
+        m_D2DContext->SetUnitMode(D2D1_UNIT_MODE_PIXELS);
         m_D2DContext->Clear(D2D1::ColorF(clearColor.Red, clearColor.Green, clearColor.Blue));
+
         return true;
     }
 

@@ -50,12 +50,17 @@ namespace N503::Renderer2D::Device
         wil::com_ptr<IDXGISurface> backBuffer;
         THROW_IF_FAILED(m_SwapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.put())));
 
-        D2D1_BITMAP_PROPERTIES1
-        bitmapProperties = D2D1::BitmapProperties1(
-            D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW, D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED)
+        D2D1_BITMAP_PROPERTIES1 bitmapProperties = D2D1::BitmapProperties1(
+            D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
+            D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED),
+            96.0f, // dpiX: 96に固定
+            96.0f  // dpiY: 96に固定
         );
 
         THROW_IF_FAILED(context.GetD2DContext()->CreateBitmapFromDxgiSurface(backBuffer.get(), &bitmapProperties, m_TargetBitmap.put()));
+
+        // デバイスコンテキスト自体にも DPI をセットする
+        context.GetD2DContext()->SetDpi(96.0f, 96.0f);
     }
 
     auto RenderTarget::Resize(const Device::Context& context, UINT width, UINT height) -> void
@@ -82,10 +87,17 @@ namespace N503::Renderer2D::Device
         THROW_IF_FAILED(m_SwapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.put())));
 
         // D2D Bitmap 再作成
-        D2D1_BITMAP_PROPERTIES1
-        bitmapProps = D2D1::BitmapProperties1(D2D1_BITMAP_OPTIONS_TARGET, D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED));
+        D2D1_BITMAP_PROPERTIES1 bitmapProperties = D2D1::BitmapProperties1(
+            D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
+            D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED),
+            96.0f, // dpiX: 96に固定
+            96.0f  // dpiY: 96に固定
+        );
 
-        THROW_IF_FAILED(context.GetD2DContext()->CreateBitmapFromDxgiSurface(backBuffer.get(), &bitmapProps, m_TargetBitmap.put()));
+        THROW_IF_FAILED(context.GetD2DContext()->CreateBitmapFromDxgiSurface(backBuffer.get(), &bitmapProperties, m_TargetBitmap.put()));
+
+        // デバイスコンテキスト自体にも DPI をセットする
+        context.GetD2DContext()->SetDpi(96.0f, 96.0f);
     }
 
     auto RenderTarget::Present() const noexcept -> HRESULT

@@ -42,11 +42,11 @@ namespace N503::Renderer2D::Message::Packets
             auto entity = context.Registry.CreateEntity();
 
             auto& transform    = context.Registry.AddComponent(entity, System::Transform{});
-            transform.X        = 100.0f;
-            transform.Y        = 100.0f;
-            transform.ScaleX   = 0.3f;
-            transform.ScaleY   = 0.3f;
-            transform.Rotation = 0.3f;
+            transform.X        = 0.0f;
+            transform.Y        = 0.0f;
+            transform.ScaleX   = 0.25f;
+            transform.ScaleY   = 0.25f;
+            transform.Rotation = 0.0f;
 
             auto& sprite  = context.Registry.AddComponent(entity, System::Sprite{ handle });
             sprite.Width  = static_cast<float>(resource->Pixels.Width);

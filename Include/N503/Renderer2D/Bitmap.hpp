@@ -36,7 +36,7 @@ namespace N503::Renderer2D
         auto operator=(Bitmap&&) -> Bitmap&;
 
     public:
-        auto SetPoint(float x, float y) -> void;
+        auto SetPoint(float x, float y, float z) -> void;
 
         auto SetOpacity(float opacity) -> void;
 

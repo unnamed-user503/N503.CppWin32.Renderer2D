@@ -23,7 +23,7 @@
 namespace N503::Renderer2D::System
 {
 
-    static constexpr std::size_t MaxEntities = 32768;
+    static constexpr std::size_t MaxEntities = 4096;
 
     static constexpr std::size_t MaxComponents = 4;
 
@@ -48,6 +48,8 @@ namespace N503::Renderer2D::System
 
         float Y{ 0.0f };
 
+        float Z{ 0.0f };
+
         float Rotation{ 0.0f };
 
         float ScaleX{ 1.0f };
@@ -58,6 +60,7 @@ namespace N503::Renderer2D::System
         {
             X        = 0.0f;
             Y        = 0.0f;
+            Z        = 0.0f;
             Rotation = 0.0f;
             ScaleX   = 1.0f;
             ScaleY   = 1.0f;

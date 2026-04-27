@@ -54,15 +54,23 @@ namespace N503::Renderer2D
 
     struct Transform
     {
-        float ScaleX;
+        struct
+        {
+            float X{ 0.0f };
 
-        float ScaleY;
+            float Y{ 0.0f };
 
-        float Rotation;
+            float Z{ 0.0f };
+        } Position;
 
-        float TranslationX;
+        float Rotation{ 0.0f };
 
-        float TranslationY;
+        struct
+        {
+            float X{ 1.0f };
+
+            float Y{ 1.0f };
+        } Scale;
     };
 
     enum class PixelFormat
@@ -71,33 +79,6 @@ namespace N503::Renderer2D
 
         B8G8R8A8_UNORM,
     };
-
-    enum class ResourceType
-    {
-        None = 0,
-        Bitmap,
-        Movie,
-        String,
-        TextLayout,
-    };
-
-    // struct Vertex
-    //{
-    //     PointF Position;
-
-    //    ColorF Color;
-
-    //    PointF TextureCoord;
-    //};
-
-    // struct Sprite
-    //{
-    //     RectF TargetRect;
-
-    //    RectF SourceRect;
-
-    //    ColorF Color;
-    //};
 
     namespace Handle
     {

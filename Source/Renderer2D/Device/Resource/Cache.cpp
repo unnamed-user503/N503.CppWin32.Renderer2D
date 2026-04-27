@@ -3,9 +3,13 @@
 
 // 1. Project Headers
 #include "../Context.hpp"
+#include "../../Engine.hpp"
 
 // 2. Project Dependencies
 #include <N503/Renderer2D/Types.hpp>
+#include <N503/Diagnostics/Entry.hpp>
+#include <N503/Diagnostics/Severity.hpp>
+#include <N503/Diagnostics/Sink.hpp>
 
 // 3. WIL (Windows Implementation Library)
 
@@ -14,6 +18,7 @@
 // 5. Windows Headers
 
 // 6. C++ Standard Libraries
+#include <format>
 
 namespace N503::Renderer2D::Device::Resource
 {
@@ -63,6 +68,10 @@ namespace N503::Renderer2D::Device::Resource
 
         if (m_Bitmaps.find(key) == m_Bitmaps.end())
         {
+#ifdef _DEBUG
+            auto log = std::format("[Renderer2D] <Device::Resource::Cache>: CreateBitmap for ResourceID={}", static_cast<std::uint64_t>(handle.ID));
+            Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{ Diagnostics::Severity::Verbose, log });
+#endif
             auto bitmap = m_DeviceContext.CreateBitmap(pixels);
 
             if (!bitmap)

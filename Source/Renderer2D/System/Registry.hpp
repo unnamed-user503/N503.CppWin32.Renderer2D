@@ -21,28 +21,33 @@ namespace N503::Renderer2D::System
     // -----------------------------------
     // ComponentTraits (single maintenance point)
     // -----------------------------------
-    template<typename T>
-    struct ComponentTraits;
+    template <typename T> struct ComponentTraits;
 
-    template<>
-    struct ComponentTraits<Transform>
+    template <> struct ComponentTraits<Transform>
     {
         static constexpr ComponentType Type = ComponentType::Transform;
-        static auto& Get(World& world, std::size_t index) { return world.Transforms[index]; }
+        static auto& Get(World& world, std::size_t index)
+        {
+            return world.Transforms[index];
+        }
     };
 
-    template<>
-    struct ComponentTraits<Sprite>
+    template <> struct ComponentTraits<Sprite>
     {
         static constexpr ComponentType Type = ComponentType::Sprite;
-        static auto& Get(World& world, std::size_t index) { return world.Sprites[index]; }
+        static auto& Get(World& world, std::size_t index)
+        {
+            return world.Sprites[index];
+        }
     };
 
-    template<>
-    struct ComponentTraits<Text>
+    template <> struct ComponentTraits<Text>
     {
         static constexpr ComponentType Type = ComponentType::Text;
-        static auto& Get(World& world, std::size_t index) { return world.Texts[index]; }
+        static auto& Get(World& world, std::size_t index)
+        {
+            return world.Texts[index];
+        }
     };
 
     // -----------------------------------
@@ -131,32 +136,28 @@ namespace N503::Renderer2D::System
 
         auto DestroyEntity(Entity entity) -> void;
 
-        template<typename T>
-        auto AddComponent(Entity entity, T&& component) -> T&
+        template <typename T> auto AddComponent(Entity entity, T&& component) -> T&
         {
             const auto index = ToArrayIndex(entity);
 
             auto& entry = ComponentTraits<T>::Get(*m_World, index);
-            entry = std::forward<T>(component);
+            entry       = std::forward<T>(component);
 
             m_World->ComponentMasks[index].set(static_cast<size_t>(ComponentTraits<T>::Type));
             return entry;
         }
 
-        template<typename T>
-        auto GetComponent(Entity entity) -> T&
+        template <typename T> auto GetComponent(Entity entity) -> T&
         {
             return ComponentTraits<T>::Get(*m_World, ToArrayIndex(entity));
         }
 
-        template<typename T>
-        bool HasComponent(Entity entity) const
+        template <typename T> bool HasComponent(Entity entity) const
         {
             return m_World->ComponentMasks[ToArrayIndex(entity)].test(static_cast<size_t>(ComponentTraits<T>::Type));
         }
 
-        template<typename T>
-        void RemoveComponent(Entity entity)
+        template <typename T> void RemoveComponent(Entity entity)
         {
             m_World->ComponentMasks[ToArrayIndex(entity)].reset(static_cast<size_t>(ComponentTraits<T>::Type));
         }

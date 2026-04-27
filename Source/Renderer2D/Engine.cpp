@@ -35,6 +35,7 @@
 // 6. C++ Standard Libraries
 #include <atomic>
 #include <format>
+#include <iostream>
 #include <memory>
 #include <semaphore>
 #include <thread>
@@ -147,6 +148,8 @@ namespace N503::Renderer2D
                 textSystem.reset();
                 rendererSystem.reset();
 
+                registry.reset();
+
                 renderTarget.reset();
                 deviceContext.reset();
             }
@@ -194,7 +197,11 @@ namespace N503::Renderer2D
 
             if (result >= WAIT_OBJECT_0 && result < (WAIT_OBJECT_0 + count))
             {
-                Message::Context context{ .ResourceContainer = *resources, .Registry = *registry, .DeviceContext = *deviceContext };
+                Message::Context context{
+                    .ResourceContainer = *resources,
+                    .Registry          = *registry,
+                    .DeviceContext     = *deviceContext,
+                };
                 messageDispatcher.Dispatch(*m_MessageQueue, context);
             }
             else if (result == WAIT_OBJECT_0 + count)

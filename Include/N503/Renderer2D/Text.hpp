@@ -36,7 +36,6 @@ namespace N503::Renderer2D
         auto operator=(Text&&) -> Text&;
 
     public:
-
     public:
         struct Entity;
 

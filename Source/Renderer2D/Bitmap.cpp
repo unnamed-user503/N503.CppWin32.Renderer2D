@@ -4,6 +4,10 @@
 // 1. Project Headers
 #include "Engine.hpp"
 #include "Message/Packets/CreateSprite.hpp"
+#include "Message/Packets/SetPosition.hpp"
+
+#include "System/Entity.hpp"
+#include "System/Registry.hpp"
 
 // 2. Project Dependencies
 #include <N503/Renderer2D/Bitmap.hpp>
@@ -36,8 +40,21 @@ namespace N503::Renderer2D
         Engine::GetInstance().GetMessageQueue().EnqueueSync(std::move(packet));
     }
 
-    auto Bitmap::SetPoint(float x, float y) -> void
+    auto Bitmap::SetPoint(float x, float y, float z) -> void
     {
+        if (!m_Entity)
+        {
+            return;
+        }
+
+        auto packet = Message::Packets::SetPosition{
+            .ID = m_Entity->ID,
+            .X  = x,
+            .Y  = y,
+            .Z  = z,
+        };
+
+        Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
     }
 
     auto Bitmap::SetOpacity(float opacity) -> void

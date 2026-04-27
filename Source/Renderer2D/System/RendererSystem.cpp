@@ -15,16 +15,32 @@
 // 5. Windows Headers
 
 // 6. C++ Standard Libraries
+#include <algorithm>
 
 namespace N503::Renderer2D::System
 {
 
     auto RendererSystem::Update(Registry& registry, Device::Context& context) -> void
     {
-        for (auto e : registry.GetView<Transform, Sprite>())
+        /*
+        // 描画対象のエンティティを収集
+        std::vector<Entity> renderList;
+        for (auto entity : registry.GetView<Transform, Sprite>())
         {
-            auto& transform = registry.GetComponent<Transform>(e);
-            auto& sprite    = registry.GetComponent<Sprite>(e);
+            renderList.push_back(entity);
+        }
+
+        // Z値でソート（小さい順＝奥、大きい順＝手前）
+        std::sort(
+            renderList.begin(),
+            renderList.end(),
+            [&](Entity a, Entity b) { return registry.GetComponent<Transform>(a).Z < registry.GetComponent<Transform>(b).Z; }
+        );
+        */
+        for (auto entity : registry.GetView<Transform, Sprite>())
+        {
+            auto& transform = registry.GetComponent<Transform>(entity);
+            auto& sprite    = registry.GetComponent<Sprite>(entity);
 
             if (sprite.Bitmap)
             {

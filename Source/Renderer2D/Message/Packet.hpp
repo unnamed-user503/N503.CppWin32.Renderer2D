@@ -4,6 +4,7 @@
 #include "Packets/CreateSprite.hpp"
 #include "Packets/CreateText.hpp"
 #include "Packets/DestroyEntity.hpp"
+#include "Packets/SetPosition.hpp"
 
 // 2. Project Dependencies
 
@@ -21,6 +22,6 @@ namespace N503::Renderer2D::Message
 
     using namespace Packets;
 
-    using Packet = std::variant<CreateSprite, CreateText, DestroyEntity>;
+    using Packet = std::variant<CreateSprite, CreateText, DestroyEntity, SetPosition>;
 
 } // namespace N503::Renderer2D::Message
