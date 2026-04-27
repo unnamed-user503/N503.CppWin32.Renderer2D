@@ -44,8 +44,8 @@ namespace N503::Renderer2D::Message::Packets
             auto& transform    = context.Registry.AddComponent(entity, System::Transform{});
             transform.X        = 0.0f;
             transform.Y        = 0.0f;
-            transform.ScaleX   = 0.25f;
-            transform.ScaleY   = 0.25f;
+            transform.ScaleX   = 1.0f;
+            transform.ScaleY   = 1.0f;
             transform.Rotation = 0.0f;
 
             auto& sprite  = context.Registry.AddComponent(entity, System::Sprite{ handle });

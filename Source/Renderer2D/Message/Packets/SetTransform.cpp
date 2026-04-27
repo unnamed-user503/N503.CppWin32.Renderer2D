@@ -34,6 +34,9 @@ namespace N503::Renderer2D::Message::Packets
         transform.X = Transform.Position.X;
         transform.Y = Transform.Position.Y;
         transform.Z = Transform.Position.Z;
+        transform.Rotation = Transform.Rotation;
+        transform.ScaleX   = Transform.Scale.X;
+        transform.ScaleY   = Transform.Scale.Y;
     }
 
 } // namespace N503::Renderer2D::Message::Packets
