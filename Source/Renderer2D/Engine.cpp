@@ -53,6 +53,7 @@ namespace N503::Renderer2D
     Engine::Engine()
     {
         m_MessageQueue = std::make_unique<Message::Queue>();
+        m_SystemRegistry = std::make_unique<System::Registry>();
     }
 
     auto Engine::Start() -> void
@@ -133,7 +134,6 @@ namespace N503::Renderer2D
         auto resources     = std::make_unique<Resource::Container>();
         auto deviceContext = std::make_unique<Device::Context>();
 
-        auto registry       = std::make_unique<System::Registry>();
         auto spriteSystem   = std::make_unique<System::SpriteSystem>();
         auto textSystem     = std::make_unique<System::TextSystem>();
         auto rendererSystem = std::make_unique<System::RendererSystem>();
@@ -151,7 +151,7 @@ namespace N503::Renderer2D
                 textSystem.reset();
                 rendererSystem.reset();
 
-                registry.reset();
+                m_SystemRegistry.reset();
 
                 renderTarget.reset();
                 deviceContext.reset();
@@ -183,6 +183,8 @@ namespace N503::Renderer2D
 
         while (!stopToken.stop_requested())
         {
+            auto start = std::chrono::steady_clock::now();
+
             HWND hwnd = nullptr;
 
             if (renderTarget == nullptr && (hwnd = Device::Viewport::GetInstance().GetRenderTargetWindow()))
@@ -203,7 +205,7 @@ namespace N503::Renderer2D
             {
                 Message::Context context{
                     .ResourceContainer = *resources,
-                    .Registry          = *registry,
+                    .Registry          = *m_SystemRegistry,
                     .DeviceContext     = *deviceContext,
                 };
                 messageDispatcher.Dispatch(*m_MessageQueue, context);
@@ -219,9 +221,9 @@ namespace N503::Renderer2D
             // コマンドリストにコマンドが存在する場合は、デバイスコンテキストを使用してコマンドを実行し、レンダリングターゲットを提示します。
             if (deviceContext->BeginDraw({ 0.1f, 0.2f, 0.4f, 1.0f }))
             {
-                spriteSystem->Update(*registry, *deviceContext, *resources);
-                rendererSystem->Update(*registry, *deviceContext);
-                textSystem->Update(*registry, *deviceContext);
+                spriteSystem->Update(*m_SystemRegistry, *deviceContext, *resources);
+                rendererSystem->Update(*m_SystemRegistry, *deviceContext);
+                textSystem->Update(*m_SystemRegistry, *deviceContext);
 
                 const auto endDrawResult = deviceContext->EndDraw();
                 const auto presentResult = renderTarget->Present();
@@ -235,6 +237,9 @@ namespace N503::Renderer2D
             }
 
             diagnosticsReporter.Submit(m_DiagnosticsSink);
+
+            auto end = std::chrono::steady_clock::now();
+            std::cout << "[Renderer2D] <Profile> : " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " us\n";
         }
     }
 

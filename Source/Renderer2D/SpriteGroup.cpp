@@ -3,8 +3,11 @@
 
 // 1. Project Headers
 #include "Engine.hpp"
+#include "Message/Queue.hpp"
+#include "Message/Packet.hpp"
 #include "Message/Packets/CreateSprite.hpp"
-#include "Message/Packets/SetPosition.hpp"
+#include "Message/Packets/DestroyEntity.hpp"
+#include "Message/Packets/SetTransform.hpp"
 
 #include "System/Entity.hpp"
 #include "System/Registry.hpp"
@@ -49,6 +52,28 @@ namespace N503::Renderer2D
         Engine::GetInstance().Start();
         Engine::GetInstance().GetMessageQueue().EnqueueSync(std::move(packets));
     }
+    
+    SpriteGroup::~SpriteGroup()
+    {
+        if (!m_Entity)
+        {
+            return;
+        }
+
+        std::vector<Message::Packet> packets;
+        packets.reserve(m_Entity->ID.size());
+
+        for (std::size_t i = 0; i < m_Entity->ID.size(); ++i)
+        {
+            auto packet = Message::Packets::DestroyEntity{
+                .ID = m_Entity->ID[i],
+            };
+
+            packets.push_back(std::move(packet));
+        }
+
+        Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packets));
+    }
 
     auto SpriteGroup::SetTransform(std::function<Transform&(Transform&)> delegate) -> void
     {
@@ -64,11 +89,9 @@ namespace N503::Renderer2D
         {
             auto& transform = delegate(m_Entity->Transforms[i]);
 
-            auto packet = Message::Packets::SetPosition{
+            auto packet = Message::Packets::SetTransform{
                 .ID = m_Entity->ID[i],
-                .X  = transform.Position.X,
-                .Y  = transform.Position.Y,
-                .Z  = transform.Position.Z,
+                .Transform = transform,
             };
 
             packets.push_back(std::move(packet));
@@ -76,8 +99,6 @@ namespace N503::Renderer2D
 
         Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packets));
     }
-
-    SpriteGroup::~SpriteGroup() = default;
 
     SpriteGroup::SpriteGroup(SpriteGroup&& other) = default;
 

@@ -27,6 +27,14 @@ namespace N503::Renderer2D::Message::Packets
     {
         System::Entity* Result{ nullptr };
 
+        std::string Text{};
+
+        std::string FontName{};
+
+        float FontSize{ 0.0f };
+
+        ColorF Color{ 1.0f, 1.0f, 1.0f, 1.0f };
+
         auto operator()(Message::Context& context) const -> void;
     };
 

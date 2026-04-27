@@ -1,5 +1,5 @@
 #include "Pch.hpp"
-#include "SetPosition.hpp"
+#include "SetTransform.hpp"
 
 // 1. Project Headers
 #include "../../Device/Context.hpp"
@@ -22,7 +22,7 @@
 namespace N503::Renderer2D::Message::Packets
 {
 
-    auto SetPosition::operator()(Context& context) const -> void
+    auto SetTransform::operator()(Context& context) const -> void
     {
         if (!context.Registry.HasComponent<System::Transform>(ID))
         {
@@ -31,9 +31,9 @@ namespace N503::Renderer2D::Message::Packets
 
         auto& transform = context.Registry.GetComponent<System::Transform>(ID);
 
-        transform.X = X;
-        transform.Y = Y;
-        transform.Z = Z;
+        transform.X = Transform.Position.X;
+        transform.Y = Transform.Position.Y;
+        transform.Z = Transform.Position.Z;
     }
 
 } // namespace N503::Renderer2D::Message::Packets

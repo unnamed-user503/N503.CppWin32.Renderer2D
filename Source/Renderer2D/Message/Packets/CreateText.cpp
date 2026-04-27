@@ -23,19 +23,19 @@ namespace N503::Renderer2D::Message::Packets
 
     auto CreateText::operator()(Message::Context& context) const -> void
     {
-        auto textFormat = context.DeviceContext.GetResourceCache().GetOrCreateTextFormat("Segoe UI", 32.0f);
+        auto textFormat = context.DeviceContext.GetResourceCache().GetOrCreateTextFormat(FontName, FontSize);
         if (!textFormat)
         {
             return;
         }
 
-        auto textLayout = context.DeviceContext.GetResourceCache().GetOrCreateTextLayout("Hello, World!", textFormat);
+        auto textLayout = context.DeviceContext.GetResourceCache().GetOrCreateTextLayout(Text, textFormat);
         if (!textLayout)
         {
             return;
         }
 
-        auto brush = context.DeviceContext.GetResourceCache().GetOrCreateBrush(Renderer2D::ColorF{ 1.0f, 1.0f, 1.0f, 1.0f });
+        auto brush = context.DeviceContext.GetResourceCache().GetOrCreateBrush(Color);
         if (!textLayout)
         {
             return;

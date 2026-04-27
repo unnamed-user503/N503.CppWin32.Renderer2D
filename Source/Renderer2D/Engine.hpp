@@ -1,8 +1,6 @@
 #pragma once
 
 // 1. Project Headers
-#include "Message/Queue.hpp"
-#include "Resource/Container.hpp"
 
 // 2. Project Dependencies
 #include <N503/Diagnostics/Entry.hpp>
@@ -21,6 +19,16 @@
 #include <atomic>
 #include <memory>
 #include <thread>
+
+namespace N503::Renderer2D::Message
+{
+    class Queue;
+}
+
+namespace N503::Renderer2D::System
+{
+    class Registry;
+}
 
 namespace N503::Renderer2D
 {
@@ -48,6 +56,11 @@ namespace N503::Renderer2D
             return *m_MessageQueue;
         }
 
+        auto GetSystemRegistry() const -> System::Registry&
+        {
+            return *m_SystemRegistry;
+        }
+
         auto GetDiagnosticsSink() const -> const Diagnostics::Sink&
         {
             return m_DiagnosticsSink;
@@ -64,6 +77,8 @@ namespace N503::Renderer2D
         wil::unique_event m_StartedEvent{ ::CreateEventW(nullptr, TRUE, FALSE, L"Local\\N503.CppWin32.Renderer2D.Event.EngineStarted") };
 
         Diagnostics::Sink m_DiagnosticsSink;
+
+        std::unique_ptr<System::Registry> m_SystemRegistry;
 
         std::unique_ptr<Message::Queue> m_MessageQueue;
 

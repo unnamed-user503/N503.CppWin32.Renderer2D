@@ -36,15 +36,9 @@ namespace N503::Renderer2D
         auto operator=(Sprite&&) -> Sprite&;
 
     public:
-        auto SetPoint(float x, float y, float z) -> void;
+        auto SetTransform(const Transform& transform) -> void;
 
         auto SetOpacity(float opacity) -> void;
-
-        auto GetWidth() const -> float;
-
-        auto GetHeight() const -> float;
-
-        auto GetPitch() const -> float;
 
     public:
         struct Entity;

@@ -23,6 +23,7 @@ namespace N503::Renderer2D::Message::Packets
 
     auto DestroyEntity::operator()(Context& context) const -> void
     {
+        context.Registry.DestroyEntity(ID);
     }
 
 } // namespace N503::Renderer2D::Message::Packets

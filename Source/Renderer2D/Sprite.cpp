@@ -3,8 +3,10 @@
 
 // 1. Project Headers
 #include "Engine.hpp"
+#include "Message/Queue.hpp"
 #include "Message/Packets/CreateSprite.hpp"
-#include "Message/Packets/SetPosition.hpp"
+#include "Message/Packets/DestroyEntity.hpp"
+#include "Message/Packets/SetTransform.hpp"
 
 #include "System/Entity.hpp"
 #include "System/Registry.hpp"
@@ -37,21 +39,33 @@ namespace N503::Renderer2D
         };
 
         Engine::GetInstance().Start();
-        Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
+        Engine::GetInstance().GetMessageQueue().EnqueueSync(std::move(packet));
     }
-
-    auto Sprite::SetPoint(float x, float y, float z) -> void
+    
+    Sprite::~Sprite()
     {
         if (!m_Entity)
         {
             return;
         }
 
-        auto packet = Message::Packets::SetPosition{
+        auto packet = Message::Packets::DestroyEntity{
             .ID = m_Entity->ID,
-            .X  = x,
-            .Y  = y,
-            .Z  = z,
+        };
+
+        Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
+    }
+
+    auto Sprite::SetTransform(const Transform & transform) -> void
+    {
+        if (!m_Entity)
+        {
+            return;
+        }
+
+        auto packet = Message::Packets::SetTransform{
+            .ID = m_Entity->ID,
+            .Transform = transform,
         };
 
         Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
@@ -60,23 +74,6 @@ namespace N503::Renderer2D
     auto Sprite::SetOpacity(float opacity) -> void
     {
     }
-
-    auto Sprite::GetWidth() const -> float
-    {
-        return 0.0f;
-    }
-
-    auto Sprite::GetHeight() const -> float
-    {
-        return 0.0f;
-    }
-
-    auto Sprite::GetPitch() const -> float
-    {
-        return 0.0f;
-    }
-
-    Sprite::~Sprite() = default;
 
     Sprite::Sprite(Sprite&& other) = default;
 

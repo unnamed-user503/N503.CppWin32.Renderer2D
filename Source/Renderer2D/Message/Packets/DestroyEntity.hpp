@@ -25,6 +25,8 @@ namespace N503::Renderer2D::Message::Packets
 
     struct DestroyEntity
     {
+        System::Entity ID{};
+
         auto operator()(Message::Context& context) const -> void;
     };
 

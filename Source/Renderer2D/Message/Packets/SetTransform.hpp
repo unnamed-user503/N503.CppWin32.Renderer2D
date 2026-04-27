@@ -23,15 +23,11 @@ namespace N503::Renderer2D::Message
 namespace N503::Renderer2D::Message::Packets
 {
 
-    struct SetPosition
+    struct SetTransform
     {
         System::Entity ID{};
 
-        float X{ 0.0f };
-
-        float Y{ 0.0f };
-
-        float Z{ 0.0f };
+        Renderer2D::Transform Transform{};
 
         auto operator()(Message::Context& context) const -> void;
     };

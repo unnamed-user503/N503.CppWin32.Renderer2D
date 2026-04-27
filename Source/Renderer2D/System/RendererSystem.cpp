@@ -22,7 +22,6 @@ namespace N503::Renderer2D::System
 
     auto RendererSystem::Update(Registry& registry, Device::Context& context) -> void
     {
-        /*
         // 描画対象のエンティティを収集
         std::vector<Entity> renderList;
         for (auto entity : registry.GetView<Transform, Sprite>())
@@ -36,8 +35,8 @@ namespace N503::Renderer2D::System
             renderList.end(),
             [&](Entity a, Entity b) { return registry.GetComponent<Transform>(a).Z < registry.GetComponent<Transform>(b).Z; }
         );
-        */
-        for (auto entity : registry.GetView<Transform, Sprite>())
+
+        for (auto entity : renderList)
         {
             auto& transform = registry.GetComponent<Transform>(entity);
             auto& sprite    = registry.GetComponent<Sprite>(entity);
