@@ -23,7 +23,12 @@ namespace N503::Renderer2D
     class N503_API Text final
     {
     public:
-        explicit Text(const std::string_view text, const std::string_view font = "MS ゴシック", const float size = 24, Renderer2D::ColorF color = { 1.0f, 1.0f, 1.0f, 1.0f });
+        explicit Text(
+            const std::string_view text,
+            const std::string_view font = "MS ゴシック",
+            const float size            = 24,
+            Renderer2D::ColorF color    = { 1.0f, 1.0f, 1.0f, 1.0f }
+        );
 
         ~Text();
 

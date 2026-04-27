@@ -3,11 +3,11 @@
 
 // 1. Project Headers
 #include "Engine.hpp"
-#include "Message/Queue.hpp"
 #include "Message/Packet.hpp"
 #include "Message/Packets/CreateSprite.hpp"
 #include "Message/Packets/DestroyEntity.hpp"
 #include "Message/Packets/SetTransform.hpp"
+#include "Message/Queue.hpp"
 
 // 2. Project Dependencies
 #include <N503/Renderer2D/Text.hpp>
@@ -66,7 +66,7 @@ namespace N503::Renderer2D
         }
 
         auto packet = Message::Packets::SetTransform{
-            .ID = m_Entity->ID,
+            .ID        = m_Entity->ID,
             .Transform = transform,
         };
 

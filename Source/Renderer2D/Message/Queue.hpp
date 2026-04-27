@@ -61,7 +61,7 @@ namespace N503::Renderer2D::Message
             {
                 if (!queue.empty() && std::holds_alternative<TPacket>(queue.back().Packet))
                 {
-                    m_Target = &std::get_if<TPacket>(queue.back().Packet);
+                    m_Target = &std::get_if<TPacket>(queue.back().Packets.back());
                 }
             }
 
@@ -139,8 +139,6 @@ namespace N503::Renderer2D::Message
         wil::unique_event_nothrow m_WakeupEvent{ ::CreateEventW(nullptr, FALSE, FALSE, nullptr) };
 
         std::mutex m_Mutex;
-
-        std::atomic_flag m_SpinLock = ATOMIC_FLAG_INIT;
     };
 
 } // namespace N503::Renderer2D::Message

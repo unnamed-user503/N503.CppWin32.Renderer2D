@@ -52,7 +52,7 @@ namespace N503::Renderer2D::Resource
 
         std::vector<ResourceHandle> m_AvailableHandles;
 
-        std::unordered_map<std::string_view, ResourceHandle, std::hash<std::string_view>, std::equal_to<>> m_Indexes;
+        std::unordered_map<std::string, ResourceHandle> m_Indexes;
     };
 
 } // namespace N503::Renderer2D::Resource

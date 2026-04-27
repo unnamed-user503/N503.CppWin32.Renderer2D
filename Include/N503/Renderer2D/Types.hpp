@@ -139,15 +139,15 @@ namespace N503::Renderer2D
         bool operator==(const ResourceHandle&) const = default;
 
         [[nodiscard]]
-        bool operator==(const Handle::ResourceID) const
+        bool operator==(const Handle::ResourceID& other) const
         {
-            return ID == Handle::ResourceID::Invalid;
+            return ID == other;
         }
 
         [[nodiscard]]
-        bool operator!=(const Handle::ResourceID) const
+        bool operator!=(const Handle::ResourceID& other) const
         {
-            return ID != Handle::ResourceID::Invalid;
+            return ID != other;
         }
     };
 
@@ -175,15 +175,15 @@ namespace N503::Renderer2D
         bool operator==(const CommandHandle&) const = default;
 
         [[nodiscard]]
-        bool operator==(const Handle::CommandID) const
+        bool operator==(const Handle::CommandID& other) const
         {
-            return ID == Handle::CommandID::Invalid;
+            return ID == other;
         }
 
         [[nodiscard]]
-        bool operator!=(const Handle::CommandID) const
+        bool operator!=(const Handle::CommandID& other) const
         {
-            return ID != Handle::CommandID::Invalid;
+            return ID != other;
         }
     };
 

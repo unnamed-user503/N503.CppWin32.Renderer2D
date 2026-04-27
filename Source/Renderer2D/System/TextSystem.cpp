@@ -24,12 +24,12 @@ namespace N503::Renderer2D::System
         for (auto entity : registry.GetView<Transform, Text>())
         {
             auto& transform = registry.GetComponent<Transform>(entity);
-            auto& text = registry.GetComponent<Text>(entity);
+            auto& text      = registry.GetComponent<Text>(entity);
 
             if (text.TextLayout)
             {
                 context.DrawTextLayout({ transform.X, transform.Y }, text.TextLayout, text.Brush);
-                //text.IsDirty = false;
+                // text.IsDirty = false;
             }
         }
     }

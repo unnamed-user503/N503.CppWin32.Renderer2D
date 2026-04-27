@@ -38,8 +38,10 @@ namespace N503::Renderer2D::Resource
 
     auto Container::Add(const std::string_view path) -> ResourceHandle
     {
+        std::string key(path);
+
         // すでに同じパスのリソースが存在する場合は、そのハンドルを返します。
-        if (auto it = m_Indexes.find(path); it != m_Indexes.end())
+        if (auto it = m_Indexes.find(key); it != m_Indexes.end())
         {
             return it->second;
         }
@@ -50,54 +52,52 @@ namespace N503::Renderer2D::Resource
             return { .ID = Handle::ResourceID::Invalid };
         }
 
-        // 利用可能なハンドルのリストからハンドルを取得します。
-        ResourceHandle handle = m_AvailableHandles.back();
-
-        // ハンドルのIDをインデックスとして使用します。これにより、O(1)でエントリにアクセスできます。
-        const auto index = static_cast<std::uint64_t>(handle.ID);
-
-        // 画像をデコードして、確保したメモリにピクセルデータを書き込みます。
+        // 画像をデコードしてピクセルデータを取得します。
         Codec::WicImageDecoder decoder(path);
 
-        Pixels::Buffer pixels;
-        pixels.Size = static_cast<std::size_t>(decoder.GetHeight()) * static_cast<std::size_t>(decoder.GetPitch());
+        const std::size_t requiredSize = static_cast<std::size_t>(decoder.GetHeight()) * static_cast<std::size_t>(decoder.GetPitch());
+        void* address                  = m_Storage.AllocateBytes(requiredSize, 16);
 
-        // 画像データのバイトサイズに基づいて、アリメントを16バイトとした生のバイト列としてメモリを確保します。
-        void* address = m_Storage.AllocateBytes(pixels.Size, 16);
-
-        if (address == nullptr)
+        if (!address)
         {
-            return {}; // メモリ確保に失敗した場合は、無効なハンドルを返します。
+            return { .ID = Handle::ResourceID::Invalid };
         }
 
-        pixels = decoder.Decode(
+        // デコーダーにピクセルデータの書き込み先を提供し、デコードを実行します。
+        // clang-format off
+        auto pixels = decoder.Decode(
             [&](std::size_t size) -> std::span<std::byte>
             {
-                if (size > pixels.Size)
-                {
-                    return {};
-                }
-                return std::span<std::byte>(static_cast<std::byte*>(address), size);
+                return (size <= requiredSize) ? std::span{ static_cast<std::byte*>(address), size } : std::span<std::byte>{};
             }
         );
+        // clang-format on
 
-        // エントリを作成して保存します。
-        m_Entries[index] = Entry{
-            .Handle   = handle,
-            .Pixels   = pixels,
-            .Metadata = { .Path = std::string(path) },
-        };
+        if (!pixels.Bytes)
+        {
+            return { .ID = Handle::ResourceID::Invalid };
+        }
 
-        // パスとハンドルの対応を保存します。
-        m_Indexes[m_Entries[index].Metadata.Path] = handle;
+        // 利用可能なハンドルのリストからハンドルを取得し、エントリを作成して保存します。
+        const auto handle = m_AvailableHandles.back();
+        const auto index  = static_cast<std::uint64_t>(handle.ID);
+
+        auto [it, inserted] = m_Indexes.try_emplace(std::move(key), handle);
+
+        if (!inserted)
+        {
+            return it->second;
+        }
+
+        m_Entries[index] = Entry{ .Handle = handle, .Pixels = pixels, .Metadata = { .Path = it->first } };
+
+        // 利用可能なハンドルのリストからハンドルを削除します。
+        m_AvailableHandles.pop_back();
 
 #ifdef _DEBUG
         auto log = std::format("[Renderer2D] <Resource::Container>: Add to ResourceID={}", static_cast<std::uint64_t>(handle.ID));
         Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{ Diagnostics::Severity::Verbose, log });
 #endif
-
-        // 利用可能なハンドルのリストからハンドルを削除します。
-        m_AvailableHandles.pop_back();
 
         return handle;
     }
@@ -119,7 +119,7 @@ namespace N503::Renderer2D::Resource
         }
 
         // パスとハンドルの対応を削除します。
-        m_Indexes.erase(m_Entries[index].Metadata.Path);
+        m_Indexes.erase(std::string(m_Entries[index].Metadata.Path));
 
         // エントリを空にして、次の世代のハンドルを利用可能なハンドルのリストに追加します。
         ResourceHandle nextGenerationHandle = handle;
@@ -153,7 +153,9 @@ namespace N503::Renderer2D::Resource
 
     auto Container::Get(const std::string_view path) const -> const Entry*
     {
-        if (auto it = m_Indexes.find(path); it != m_Indexes.end())
+        auto key = std::string(path);
+
+        if (auto it = m_Indexes.find(key); it != m_Indexes.end())
         {
             return Get(it->second);
         }
@@ -163,7 +165,9 @@ namespace N503::Renderer2D::Resource
 
     auto Container::GetHandle(const std::string_view path) const -> ResourceHandle
     {
-        if (auto it = m_Indexes.find(path); it != m_Indexes.end())
+        auto key = std::string(path);
+
+        if (auto it = m_Indexes.find(key); it != m_Indexes.end())
         {
             return it->second;
         }

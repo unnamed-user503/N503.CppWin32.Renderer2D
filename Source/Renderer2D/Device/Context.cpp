@@ -157,14 +157,7 @@ namespace N503::Renderer2D::Device
 
         auto wide = TranscodeUtf8ToWide(text);
 
-        auto hr = m_DWriteFactory->CreateTextLayout(
-            wide.data(),
-            static_cast<UINT32>(wide.length()),
-            textFormat.get(),
-            1280.0f,
-            720.0f,
-            textLayout.put()
-        );
+        auto hr = m_DWriteFactory->CreateTextLayout(wide.data(), static_cast<UINT32>(wide.length()), textFormat.get(), 1280.0f, 720.0f, textLayout.put());
 
         if (FAILED(hr))
         {
@@ -179,7 +172,8 @@ namespace N503::Renderer2D::Device
         m_D2DContext->DrawBitmap(bitmap.get(), destination);
     }
 
-    auto Device::Context::DrawTextLayout(const Renderer2D::PointF origin, wil::com_ptr<IDWriteTextLayout> textLayout, wil::com_ptr<ID2D1SolidColorBrush> brush) -> void
+    auto Device::Context::DrawTextLayout(const Renderer2D::PointF origin, wil::com_ptr<IDWriteTextLayout> textLayout, wil::com_ptr<ID2D1SolidColorBrush> brush)
+        -> void
     {
         m_D2DContext->DrawTextLayout(D2D1::Point2F(origin.X, origin.Y), textLayout.get(), brush.get());
     }

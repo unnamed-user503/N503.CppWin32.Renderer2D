@@ -983,9 +983,9 @@ namespace N503::Renderer2D::Device
         m_D2DContext->DrawBitmap(bitmap.get(), destination);
     }
 
-    auto Device::Context::DrawTextLayout(wil::com_ptr<IDWriteTextLayout> textLayout, wil::com_ptr<ID2D1SolidColorBrush> brush) -> void
+    auto Device::Context::DrawTextLayout(const Renderer2D::PointF origin, wil::com_ptr<IDWriteTextLayout> textLayout, wil::com_ptr<ID2D1SolidColorBrush> brush) -> void
     {
-        m_D2DContext->DrawTextLayout(D2D1::Point2F(100.0f, 100.0f), textLayout.get(), brush.get());
+        m_D2DContext->DrawTextLayout(D2D1::Point2F(origin.X, origin.Y), textLayout.get(), brush.get());
     }
 
     auto Device::Context::SetTransform(const D2D1_MATRIX_3X2_F& transform) -> void
@@ -1089,7 +1089,7 @@ namespace N503::Renderer2D::Device
 
         auto DrawBitmap(wil::com_ptr<ID2D1Bitmap1> bitmap, const D2D1_RECT_F destination) -> void;
 
-        auto DrawTextLayout(wil::com_ptr<IDWriteTextLayout> textLayout, wil::com_ptr<ID2D1SolidColorBrush> brush) -> void;
+        auto DrawTextLayout(const Renderer2D::PointF origin, wil::com_ptr<IDWriteTextLayout> textLayout, wil::com_ptr<ID2D1SolidColorBrush> brush) -> void;
 
         auto SetTransform(const D2D1_MATRIX_3X2_F& transform) -> void;
 
@@ -1455,8 +1455,8 @@ namespace N503::Renderer2D::Message::Packets
             auto& transform    = context.Registry.AddComponent(entity, System::Transform{});
             transform.X        = 0.0f;
             transform.Y        = 0.0f;
-            transform.ScaleX   = 0.25f;
-            transform.ScaleY   = 0.25f;
+            transform.ScaleX   = 1.0f;
+            transform.ScaleY   = 1.0f;
             transform.Rotation = 0.0f;
 
             auto& sprite  = context.Registry.AddComponent(entity, System::Sprite{ handle });
@@ -1533,18 +1533,21 @@ namespace N503::Renderer2D::Message::Packets
     auto CreateText::operator()(Message::Context& context) const -> void
     {
         auto textFormat = context.DeviceContext.GetResourceCache().GetOrCreateTextFormat(FontName, FontSize);
+
         if (!textFormat)
         {
             return;
         }
 
         auto textLayout = context.DeviceContext.GetResourceCache().GetOrCreateTextLayout(Text, textFormat);
+
         if (!textLayout)
         {
             return;
         }
 
         auto brush = context.DeviceContext.GetResourceCache().GetOrCreateBrush(Color);
+
         if (!textLayout)
         {
             return;
@@ -1567,6 +1570,8 @@ namespace N503::Renderer2D::Message::Packets
             text.TextLayout = textLayout;
             text.IsDirty    = true;
             text.Content    = L"Hello";
+
+            *Result = entity;
         }
         catch (...)
         {
@@ -1713,6 +1718,9 @@ namespace N503::Renderer2D::Message::Packets
         transform.X = Transform.Position.X;
         transform.Y = Transform.Position.Y;
         transform.Z = Transform.Position.Z;
+        transform.Rotation = Transform.Rotation;
+        transform.ScaleX   = Transform.Scale.X;
+        transform.ScaleY   = Transform.Scale.Y;
     }
 
 } // namespace N503::Renderer2D::Message::Packets
@@ -3252,13 +3260,14 @@ namespace N503::Renderer2D::System
 
     void TextSystem::Update(Registry& registry, Device::Context& context)
     {
-        for (auto entity : registry.GetView<Text>())
+        for (auto entity : registry.GetView<Transform, Text>())
         {
+            auto& transform = registry.GetComponent<Transform>(entity);
             auto& text = registry.GetComponent<Text>(entity);
 
             if (text.TextLayout)
             {
-                context.DrawTextLayout(text.TextLayout, text.Brush);
+                context.DrawTextLayout({ transform.X, transform.Y }, text.TextLayout, text.Brush);
                 //text.IsDirty = false;
             }
         }

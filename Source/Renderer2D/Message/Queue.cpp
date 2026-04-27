@@ -46,10 +46,7 @@ namespace N503::Renderer2D::Message
         }
 #endif
         {
-            while (m_SpinLock.test_and_set(std::memory_order_acquire))
-            {
-                _mm_pause();
-            }
+            std::scoped_lock lock(m_Mutex);
 
             const std::size_t currentSize = m_Buffer[m_BufferIndex].Container.size();
             const std::size_t capacity    = MaxMessageQueued;
@@ -62,8 +59,6 @@ namespace N503::Renderer2D::Message
             {
                 m_Buffer[m_BufferIndex].Container.push(Envelope{ std::move(packet) });
             }
-
-            m_SpinLock.clear(std::memory_order_release);
         }
 
         if (isBusy)
@@ -95,14 +90,9 @@ namespace N503::Renderer2D::Message
         }
 #endif
         {
-            while (m_SpinLock.test_and_set(std::memory_order_acquire))
-            {
-                _mm_pause();
-            }
+            std::scoped_lock lock(m_Mutex);
 
             m_Buffer[m_BufferIndex].Container.push(Envelope{ std::move(packet), &signal });
-
-            m_SpinLock.clear(std::memory_order_release);
         }
 
         m_WakeupEvent.SetEvent();
@@ -114,10 +104,7 @@ namespace N503::Renderer2D::Message
     {
         while (!packets.empty())
         {
-            while (m_SpinLock.test_and_set(std::memory_order_acquire))
-            {
-                _mm_pause();
-            }
+            std::scoped_lock lock(m_Mutex);
 
             const std::size_t currentSize  = m_Buffer[m_BufferIndex].Container.size();
             const std::size_t canPushCount = (currentSize < MaxMessageQueued) ? (MaxMessageQueued - currentSize) : 0;
@@ -128,18 +115,13 @@ namespace N503::Renderer2D::Message
                 auto first = packets.begin();
                 auto last  = packets.begin() + processCount;
 
-                std::vector<Packet> bundle(
-                    std::make_move_iterator(first),
-                    std::make_move_iterator(last)
-                );
+                std::vector<Packet> bundle(std::make_move_iterator(first), std::make_move_iterator(last));
 
                 packets.erase(first, last);
 
                 m_Buffer[m_BufferIndex].Container.push(Envelope{ std::move(bundle), nullptr });
                 m_WakeupEvent.SetEvent();
             }
-
-            m_SpinLock.clear(std::memory_order_release);
 
             if (!packets.empty())
             {
@@ -154,10 +136,7 @@ namespace N503::Renderer2D::Message
 
         while (!packets.empty())
         {
-            while (m_SpinLock.test_and_set(std::memory_order_acquire))
-            {
-                _mm_pause();
-            }
+            std::scoped_lock lock(m_Mutex);
 
             const std::size_t currentSize  = m_Buffer[m_BufferIndex].Container.size();
             const std::size_t canPushCount = (currentSize < MaxMessageQueued) ? (MaxMessageQueued - currentSize) : 0;
@@ -168,18 +147,13 @@ namespace N503::Renderer2D::Message
                 auto first = packets.begin();
                 auto last  = packets.begin() + processCount;
 
-                std::vector<Packet> bundle(
-                    std::make_move_iterator(first),
-                    std::make_move_iterator(last)
-                );
+                std::vector<Packet> bundle(std::make_move_iterator(first), std::make_move_iterator(last));
 
                 packets.erase(first, last);
 
                 m_Buffer[m_BufferIndex].Container.push(Envelope{ std::move(bundle), &signal });
                 m_WakeupEvent.SetEvent();
             }
-
-            m_SpinLock.clear(std::memory_order_release);
 
             if (!packets.empty())
             {
@@ -195,10 +169,7 @@ namespace N503::Renderer2D::Message
     [[nodiscard]]
     auto Queue::PopAll() -> Container
     {
-        while (m_SpinLock.test_and_set(std::memory_order_acquire))
-        {
-            _mm_pause();
-        }
+        std::scoped_lock lock(m_Mutex);
 
         // UIスレッドで溜めたデータを「Allocatorごと」奪い去る
         auto container = std::move(m_Buffer[m_BufferIndex].Container);
@@ -208,8 +179,6 @@ namespace N503::Renderer2D::Message
 
         // 次の Push 用にインデックスを切り替える
         m_BufferIndex = (m_BufferIndex + 1) % m_Buffer.size();
-
-        m_SpinLock.clear(std::memory_order_release);
 
         return container;
     }

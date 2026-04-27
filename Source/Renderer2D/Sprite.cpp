@@ -3,10 +3,10 @@
 
 // 1. Project Headers
 #include "Engine.hpp"
-#include "Message/Queue.hpp"
 #include "Message/Packets/CreateSprite.hpp"
 #include "Message/Packets/DestroyEntity.hpp"
 #include "Message/Packets/SetTransform.hpp"
+#include "Message/Queue.hpp"
 
 #include "System/Entity.hpp"
 #include "System/Registry.hpp"
@@ -41,7 +41,7 @@ namespace N503::Renderer2D
         Engine::GetInstance().Start();
         Engine::GetInstance().GetMessageQueue().EnqueueSync(std::move(packet));
     }
-    
+
     Sprite::~Sprite()
     {
         if (!m_Entity)
@@ -56,7 +56,7 @@ namespace N503::Renderer2D
         Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
     }
 
-    auto Sprite::SetTransform(const Transform & transform) -> void
+    auto Sprite::SetTransform(const Transform& transform) -> void
     {
         if (!m_Entity)
         {
@@ -64,7 +64,7 @@ namespace N503::Renderer2D
         }
 
         auto packet = Message::Packets::SetTransform{
-            .ID = m_Entity->ID,
+            .ID        = m_Entity->ID,
             .Transform = transform,
         };
 

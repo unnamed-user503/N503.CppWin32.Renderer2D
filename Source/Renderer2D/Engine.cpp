@@ -52,7 +52,7 @@ namespace N503::Renderer2D
 
     Engine::Engine()
     {
-        m_MessageQueue = std::make_unique<Message::Queue>();
+        m_MessageQueue   = std::make_unique<Message::Queue>();
         m_SystemRegistry = std::make_unique<System::Registry>();
     }
 
