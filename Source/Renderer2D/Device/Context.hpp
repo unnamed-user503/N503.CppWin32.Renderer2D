@@ -52,7 +52,7 @@ namespace N503::Renderer2D::Device
 
         auto DrawBitmap(wil::com_ptr<ID2D1Bitmap1> bitmap, const D2D1_RECT_F destination) -> void;
 
-        auto DrawTextLayout(wil::com_ptr<IDWriteTextLayout> textLayout, wil::com_ptr<ID2D1SolidColorBrush> brush) -> void;
+        auto DrawTextLayout(const Renderer2D::PointF origin, wil::com_ptr<IDWriteTextLayout> textLayout, wil::com_ptr<ID2D1SolidColorBrush> brush) -> void;
 
         auto SetTransform(const D2D1_MATRIX_3X2_F& transform) -> void;
 

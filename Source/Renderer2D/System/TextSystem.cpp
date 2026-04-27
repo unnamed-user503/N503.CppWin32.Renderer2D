@@ -21,13 +21,14 @@ namespace N503::Renderer2D::System
 
     void TextSystem::Update(Registry& registry, Device::Context& context)
     {
-        for (auto entity : registry.GetView<Text>())
+        for (auto entity : registry.GetView<Transform, Text>())
         {
+            auto& transform = registry.GetComponent<Transform>(entity);
             auto& text = registry.GetComponent<Text>(entity);
 
             if (text.TextLayout)
             {
-                context.DrawTextLayout(text.TextLayout, text.Brush);
+                context.DrawTextLayout({ transform.X, transform.Y }, text.TextLayout, text.Brush);
                 //text.IsDirty = false;
             }
         }

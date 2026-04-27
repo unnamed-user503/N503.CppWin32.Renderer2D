@@ -24,18 +24,21 @@ namespace N503::Renderer2D::Message::Packets
     auto CreateText::operator()(Message::Context& context) const -> void
     {
         auto textFormat = context.DeviceContext.GetResourceCache().GetOrCreateTextFormat(FontName, FontSize);
+
         if (!textFormat)
         {
             return;
         }
 
         auto textLayout = context.DeviceContext.GetResourceCache().GetOrCreateTextLayout(Text, textFormat);
+
         if (!textLayout)
         {
             return;
         }
 
         auto brush = context.DeviceContext.GetResourceCache().GetOrCreateBrush(Color);
+
         if (!textLayout)
         {
             return;
@@ -58,6 +61,8 @@ namespace N503::Renderer2D::Message::Packets
             text.TextLayout = textLayout;
             text.IsDirty    = true;
             text.Content    = L"Hello";
+
+            *Result = entity;
         }
         catch (...)
         {

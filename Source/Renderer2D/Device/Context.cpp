@@ -179,9 +179,9 @@ namespace N503::Renderer2D::Device
         m_D2DContext->DrawBitmap(bitmap.get(), destination);
     }
 
-    auto Device::Context::DrawTextLayout(wil::com_ptr<IDWriteTextLayout> textLayout, wil::com_ptr<ID2D1SolidColorBrush> brush) -> void
+    auto Device::Context::DrawTextLayout(const Renderer2D::PointF origin, wil::com_ptr<IDWriteTextLayout> textLayout, wil::com_ptr<ID2D1SolidColorBrush> brush) -> void
     {
-        m_D2DContext->DrawTextLayout(D2D1::Point2F(100.0f, 100.0f), textLayout.get(), brush.get());
+        m_D2DContext->DrawTextLayout(D2D1::Point2F(origin.X, origin.Y), textLayout.get(), brush.get());
     }
 
     auto Device::Context::SetTransform(const D2D1_MATRIX_3X2_F& transform) -> void
