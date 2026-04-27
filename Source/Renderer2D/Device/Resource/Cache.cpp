@@ -96,6 +96,10 @@ namespace N503::Renderer2D::Device::Resource
 
         if (m_Brushes.find(key) == m_Brushes.end())
         {
+#ifdef _DEBUG
+            auto log = std::format("[Renderer2D] <Device::Resource::Cache>: CreateBrush for Color={}", key);
+            Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{ Diagnostics::Severity::Verbose, log });
+#endif
             auto brush = m_DeviceContext.CreateSolidColorBrush(color);
 
             if (!brush)
@@ -115,6 +119,10 @@ namespace N503::Renderer2D::Device::Resource
 
         if (m_TextFormats.find(key) == m_TextFormats.end())
         {
+#ifdef _DEBUG
+            auto log = std::format("[Renderer2D] <Device::Resource::Cache>: CreateTextFormat for Key={}", fontName);
+            Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{ Diagnostics::Severity::Verbose, log });
+#endif
             auto textFormat = m_DeviceContext.CreateTextFormat(fontName, fontSize);
 
             if (!textFormat)
@@ -134,6 +142,10 @@ namespace N503::Renderer2D::Device::Resource
 
         if (m_TextLayouts.find(key) == m_TextLayouts.end())
         {
+#ifdef _DEBUG
+            auto log = std::format("[Renderer2D] <Device::Resource::Cache>: CreateTextLayout for Key={}", text);
+            Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{ Diagnostics::Severity::Verbose, log });
+#endif
             auto textLayout = m_DeviceContext.CreateTextLayout(text, textFormat);
 
             if (!textLayout)

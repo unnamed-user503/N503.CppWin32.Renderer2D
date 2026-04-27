@@ -217,11 +217,11 @@ namespace N503::Renderer2D
             }
 
             // コマンドリストにコマンドが存在する場合は、デバイスコンテキストを使用してコマンドを実行し、レンダリングターゲットを提示します。
-            if (deviceContext->BeginDraw({ 0.1f, 0.2f, 0.4f, 0.0f }))
+            if (deviceContext->BeginDraw({ 0.1f, 0.2f, 0.4f, 1.0f }))
             {
                 spriteSystem->Update(*registry, *deviceContext, *resources);
-                textSystem->Update(*registry, *deviceContext);
                 rendererSystem->Update(*registry, *deviceContext);
+                textSystem->Update(*registry, *deviceContext);
 
                 const auto endDrawResult = deviceContext->EndDraw();
                 const auto presentResult = renderTarget->Present();

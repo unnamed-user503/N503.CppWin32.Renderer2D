@@ -139,7 +139,7 @@ namespace N503::Renderer2D::Device
             DWRITE_FONT_STYLE_NORMAL,
             DWRITE_FONT_STRETCH_NORMAL,
             fontSize,
-            L"", // locale
+            L"ja-jp",
             textFormat.put()
         );
 
@@ -155,12 +155,14 @@ namespace N503::Renderer2D::Device
     {
         wil::com_ptr<IDWriteTextLayout> textLayout;
 
+        auto wide = TranscodeUtf8ToWide(text);
+
         auto hr = m_DWriteFactory->CreateTextLayout(
-            TranscodeUtf8ToWide(text).c_str(), // text
-            static_cast<UINT32>(text.size()),  // text length
+            wide.data(),
+            static_cast<UINT32>(wide.length()),
             textFormat.get(),
-            0.0f, // max width
-            0.0f, // max height
+            1280.0f,
+            720.0f,
             textLayout.put()
         );
 
@@ -179,7 +181,7 @@ namespace N503::Renderer2D::Device
 
     auto Device::Context::DrawTextLayout(wil::com_ptr<IDWriteTextLayout> textLayout, wil::com_ptr<ID2D1SolidColorBrush> brush) -> void
     {
-        m_D2DContext->DrawTextLayout(D2D1::Point2F(0.0f, 0.0f), textLayout.get(), brush.get());
+        m_D2DContext->DrawTextLayout(D2D1::Point2F(100.0f, 100.0f), textLayout.get(), brush.get());
     }
 
     auto Device::Context::SetTransform(const D2D1_MATRIX_3X2_F& transform) -> void
@@ -197,7 +199,7 @@ namespace N503::Renderer2D::Device
         m_D2DContext->BeginDraw();
         // m_D2DContext->SetDpi(96.0f, 96.0f);
         m_D2DContext->SetUnitMode(D2D1_UNIT_MODE_PIXELS);
-        m_D2DContext->Clear(D2D1::ColorF(clearColor.Red, clearColor.Green, clearColor.Blue));
+        m_D2DContext->Clear(D2D1::ColorF(clearColor.Red, clearColor.Green, clearColor.Blue, clearColor.Alpha));
 
         return true;
     }

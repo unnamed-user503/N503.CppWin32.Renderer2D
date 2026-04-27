@@ -23,19 +23,19 @@ namespace N503::Renderer2D::Message::Packets
 
     auto CreateText::operator()(Message::Context& context) const -> void
     {
-        auto textFormat = context.DeviceContext.GetResourceCache().GetOrCreateTextFormat("Segoe UI", 24.0f);
+        auto textFormat = context.DeviceContext.GetResourceCache().GetOrCreateTextFormat("Segoe UI", 32.0f);
         if (!textFormat)
         {
             return;
         }
 
-        auto textLayout = context.DeviceContext.GetResourceCache().GetOrCreateTextLayout("Hello", textFormat);
+        auto textLayout = context.DeviceContext.GetResourceCache().GetOrCreateTextLayout("Hello, World!", textFormat);
         if (!textLayout)
         {
             return;
         }
 
-        auto brush = context.DeviceContext.GetResourceCache().GetOrCreateBrush(Renderer2D::ColorF{ 0.0f, 0.0f, 0.0f, 0.0f });
+        auto brush = context.DeviceContext.GetResourceCache().GetOrCreateBrush(Renderer2D::ColorF{ 1.0f, 1.0f, 1.0f, 1.0f });
         if (!textLayout)
         {
             return;
@@ -46,11 +46,11 @@ namespace N503::Renderer2D::Message::Packets
             auto entity = context.Registry.CreateEntity();
 
             auto& transform    = context.Registry.AddComponent(entity, System::Transform{});
-            transform.X        = 100.0f;
-            transform.Y        = 100.0f;
-            transform.ScaleX   = 0.3f;
-            transform.ScaleY   = 0.3f;
-            transform.Rotation = 0.3f;
+            transform.X        = 0.0f;
+            transform.Y        = 0.0f;
+            transform.ScaleX   = 1.0f;
+            transform.ScaleY   = 1.0f;
+            transform.Rotation = 0.0f;
 
             auto& text      = context.Registry.AddComponent(entity, System::Text{});
             text.Brush      = brush;

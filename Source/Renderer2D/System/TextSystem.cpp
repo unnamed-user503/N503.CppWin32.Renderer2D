@@ -25,10 +25,10 @@ namespace N503::Renderer2D::System
         {
             auto& text = registry.GetComponent<Text>(entity);
 
-            if (text.IsDirty && !text.Content.empty() && text.TextFormat)
+            if (text.TextLayout)
             {
-                // context.DrawTextLayout(text.TextLayout, text.Brush);
-                text.IsDirty = false;
+                context.DrawTextLayout(text.TextLayout, text.Brush);
+                //text.IsDirty = false;
             }
         }
     }
