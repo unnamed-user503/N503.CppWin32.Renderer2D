@@ -9,8 +9,6 @@
 #include "Message/Dispatcher.hpp"
 #include "Message/Queue.hpp"
 #include "Resource/Container.hpp"
-
-#include "System/Entity.hpp"
 #include "System/Registry.hpp"
 #include "System/RendererSystem.hpp"
 #include "System/SpriteSystem.hpp"
@@ -24,7 +22,6 @@
 #include <N503/Diagnostics/Sink.hpp>
 
 // 3. WIL (Windows Implementation Library)
-#include <wil/com.h>
 #include <wil/resource.h>
 
 // 4. Third-party Libraries
@@ -34,12 +31,13 @@
 
 // 6. C++ Standard Libraries
 #include <atomic>
+#include <chrono>
 #include <format>
 #include <iostream>
 #include <memory>
 #include <semaphore>
+#include <stop_token>
 #include <thread>
-#include <utility>
 
 namespace N503::Renderer2D
 {
@@ -183,8 +181,6 @@ namespace N503::Renderer2D
 
         while (!stopToken.stop_requested())
         {
-            auto start = std::chrono::steady_clock::now();
-
             HWND hwnd = nullptr;
 
             if (renderTarget == nullptr && (hwnd = Device::Viewport::GetInstance().GetRenderTargetWindow()))
@@ -194,7 +190,7 @@ namespace N503::Renderer2D
                 m_StartedEvent.SetEvent();
             }
 
-            // メッセージキューのウェイクアップイベントとOSメッセージを待機する
+            // メッセージキューのイベントハンドルとOSメッセージの両方を待機する
             const auto count   = static_cast<DWORD>(waitHandles.size());
             const auto handles = waitHandles.begin();
             const auto timeout = isAnyActive ? 0 : INFINITE;
@@ -221,9 +217,14 @@ namespace N503::Renderer2D
             // コマンドリストにコマンドが存在する場合は、デバイスコンテキストを使用してコマンドを実行し、レンダリングターゲットを提示します。
             if (deviceContext->BeginDraw({ 0.1f, 0.2f, 0.4f, 1.0f }))
             {
+                auto start = std::chrono::steady_clock::now();
+
                 spriteSystem->Update(*m_SystemRegistry, *deviceContext, *resources);
                 rendererSystem->Update(*m_SystemRegistry, *deviceContext);
                 textSystem->Update(*m_SystemRegistry, *deviceContext);
+
+                auto end = std::chrono::steady_clock::now();
+                std::cout << "[Renderer2D] <Profile> : " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " us\n";
 
                 const auto endDrawResult = deviceContext->EndDraw();
                 const auto presentResult = renderTarget->Present();
@@ -237,9 +238,6 @@ namespace N503::Renderer2D
             }
 
             diagnosticsReporter.Submit(m_DiagnosticsSink);
-
-            auto end = std::chrono::steady_clock::now();
-            std::cout << "[Renderer2D] <Profile> : " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " us\n";
         }
     }
 

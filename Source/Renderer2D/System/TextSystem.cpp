@@ -29,7 +29,6 @@ namespace N503::Renderer2D::System
             if (text.TextLayout)
             {
                 context.DrawTextLayout({ transform.X, transform.Y }, text.TextLayout, text.Brush);
-                // text.IsDirty = false;
             }
         }
     }
