@@ -37,7 +37,7 @@ namespace N503::Renderer2D
         auto operator=(SpriteGroup&&) -> SpriteGroup&;
 
     public:
-        auto SetTransform(std::function<Transform&(Transform&)> delegate) -> void;
+        auto SetTransform(std::function<bool(Transform&)> delegate) -> void;
 
     public:
         struct Entity;

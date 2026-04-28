@@ -15,6 +15,7 @@
 #include <Windows.h>
 #include <d2d1.h>
 #include <d2d1_1.h>
+#include <d2d1_3.h>
 #include <d3d11.h>
 #include <dwrite.h>
 #include <dxgi1_2.h>
@@ -75,6 +76,16 @@ namespace N503::Renderer2D::Device
             return m_D2DContext;
         }
 
+        auto GetD2DContext3() const -> wil::com_ptr<ID2D1DeviceContext3>
+        {
+            return m_D2DContext3;
+        }
+
+        auto GetSpriteBatch() const -> wil::com_ptr<ID2D1SpriteBatch>
+        {
+            return m_SpriteBatch;
+        }
+
         auto GetResourceCache() -> Resource::Cache&
         {
             return m_ResourceCache;
@@ -92,6 +103,10 @@ namespace N503::Renderer2D::Device
         wil::com_ptr<ID2D1Device> m_D2DDevice;
 
         wil::com_ptr<ID2D1DeviceContext> m_D2DContext;
+
+        wil::com_ptr<ID2D1DeviceContext3> m_D2DContext3;
+
+        wil::com_ptr<ID2D1SpriteBatch> m_SpriteBatch;
 
         Resource::Cache m_ResourceCache{ *this };
     };

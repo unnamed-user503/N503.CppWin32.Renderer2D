@@ -16,6 +16,7 @@
 // 5. Windows Headers
 #include <d2d1.h>
 #include <d2d1_1.h>
+#include <d2d1_3.h>
 #include <dwrite.h>
 
 // 6. C++ Standard Libraries
@@ -90,6 +91,10 @@ namespace N503::Renderer2D::Device
 
         THROW_IF_FAILED(m_D2DFactory->CreateDevice(dxgiDevice.get(), m_D2DDevice.put()));
         THROW_IF_FAILED(m_D2DDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, m_D2DContext.put()));
+
+        // SpriteBatchの作成
+        THROW_IF_FAILED(m_D2DContext->QueryInterface(IID_PPV_ARGS(&m_D2DContext3)));
+        THROW_IF_FAILED(m_D2DContext3->CreateSpriteBatch(&m_SpriteBatch));
     }
 
     auto Context::CreateBitmap(const Pixels::Buffer& pixels) -> wil::com_ptr<ID2D1Bitmap1>

@@ -19,12 +19,12 @@
 #include <Windows.h>
 
 // 6. C++ Standard Libraries
-#include <format>
-#include <semaphore>
-#include <utility>
 #include <algorithm>
+#include <format>
 #include <iterator>
 #include <mutex>
+#include <semaphore>
+#include <utility>
 #include <vector>
 
 namespace N503::Renderer2D::Message
@@ -35,11 +35,9 @@ namespace N503::Renderer2D::Message
         {
             std::unique_lock lock(m_Mutex);
 
-            if (HasCongestion()) 
+            if (HasCongestion())
             {
-                m_BufferExchanged.wait(lock, [this] { 
-                    return m_Buffer[m_BufferIndex].Container.size() < MaxMessageQueued; 
-                });
+                m_BufferExchanged.wait(lock, [this] { return m_Buffer[m_BufferIndex].Container.size() < MaxMessageQueued; });
             }
 
             m_Buffer[m_BufferIndex].Container.push(Envelope{ std::move(packet) });
@@ -181,4 +179,4 @@ namespace N503::Renderer2D::Message
         return isCongested;
     }
 
-} // namespace N503::Core::Message
+} // namespace N503::Renderer2D::Message

@@ -37,6 +37,7 @@ namespace N503::Renderer2D::Message::Packets
         transform.Rotation = Transform.Rotation;
         transform.ScaleX   = Transform.Scale.X;
         transform.ScaleY   = Transform.Scale.Y;
+        transform.IsDirty  = true;
     }
 
 } // namespace N503::Renderer2D::Message::Packets

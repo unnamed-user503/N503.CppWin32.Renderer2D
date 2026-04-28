@@ -75,7 +75,7 @@ namespace N503::Renderer2D
         Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packets));
     }
 
-    auto SpriteGroup::SetTransform(std::function<Transform&(Transform&)> delegate) -> void
+    auto SpriteGroup::SetTransform(std::function<bool(Transform&)> delegate) -> void
     {
         if (!m_Entity)
         {
@@ -87,11 +87,16 @@ namespace N503::Renderer2D
 
         for (std::size_t i = 0; i < m_Entity->ID.size(); ++i)
         {
-            auto& transform = delegate(m_Entity->Transforms[i]);
+            auto isDirty = delegate(m_Entity->Transforms[i]);
+
+            if (!isDirty)
+            {
+                continue;
+            }
 
             auto packet = Message::Packets::SetTransform{
                 .ID        = m_Entity->ID[i],
-                .Transform = transform,
+                .Transform = m_Entity->Transforms[i],
             };
 
             packets.push_back(std::move(packet));

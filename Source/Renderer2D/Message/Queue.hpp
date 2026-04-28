@@ -101,4 +101,4 @@ namespace N503::Renderer2D::Message
         std::mutex m_Mutex;
     };
 
-} // namespace N503::Core::Message
+} // namespace N503::Renderer2D::Message
