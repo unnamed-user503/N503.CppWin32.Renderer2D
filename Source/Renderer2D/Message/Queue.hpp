@@ -81,14 +81,13 @@ namespace N503::Renderer2D::Message
         auto HasCongestion(const float threshold = 0.8f) const noexcept -> bool;
 
     private:
-        /// @brief
         struct Buffer
         {
-            typename Queue::Storage Storage{ MaxMessageQueued }; ///< Allocator より先に宣言する必要がある事に注意
+            Queue::Storage Storage{ MaxMessageQueued }; ///< Allocator より先に宣言する必要がある事に注意
 
-            typename Queue::Allocator Allocator{ &Storage }; ///< Container より先に宣言する必要がある事に注意
+            Queue::Allocator Allocator{ &Storage }; ///< Container より先に宣言する必要がある事に注意
 
-            typename Queue::Container Container{ Allocator };
+            Queue::Container Container{ Allocator };
         };
 
         std::array<Buffer, BufferCount> m_Buffer{};

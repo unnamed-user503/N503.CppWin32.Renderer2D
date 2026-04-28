@@ -24,23 +24,23 @@ namespace N503::Renderer2D::Message
 
     auto Dispatcher::Dispatch(Queue& queue, Context& context) -> void
     {
-        auto bundles = queue.PopAll();
+        auto envelopes = queue.PopAll();
 
-        while (!bundles.empty())
+        while (!envelopes.empty())
         {
-            auto& envelope = bundles.front();
+            auto& bundle = envelopes.front();
 
-            for (auto& packet : envelope.Packets)
+            for (auto& packet : bundle.Packets)
             {
                 std::visit([&context](auto&& concrete) { concrete(context); }, packet);
             }
 
-            if (envelope.Signal)
+            if (bundle.Signal)
             {
-                envelope.Signal->release();
+                bundle.Signal->release();
             }
 
-            bundles.pop();
+            envelopes.pop();
         }
     }
 
