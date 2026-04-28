@@ -17,16 +17,14 @@
 #include <Windows.h>
 
 // 6. C++ Standard Libraries
-#include <algorithm>
 #include <array>
-#include <atomic>
+#include <condition_variable>
 #include <cstddef>
 #include <cstdint>
 #include <list>
 #include <mutex>
 #include <queue>
-#include <utility>
-#include <variant>
+#include <vector>
 
 namespace N503::Renderer2D::Message
 {
@@ -79,6 +77,9 @@ namespace N503::Renderer2D::Message
         [[nodiscard]]
         auto GetWakeupEventHandle() const -> HANDLE;
 
+        [[nodiscard]]
+        auto HasCongestion(const float threshold = 0.8f) const noexcept -> bool;
+
     private:
         /// @brief
         struct Buffer
@@ -94,9 +95,11 @@ namespace N503::Renderer2D::Message
 
         std::uint32_t m_BufferIndex{ 0 };
 
+        std::condition_variable m_BufferExchanged;
+
         wil::unique_event_nothrow m_WakeupEvent{ ::CreateEventW(nullptr, FALSE, FALSE, nullptr) };
 
         std::mutex m_Mutex;
     };
 
-} // namespace N503::Renderer2D::Message
+} // namespace N503::Core::Message

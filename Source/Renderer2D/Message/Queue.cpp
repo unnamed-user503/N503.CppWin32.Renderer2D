@@ -22,76 +22,42 @@
 #include <format>
 #include <semaphore>
 #include <utility>
+#include <algorithm>
+#include <iterator>
+#include <mutex>
+#include <vector>
 
 namespace N503::Renderer2D::Message
 {
 
     auto Queue::Enqueue(Packet&& packet) -> void
     {
-        bool isBusy = false;
-
-#ifdef _DEBUG
         {
-            const std::size_t currentSize = m_Buffer[m_BufferIndex].Container.size();
-            const std::size_t capacity    = MaxMessageQueued;
+            std::unique_lock lock(m_Mutex);
 
-            if (currentSize >= capacity * 0.8) // 80%を超えたら警告
+            if (HasCongestion()) 
             {
-                Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{
-                    .Severity = Diagnostics::Severity::Warning,
-                    .Expected = std::format("EventQueue is congesting: CurrentSize={}, Capacity={}\n", currentSize, capacity).data(),
-                    .Position = 0,
+                m_BufferExchanged.wait(lock, [this] { 
+                    return m_Buffer[m_BufferIndex].Container.size() < MaxMessageQueued; 
                 });
             }
-        }
-#endif
-        {
-            std::scoped_lock lock(m_Mutex);
 
-            const std::size_t currentSize = m_Buffer[m_BufferIndex].Container.size();
-            const std::size_t capacity    = MaxMessageQueued;
-
-            if (currentSize >= capacity * 0.95)
-            {
-                isBusy = true;
-            }
-            else
-            {
-                m_Buffer[m_BufferIndex].Container.push(Envelope{ std::move(packet) });
-            }
+            m_Buffer[m_BufferIndex].Container.push(Envelope{ std::move(packet) });
         }
 
-        if (isBusy)
-        {
-            EnqueueSync(std::move(packet));
-        }
-        else
-        {
-            m_WakeupEvent.SetEvent();
-        }
+        m_WakeupEvent.SetEvent();
     }
 
     auto Queue::EnqueueSync(Packet&& packet) -> void
     {
         std::binary_semaphore signal{ 0 };
 
-#ifdef _DEBUG
         {
-            const std::size_t currentSize = m_Buffer[m_BufferIndex].Container.size();
-            const std::size_t capacity    = MaxMessageQueued;
+            std::unique_lock lock(m_Mutex);
 
-            if (currentSize >= capacity * 0.8) // 80%を超えたら警告
-            {
-                Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{
-                    .Severity = Diagnostics::Severity::Warning,
-                    .Expected = std::format("EventQueue is congesting: CurrentSize={}, Capacity={}\n", currentSize, capacity).data(),
-                    .Position = 0,
-                });
-            }
-        }
-#endif
-        {
-            std::scoped_lock lock(m_Mutex);
+            (void)HasCongestion();
+
+            m_BufferExchanged.wait(lock, [this] { return m_Buffer[m_BufferIndex].Container.size() < MaxMessageQueued; });
 
             m_Buffer[m_BufferIndex].Container.push(Envelope{ std::move(packet), &signal });
         }
@@ -103,92 +69,66 @@ namespace N503::Renderer2D::Message
 
     auto Queue::Enqueue(std::vector<Packet>&& packets) -> void
     {
-#ifdef _DEBUG
+        const std::size_t total = packets.size();
+        std::size_t sent        = 0;
+
+        while (sent < total)
         {
-            const std::size_t currentSize = m_Buffer[m_BufferIndex].Container.size();
-            const std::size_t capacity    = MaxMessageQueued;
+            std::unique_lock lock(m_Mutex);
 
-            if (currentSize >= capacity * 0.8) // 80%を超えたら警告
+            m_BufferExchanged.wait(lock, [this] { return m_Buffer[m_BufferIndex].Container.size() < MaxMessageQueued; });
+
+            const std::size_t current = m_Buffer[m_BufferIndex].Container.size();
+            const std::size_t remain  = (current < MaxMessageQueued) ? (MaxMessageQueued - current) : 0;
+            const std::size_t submit  = std::min(total - sent, remain);
+
+            if (submit > 0)
             {
-                Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{
-                    .Severity = Diagnostics::Severity::Warning,
-                    .Expected = std::format("EventQueue is congesting: CurrentSize={}, Capacity={}\n", currentSize, capacity).data(),
-                    .Position = 0,
-                });
-            }
-        }
-#endif
-        while (!packets.empty())
-        {
-            std::scoped_lock lock(m_Mutex);
+                auto first = packets.begin() + sent;
+                auto last  = first + submit;
 
-            const std::size_t currentSize  = m_Buffer[m_BufferIndex].Container.size();
-            const std::size_t canPushCount = (currentSize < MaxMessageQueued) ? (MaxMessageQueued - currentSize) : 0;
-            const std::size_t processCount = std::min(packets.size(), canPushCount);
-
-            if (processCount > 0)
-            {
-                auto first = packets.begin();
-                auto last  = packets.begin() + processCount;
-
-                std::vector<Packet> bundle(std::make_move_iterator(first), std::make_move_iterator(last));
-
-                packets.erase(first, last);
+                std::vector<Packet> bundle;
+                bundle.reserve(submit);
+                std::move(first, last, std::back_inserter(bundle));
 
                 m_Buffer[m_BufferIndex].Container.push(Envelope{ std::move(bundle), nullptr });
                 m_WakeupEvent.SetEvent();
-            }
 
-            if (!packets.empty())
-            {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                sent += submit;
             }
         }
     }
 
     auto Queue::EnqueueSync(std::vector<Packet>&& packets) -> void
     {
-#ifdef _DEBUG
-        {
-            const std::size_t currentSize = m_Buffer[m_BufferIndex].Container.size();
-            const std::size_t capacity    = MaxMessageQueued;
-
-            if (currentSize >= capacity * 0.8) // 80%を超えたら警告
-            {
-                Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{
-                    .Severity = Diagnostics::Severity::Warning,
-                    .Expected = std::format("EventQueue is congesting: CurrentSize={}, Capacity={}\n", currentSize, capacity).data(),
-                    .Position = 0,
-                });
-            }
-        }
-#endif
         std::binary_semaphore signal{ 0 };
 
-        while (!packets.empty())
+        const std::size_t total = packets.size();
+        std::size_t sent        = 0;
+
+        while (sent < total)
         {
-            std::scoped_lock lock(m_Mutex);
+            std::unique_lock lock(m_Mutex);
 
-            const std::size_t currentSize  = m_Buffer[m_BufferIndex].Container.size();
-            const std::size_t canPushCount = (currentSize < MaxMessageQueued) ? (MaxMessageQueued - currentSize) : 0;
-            const std::size_t processCount = std::min(packets.size(), canPushCount);
+            m_BufferExchanged.wait(lock, [this] { return m_Buffer[m_BufferIndex].Container.size() < MaxMessageQueued; });
 
-            if (processCount > 0)
+            const std::size_t current = m_Buffer[m_BufferIndex].Container.size();
+            const std::size_t remain  = (current < MaxMessageQueued) ? (MaxMessageQueued - current) : 0;
+            const std::size_t submit  = std::min(total - sent, remain);
+
+            if (submit > 0)
             {
-                auto first = packets.begin();
-                auto last  = packets.begin() + processCount;
+                auto first = packets.begin() + sent;
+                auto last  = first + submit;
 
-                std::vector<Packet> bundle(std::make_move_iterator(first), std::make_move_iterator(last));
-
-                packets.erase(first, last);
+                std::vector<Packet> bundle;
+                bundle.reserve(submit);
+                std::move(first, last, std::back_inserter(bundle));
 
                 m_Buffer[m_BufferIndex].Container.push(Envelope{ std::move(bundle), &signal });
                 m_WakeupEvent.SetEvent();
-            }
 
-            if (!packets.empty())
-            {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                sent += submit;
             }
         }
 
@@ -209,6 +149,9 @@ namespace N503::Renderer2D::Message
         // 次のバッファに切り替える
         m_BufferIndex = (m_BufferIndex + 1) % m_Buffer.size();
 
+        // バッファが切り替わったことを待機している可能性のある Enqueue 呼び出しに通知する
+        m_BufferExchanged.notify_one();
+
         return container;
     }
 
@@ -216,6 +159,26 @@ namespace N503::Renderer2D::Message
     auto Queue::GetWakeupEventHandle() const -> HANDLE
     {
         return m_WakeupEvent.get();
+    }
+
+    [[nodiscard]]
+    auto Queue::HasCongestion(const float threshold) const noexcept -> bool
+    {
+#ifdef _DEBUG
+        const std::size_t currentSize = m_Buffer[m_BufferIndex].Container.size();
+        const std::size_t capacity    = MaxMessageQueued;
+        const bool isCongested        = currentSize >= static_cast<std::size_t>(capacity * threshold);
+
+        if (isCongested)
+        {
+            Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{
+                .Severity = Diagnostics::Severity::Warning,
+                .Expected = std::format("EventQueue is congesting: CurrentSize={}, Capacity={}\n", currentSize, capacity).data(),
+                .Position = 0,
+            });
+        }
+#endif
+        return isCongested;
     }
 
 } // namespace N503::Core::Message
