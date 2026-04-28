@@ -23,6 +23,7 @@ namespace N503::Renderer2D::Message::Packets
 
     auto CreateSprite::operator()(Message::Context& context) const -> void
     {
+        // ResourceContainerにリソースを追加し、リソースハンドルを取得する
         auto handle = context.ResourceContainer.Add(Path);
 
         if (!handle)
@@ -30,6 +31,7 @@ namespace N503::Renderer2D::Message::Packets
             return;
         }
 
+        // リソースハンドルを使用して、リソースコンテナからリソースエントリを取得する
         auto resource = context.ResourceContainer.Get(handle);
 
         if (!resource)
@@ -39,21 +41,25 @@ namespace N503::Renderer2D::Message::Packets
 
         try
         {
+            // レジストリにエンティティを作成し、TransformコンポーネントとSpriteコンポーネントを追加する
             auto entity = context.Registry.CreateEntity();
 
+            // Transformコンポーネントを追加する
             auto& transform    = context.Registry.AddComponent(entity, System::Transform{});
             transform.X        = 0.0f;
             transform.Y        = 0.0f;
-            transform.ScaleX   = 1.0f;
-            transform.ScaleY   = 1.0f;
+            transform.ScaleX   = 0.0f;
+            transform.ScaleY   = 0.0f;
             transform.Rotation = 0.0f;
 
+            // Spriteコンポーネントを追加する
             auto& sprite                  = context.Registry.AddComponent(entity, System::Sprite{ handle });
             sprite.DestinationRect.left   = 0.0f;
             sprite.DestinationRect.top    = 0.0f;
             sprite.DestinationRect.right  = static_cast<float>(resource->Pixels.Width);
             sprite.DestinationRect.bottom = static_cast<float>(resource->Pixels.Height);
 
+            // CreateSpriteパケットのResultにエンティティIDを書き込む
             *Result = entity;
         }
         catch (...)

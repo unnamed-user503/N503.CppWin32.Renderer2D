@@ -26,7 +26,32 @@ namespace N503::Renderer2D::System
             auto& transform = registry.GetComponent<Transform>(entity);
             auto& text      = registry.GetComponent<Text>(entity);
 
-            if (text.TextLayout)
+            if (text.Content.empty())
+            {
+                continue;
+            }
+
+            if (!text.TextFormat)
+            {
+                text.TextFormat = context.GetResourceCache().GetOrCreateTextFormat(text.FontName, text.FontSize);
+
+                if (!text.TextFormat)
+                {
+                    continue;
+                }
+            }
+
+            if (!text.TextLayout)
+            {
+                text.TextLayout = context.GetResourceCache().GetOrCreateTextLayout(text.Content, text.TextFormat);
+            }
+
+            if (!text.Brush)
+            {
+                text.Brush = context.GetResourceCache().GetOrCreateBrush({ text.Color.r, text.Color.g, text.Color.b, text.Color.a });
+            }
+
+            if (text.TextLayout && text.Brush)
             {
                 context.DrawTextLayout({ transform.X, transform.Y }, text.TextLayout, text.Brush);
             }

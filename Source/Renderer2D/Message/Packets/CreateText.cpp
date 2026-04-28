@@ -21,29 +21,31 @@
 namespace N503::Renderer2D::Message::Packets
 {
 
+    namespace
+    {
+        auto TranscodeUtf8ToWide(const std::string_view utf8) -> std::wstring
+        {
+            if (utf8.empty())
+            {
+                return {};
+            }
+
+            int desired = ::MultiByteToWideChar(CP_UTF8, 0, utf8.data(), -1, nullptr, 0);
+            if (desired == 0)
+            {
+                return {};
+            }
+
+            std::wstring result(desired, 0);
+            ::MultiByteToWideChar(CP_UTF8, 0, utf8.data(), -1, &result[0], desired);
+
+            result.resize(desired - 1);
+            return result;
+        }
+    } // namespace
+
     auto CreateText::operator()(Message::Context& context) const -> void
     {
-        auto textFormat = context.DeviceContext.GetResourceCache().GetOrCreateTextFormat(FontName, FontSize);
-
-        if (!textFormat)
-        {
-            return;
-        }
-
-        auto textLayout = context.DeviceContext.GetResourceCache().GetOrCreateTextLayout(Text, textFormat);
-
-        if (!textLayout)
-        {
-            return;
-        }
-
-        auto brush = context.DeviceContext.GetResourceCache().GetOrCreateBrush(Color);
-
-        if (!textLayout)
-        {
-            return;
-        }
-
         try
         {
             auto entity = context.Registry.CreateEntity();
@@ -51,14 +53,17 @@ namespace N503::Renderer2D::Message::Packets
             auto& transform    = context.Registry.AddComponent(entity, System::Transform{});
             transform.X        = 0.0f;
             transform.Y        = 0.0f;
-            transform.ScaleX   = 1.0f;
-            transform.ScaleY   = 1.0f;
+            transform.ScaleX   = 0.0f;
+            transform.ScaleY   = 0.0f;
             transform.Rotation = 0.0f;
 
             auto& text      = context.Registry.AddComponent(entity, System::Text{});
-            text.Brush      = brush;
-            text.TextFormat = textFormat;
-            text.TextLayout = textLayout;
+            text.FontName   = TranscodeUtf8ToWide(FontName);
+            text.FontSize   = FontSize;
+            text.Color      = D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f);
+            text.Brush      = nullptr;
+            text.TextFormat = nullptr;
+            text.TextLayout = nullptr;
             text.IsDirty    = true;
             text.Content    = L"Hello";
 

@@ -49,7 +49,11 @@ namespace N503::Renderer2D::Device
 
         auto CreateTextFormat(const std::string_view fontName, const float fontSize) -> wil::com_ptr<IDWriteTextFormat>;
 
+        auto CreateTextFormat(const std::wstring_view fontName, const float fontSize) -> wil::com_ptr<IDWriteTextFormat>;
+
         auto CreateTextLayout(const std::string_view text, wil::com_ptr<IDWriteTextFormat> textFormat) -> wil::com_ptr<IDWriteTextLayout>;
+
+        auto CreateTextLayout(const std::wstring_view text, wil::com_ptr<IDWriteTextFormat> textFormat) -> wil::com_ptr<IDWriteTextLayout>;
 
         auto DrawBitmap(wil::com_ptr<ID2D1Bitmap1> bitmap, const D2D1_RECT_F destination) -> void;
 

@@ -69,8 +69,7 @@ namespace N503::Renderer2D::Device::Resource
         if (m_Bitmaps.find(key) == m_Bitmaps.end())
         {
 #ifdef _DEBUG
-            auto log = std::format("[Renderer2D] <Device::Resource::Cache>: CreateBitmap for ResourceID={}", static_cast<std::uint64_t>(handle.ID));
-            Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{ Diagnostics::Severity::Verbose, log });
+            Engine::GetInstance().GetDiagnosticsSink().Verbose(std::format("[Renderer2D] <Device::Resource::Cache>: CreateBitmap for ResourceID={}", static_cast<std::uint64_t>(handle.ID)));
 #endif
             auto bitmap = m_DeviceContext.CreateBitmap(pixels);
 
@@ -97,8 +96,7 @@ namespace N503::Renderer2D::Device::Resource
         if (m_Brushes.find(key) == m_Brushes.end())
         {
 #ifdef _DEBUG
-            auto log = std::format("[Renderer2D] <Device::Resource::Cache>: CreateBrush for Color={}", key);
-            Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{ Diagnostics::Severity::Verbose, log });
+            Engine::GetInstance().GetDiagnosticsSink().Verbose(std::format("[Renderer2D] <Device::Resource::Cache>: CreateBrush for Color={}", key));
 #endif
             auto brush = m_DeviceContext.CreateSolidColorBrush(color);
 
@@ -115,12 +113,17 @@ namespace N503::Renderer2D::Device::Resource
 
     auto Cache::GetOrCreateTextFormat(std::string_view fontName, float fontSize) -> wil::com_ptr<IDWriteTextFormat>
     {
-        const auto key = TranscodeUtf8ToWide(fontName) + L"_" + std::to_wstring(fontSize);
+        return GetOrCreateTextFormat(TranscodeUtf8ToWide(fontName), fontSize);
+    }
+
+    auto Cache::GetOrCreateTextFormat(std::wstring_view fontName, float fontSize) -> wil::com_ptr<IDWriteTextFormat>
+    {
+        const auto key = std::wstring(fontName) + L"_" + std::to_wstring(fontSize);
 
         if (m_TextFormats.find(key) == m_TextFormats.end())
         {
 #ifdef _DEBUG
-            auto log = std::format("[Renderer2D] <Device::Resource::Cache>: CreateTextFormat for Key={}", fontName);
+            auto log = std::format(L"[Renderer2D] <Device::Resource::Cache>: CreateTextFormat for Key={}", fontName);
             Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{ Diagnostics::Severity::Verbose, log });
 #endif
             auto textFormat = m_DeviceContext.CreateTextFormat(fontName, fontSize);
@@ -138,13 +141,17 @@ namespace N503::Renderer2D::Device::Resource
 
     auto Cache::GetOrCreateTextLayout(const std::string_view text, wil::com_ptr<IDWriteTextFormat> textFormat) -> wil::com_ptr<IDWriteTextLayout>
     {
-        const auto key = TranscodeUtf8ToWide(text) + L"_" + std::to_wstring(reinterpret_cast<uintptr_t>(textFormat.get()));
+        return GetOrCreateTextLayout(TranscodeUtf8ToWide(text), textFormat);
+    }
+
+    auto Cache::GetOrCreateTextLayout(const std::wstring_view text, wil::com_ptr<IDWriteTextFormat> textFormat) -> wil::com_ptr<IDWriteTextLayout>
+    {
+        const auto key = std::wstring(text) + L"_" + std::to_wstring(reinterpret_cast<uintptr_t>(textFormat.get()));
 
         if (m_TextLayouts.find(key) == m_TextLayouts.end())
         {
 #ifdef _DEBUG
-            auto log = std::format("[Renderer2D] <Device::Resource::Cache>: CreateTextLayout for Key={}", text);
-            Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{ Diagnostics::Severity::Verbose, log });
+            Engine::GetInstance().GetDiagnosticsSink().Verbose(std::format(L"[Renderer2D] <Device::Resource::Cache>: CreateTextLayout for Key={}", text));
 #endif
             auto textLayout = m_DeviceContext.CreateTextLayout(text, textFormat);
 

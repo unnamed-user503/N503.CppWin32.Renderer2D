@@ -169,11 +169,7 @@ namespace N503::Renderer2D::Message
 
         if (isCongested)
         {
-            Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{
-                .Severity = Diagnostics::Severity::Warning,
-                .Expected = std::format("EventQueue is congesting: CurrentSize={}, Capacity={}\n", currentSize, capacity).data(),
-                .Position = 0,
-            });
+            Engine::GetInstance().GetDiagnosticsSink().Warning(std::format("EventQueue is congesting: CurrentSize={}, Capacity={}\n", currentSize, capacity).data());
         }
 #endif
         return isCongested;

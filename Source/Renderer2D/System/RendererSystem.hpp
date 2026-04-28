@@ -38,8 +38,6 @@ namespace N503::Renderer2D::System
         };
 
     public:
-        RendererSystem();
-
         auto Update(Registry& registry, Device::Context& context) -> void;
 
     private:

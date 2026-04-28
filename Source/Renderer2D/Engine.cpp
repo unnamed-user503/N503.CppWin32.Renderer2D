@@ -106,13 +106,7 @@ namespace N503::Renderer2D
     {
         if (!::PostThreadMessage(::GetThreadId(m_RendererThread.native_handle()), WM_QUIT, 0, 0))
         {
-            const Diagnostics::Entry entry{
-                .Severity = Diagnostics::Severity::Error,
-                .Expected = std::format("PostThreadMessage failed: Reason={}, Handle={}\n", ::GetLastError(), m_RendererThread.native_handle()).data(),
-                .Position = 0
-            };
-
-            m_DiagnosticsSink.AddEntry(entry);
+            m_DiagnosticsSink.Error(std::format(L"PostThreadMessage failed: Reason={}, Handle={}\n", ::GetLastError(), m_RendererThread.native_handle()).data());
         }
     }
 
@@ -217,13 +211,13 @@ namespace N503::Renderer2D
             // コマンドリストにコマンドが存在する場合は、デバイスコンテキストを使用してコマンドを実行し、レンダリングターゲットを提示します。
             if (deviceContext->BeginDraw({ 0.1f, 0.2f, 0.4f, 1.0f }))
             {
-                auto start = std::chrono::steady_clock::now();
-
                 spriteSystem->Update(*m_SystemRegistry, *deviceContext, *resources);
                 rendererSystem->Update(*m_SystemRegistry, *deviceContext);
-                textSystem->Update(*m_SystemRegistry, *deviceContext);
 
+                auto start = std::chrono::steady_clock::now();
+                textSystem->Update(*m_SystemRegistry, *deviceContext);
                 auto end = std::chrono::steady_clock::now();
+
                 std::cout << "[Renderer2D] <Profile> : " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " us\n";
 
                 const auto endDrawResult = deviceContext->EndDraw();

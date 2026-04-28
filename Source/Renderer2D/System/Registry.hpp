@@ -125,6 +125,11 @@ namespace N503::Renderer2D::System
 
         auto DestroyEntity(Entity entity) -> void;
 
+        auto GetAvailableEntityCount() const -> std::size_t
+        {
+            return m_AvailableEntityIds.size();
+        }
+
         template <typename T> auto AddComponent(Entity entity, T&& component) -> T&
         {
             const auto index = ToArrayIndex(entity);

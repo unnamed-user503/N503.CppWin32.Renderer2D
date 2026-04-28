@@ -99,6 +99,12 @@ namespace N503::Renderer2D::System
     {
         std::wstring Content;
 
+        std::wstring FontName;
+
+        float FontSize{ 0.0f };
+
+        D2D1_COLOR_F Color;
+
         wil::com_ptr<IDWriteTextFormat> TextFormat;
 
         wil::com_ptr<IDWriteTextLayout> TextLayout;

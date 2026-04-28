@@ -135,10 +135,15 @@ namespace N503::Renderer2D::Device
 
     auto Context::CreateTextFormat(const std::string_view fontName, const float fontSize) -> wil::com_ptr<IDWriteTextFormat>
     {
+        return CreateTextFormat(TranscodeUtf8ToWide(fontName), fontSize);
+    }
+
+    auto Context::CreateTextFormat(const std::wstring_view fontName, const float fontSize) -> wil::com_ptr<IDWriteTextFormat>
+    {
         wil::com_ptr<IDWriteTextFormat> textFormat;
 
         auto hr = m_DWriteFactory->CreateTextFormat(
-            TranscodeUtf8ToWide(fontName).c_str(),
+            fontName.data(),
             nullptr,
             DWRITE_FONT_WEIGHT_NORMAL,
             DWRITE_FONT_STYLE_NORMAL,
@@ -158,11 +163,14 @@ namespace N503::Renderer2D::Device
 
     auto Context::CreateTextLayout(const std::string_view text, wil::com_ptr<IDWriteTextFormat> textFormat) -> wil::com_ptr<IDWriteTextLayout>
     {
+        return CreateTextLayout(TranscodeUtf8ToWide(text), textFormat);
+    }
+
+    auto Context::CreateTextLayout(const std::wstring_view text, wil::com_ptr<IDWriteTextFormat> textFormat) -> wil::com_ptr<IDWriteTextLayout>
+    {
         wil::com_ptr<IDWriteTextLayout> textLayout;
 
-        auto wide = TranscodeUtf8ToWide(text);
-
-        auto hr = m_DWriteFactory->CreateTextLayout(wide.data(), static_cast<UINT32>(wide.length()), textFormat.get(), 1280.0f, 720.0f, textLayout.put());
+        auto hr = m_DWriteFactory->CreateTextLayout(text.data(), static_cast<UINT32>(text.length()), textFormat.get(), FLT_MAX, FLT_MAX, textLayout.put());
 
         if (FAILED(hr))
         {

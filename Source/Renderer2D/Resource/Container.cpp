@@ -95,8 +95,7 @@ namespace N503::Renderer2D::Resource
         m_AvailableHandles.pop_back();
 
 #ifdef _DEBUG
-        auto log = std::format("[Renderer2D] <Resource::Container>: Add to ResourceID={}", static_cast<std::uint64_t>(handle.ID));
-        Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{ Diagnostics::Severity::Verbose, log });
+        Engine::GetInstance().GetDiagnosticsSink().Verbose(std::format("[Renderer2D] <Resource::Container>: Add to ResourceID={}", static_cast<std::uint64_t>(handle.ID)));
 #endif
 
         return handle;

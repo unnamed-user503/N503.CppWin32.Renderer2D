@@ -15,16 +15,9 @@
 // 5. Windows Headers
 
 // 6. C++ Standard Libraries
-#include <algorithm>
-#include <format>
-#include <iostream>
 
 namespace N503::Renderer2D::System
 {
-
-    RendererSystem::RendererSystem()
-    {
-    }
 
     auto RendererSystem::Update(Registry& registry, Device::Context& context) -> void
     {
@@ -40,6 +33,7 @@ namespace N503::Renderer2D::System
                 continue;
             }
 
+            // Transformが変更された場合のみ、トランスフォームキャッシュを更新する
             if (transform.IsDirty)
             {
                 m_TransformCache[entity] = D2D1::Matrix3x2F::Translation(-sprite.DestinationRect.right * 0.5f, -sprite.DestinationRect.bottom * 0.5f) *
@@ -48,16 +42,22 @@ namespace N503::Renderer2D::System
                 transform.IsDirty = false;
             }
 
+            // RenderGroupごとにDrawCommandを振り分ける
             renderGroup[static_cast<size_t>(sprite.Group)].emplace_back(DrawCommand{
-                .Bitmap = sprite.Bitmap.get(), .DestinationRect = sprite.DestinationRect, .Matrix = m_TransformCache[entity] });
+                .Bitmap          = sprite.Bitmap.get(),
+                .DestinationRect = sprite.DestinationRect,
+                .Matrix          = m_TransformCache[entity],
+            });
         }
 
         auto d2dContext3 = context.GetD2DContext3();
         auto spriteBatch = context.GetSpriteBatch();
 
-        const auto oldAntialiasMode = d2dContext3->GetAntialiasMode();
+        // スプライトバッチはアンチエイリアスが効かないため、アンチエイリアスモードを切り替える
+        const auto beforeAntialiasMode = d2dContext3->GetAntialiasMode();
         d2dContext3->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
 
+        // RenderGroupの順番に描画する
         for (int i = 0; i < static_cast<int>(RenderGroup::Threshold); ++i)
         {
             if (renderGroup[i].empty())
@@ -93,8 +93,10 @@ namespace N503::Renderer2D::System
             }
         }
 
-        d2dContext3->SetAntialiasMode(oldAntialiasMode);
+        // アンチエイリアスモードを元に戻す
+        d2dContext3->SetAntialiasMode(beforeAntialiasMode);
 
+        // 描画後はトランスフォームをリセットする
         context.SetTransform(D2D1::Matrix3x2F::Identity());
     }
 

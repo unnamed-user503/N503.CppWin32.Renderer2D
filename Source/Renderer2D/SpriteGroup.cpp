@@ -32,12 +32,21 @@ namespace N503::Renderer2D
 
     SpriteGroup::SpriteGroup(const std::string_view path, std::size_t count)
     {
+        if (Engine::GetInstance().GetSystemRegistry().GetAvailableEntityCount() < count)
+        {
+            return;
+        }
+
         m_Entity = std::make_unique<Entity>();
+
+        // 事前にIDのサイズを確保しておくことで、CreateSpriteパケットのResultに直接IDを書き込めるようにする
         m_Entity->ID.resize(count);
 
+        // CreateSpriteパケットを一括で送信するための準備
         std::vector<Message::Packet> packets;
         packets.reserve(count);
 
+        // CreateSpriteパケットを作成し、ResultにIDの書き込み先を指定する
         for (std::size_t i = 0; i < count; ++i)
         {
             auto packet = Message::Packets::CreateSprite{
@@ -48,6 +57,7 @@ namespace N503::Renderer2D
             packets.push_back(std::move(packet));
         }
 
+        // パケットを送信する前にエンジンが起動していない場合は起動する
         Engine::GetInstance().Start();
         Engine::GetInstance().GetMessageQueue().EnqueueSync(std::move(packets));
     }
@@ -59,9 +69,11 @@ namespace N503::Renderer2D
             return;
         }
 
+        // DestroyEntityパケットを一括で送信するための準備
         std::vector<Message::Packet> packets;
         packets.reserve(m_Entity->ID.size());
 
+        // DestroyEntityパケットを作成する
         for (std::size_t i = 0; i < m_Entity->ID.size(); ++i)
         {
             auto packet = Message::Packets::DestroyEntity{
@@ -81,6 +93,7 @@ namespace N503::Renderer2D
             return;
         }
 
+        // Transformの変更が必要なスプライトに対してのみ、SetTransformパケットを作成して送信するための準備
         std::vector<Message::Packet> packets;
         packets.reserve(m_Entity->ID.size());
 
@@ -88,6 +101,7 @@ namespace N503::Renderer2D
         {
             Renderer2D::Transform transform{};
 
+            // デリゲートを呼び出して、Transformの変更が必要かどうかを判断する
             auto isDirty = delegate(i, transform);
 
             if (!isDirty)
@@ -95,6 +109,7 @@ namespace N503::Renderer2D
                 continue;
             }
 
+            // Transformが変更された場合のみ、SetTransformパケットを作成して送信する
             auto packet = Message::Packets::SetTransform{
                 .ID        = m_Entity->ID[i],
                 .Transform = std::move(transform),
