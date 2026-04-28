@@ -85,7 +85,8 @@ namespace N503::Renderer2D::Message
                 Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{
                     .Severity = Diagnostics::Severity::Warning,
                     .Expected = std::format("EventQueue is congesting: CurrentSize={}, Capacity={}\n", currentSize, capacity).data(),
-                    .Position = 0 });
+                    .Position = 0,
+                });
             }
         }
 #endif
@@ -102,6 +103,21 @@ namespace N503::Renderer2D::Message
 
     auto Queue::Enqueue(std::vector<Packet>&& packets) -> void
     {
+#ifdef _DEBUG
+        {
+            const std::size_t currentSize = m_Buffer[m_BufferIndex].Container.size();
+            const std::size_t capacity    = MaxMessageQueued;
+
+            if (currentSize >= capacity * 0.8) // 80%を超えたら警告
+            {
+                Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{
+                    .Severity = Diagnostics::Severity::Warning,
+                    .Expected = std::format("EventQueue is congesting: CurrentSize={}, Capacity={}\n", currentSize, capacity).data(),
+                    .Position = 0,
+                });
+            }
+        }
+#endif
         while (!packets.empty())
         {
             std::scoped_lock lock(m_Mutex);
@@ -132,6 +148,21 @@ namespace N503::Renderer2D::Message
 
     auto Queue::EnqueueSync(std::vector<Packet>&& packets) -> void
     {
+#ifdef _DEBUG
+        {
+            const std::size_t currentSize = m_Buffer[m_BufferIndex].Container.size();
+            const std::size_t capacity    = MaxMessageQueued;
+
+            if (currentSize >= capacity * 0.8) // 80%を超えたら警告
+            {
+                Engine::GetInstance().GetDiagnosticsSink().AddEntry(Diagnostics::Entry{
+                    .Severity = Diagnostics::Severity::Warning,
+                    .Expected = std::format("EventQueue is congesting: CurrentSize={}, Capacity={}\n", currentSize, capacity).data(),
+                    .Position = 0,
+                });
+            }
+        }
+#endif
         std::binary_semaphore signal{ 0 };
 
         while (!packets.empty())
@@ -164,31 +195,27 @@ namespace N503::Renderer2D::Message
         signal.acquire();
     }
 
-    /// @brief
-    /// @return
     [[nodiscard]]
     auto Queue::PopAll() -> Container
     {
         std::scoped_lock lock(m_Mutex);
 
-        // UIスレッドで溜めたデータを「Allocatorごと」奪い去る
+        // 現在のバッファからコンテナをムーブして取得する
         auto container = std::move(m_Buffer[m_BufferIndex].Container);
 
-        // 空になった場所に、正しい Allocator（Storageへのポインタ）を再装填
+        // 古いコンテナは破棄されるため、Allocator を再利用して新しいコンテナを構築する
         m_Buffer[m_BufferIndex].Container = Container{ m_Buffer[m_BufferIndex].Allocator };
 
-        // 次の Push 用にインデックスを切り替える
+        // 次のバッファに切り替える
         m_BufferIndex = (m_BufferIndex + 1) % m_Buffer.size();
 
         return container;
     }
 
-    /// @brief
-    /// @return
     [[nodiscard]]
     auto Queue::GetWakeupEventHandle() const -> HANDLE
     {
         return m_WakeupEvent.get();
     }
 
-} // namespace N503::Renderer2D::Message
+} // namespace N503::Core::Message

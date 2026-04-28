@@ -54,38 +54,6 @@ namespace N503::Renderer2D::Message
         using Container = std::queue<Element, Strategy>;
 
     public:
-        template <typename TPacket> class MessageBorrower
-        {
-        public:
-            MessageBorrower(std::unique_lock<std::mutex>&& lock, Container& queue) : m_Lock(std::move(lock))
-            {
-                if (!queue.empty() && std::holds_alternative<TPacket>(queue.back().Packet))
-                {
-                    m_Target = &std::get_if<TPacket>(queue.back().Packets.back());
-                }
-            }
-
-            MessageBorrower(const MessageBorrower&) = delete;
-
-            auto operator=(const MessageBorrower&) -> MessageBorrower& = delete;
-
-            auto operator->() -> TPacket*
-            {
-                return m_Target;
-            }
-
-            explicit operator bool() const
-            {
-                return m_Target != nullptr;
-            }
-
-        private:
-            std::unique_lock<std::mutex> m_Lock;
-
-            TPacket* m_Target = nullptr;
-        };
-
-    public:
         Queue() = default;
 
         Queue(const Queue&) = delete;
@@ -110,16 +78,6 @@ namespace N503::Renderer2D::Message
 
         [[nodiscard]]
         auto GetWakeupEventHandle() const -> HANDLE;
-
-    public:
-        template <typename TDataType> auto TryBorrowBack() -> MessageBorrower<TDataType>
-        {
-            // ロックを奪取する
-            std::unique_lock<std::mutex> lock{ m_Mutex };
-
-            // ロックした状態で Container を特定し、lock ごと Borrower に渡す
-            return MessageBorrower<TDataType>{ std::move(lock), m_Buffer[m_BufferIndex].Container };
-        }
 
     private:
         /// @brief
