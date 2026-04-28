@@ -18,38 +18,38 @@ namespace N503::Renderer2D
 
     struct RectF
     {
-        float X;
+        float X{ 0.0f };
 
-        float Y;
+        float Y{ 0.0f };
 
-        float Width;
+        float Width{ 0.0f };
 
-        float Height;
+        float Height{ 0.0f };
     };
 
     struct PointF
     {
-        float X;
+        float X{ 0.0f };
 
-        float Y;
+        float Y{ 0.0f };
     };
 
     struct SizeF
     {
-        float Width;
+        float Width{ 0.0f };
 
-        float Height;
+        float Height{ 0.0f };
     };
 
     struct ColorF
     {
-        float Red;
+        float Red{ 0.0f };
 
-        float Green;
+        float Green{ 0.0f };
 
-        float Blue;
+        float Blue{ 0.0f };
 
-        float Alpha;
+        float Alpha{ 0.0f };
     };
 
     struct Transform
@@ -67,9 +67,9 @@ namespace N503::Renderer2D
 
         struct
         {
-            float X{ 1.0f };
+            float X{ 0.0f };
 
-            float Y{ 1.0f };
+            float Y{ 0.0f };
         } Scale;
     };
 
@@ -78,6 +78,16 @@ namespace N503::Renderer2D
         Unknown = 0,
 
         B8G8R8A8_UNORM,
+    };
+
+    enum class RenderGroup : std::uint8_t
+    {
+        Background = 0,
+        World,
+        Normal,
+        Effect,
+        UI,
+        Threshold,
     };
 
     namespace Handle

@@ -34,7 +34,6 @@ namespace N503::Renderer2D
     {
         m_Entity = std::make_unique<Entity>();
         m_Entity->ID.resize(count);
-        m_Entity->Transforms.resize(count);
 
         std::vector<Message::Packet> packets;
         packets.reserve(count);
@@ -75,7 +74,7 @@ namespace N503::Renderer2D
         Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packets));
     }
 
-    auto SpriteGroup::SetTransform(std::function<bool(Transform&)> delegate) -> void
+    auto SpriteGroup::SetTransform(std::function<bool(const std::uint64_t index, Transform&)> delegate) -> void
     {
         if (!m_Entity)
         {
@@ -87,7 +86,9 @@ namespace N503::Renderer2D
 
         for (std::size_t i = 0; i < m_Entity->ID.size(); ++i)
         {
-            auto isDirty = delegate(m_Entity->Transforms[i]);
+            Renderer2D::Transform transform{};
+
+            auto isDirty = delegate(i, transform);
 
             if (!isDirty)
             {
@@ -96,7 +97,7 @@ namespace N503::Renderer2D
 
             auto packet = Message::Packets::SetTransform{
                 .ID        = m_Entity->ID[i],
-                .Transform = m_Entity->Transforms[i],
+                .Transform = std::move(transform),
             };
 
             packets.push_back(std::move(packet));

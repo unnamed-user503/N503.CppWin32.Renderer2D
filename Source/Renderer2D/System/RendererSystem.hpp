@@ -12,7 +12,7 @@
 // 5. Windows Headers
 
 // 6. C++ Standard Libraries
-#include <array>
+#include <unordered_map>
 #include <vector>
 
 namespace N503::Renderer2D::Device
@@ -30,42 +30,20 @@ namespace N503::Renderer2D::System
 
     class RendererSystem
     {
-    public:
-        RendererSystem() = default;
-        ~RendererSystem() = default;
+        struct DrawCommand
+        {
+            ID2D1Bitmap1* Bitmap{ nullptr };
+            D2D1_RECT_F DestinationRect{};
+            D2D1_MATRIX_3X2_F Matrix{};
+        };
 
-        // メイン更新関数
+    public:
+        RendererSystem();
+
         auto Update(Registry& registry, Device::Context& context) -> void;
 
     private:
-        // 1. 各レイヤーを適切なルールで並べ替える
-        void SortLayer(Registry& registry, std::vector<Entity>& entities, RenderGroup group);
-
-        // 2. エンティティリストを走査し、同じビットマップごとにバッチを切り出す
-        void ProcessBatchRender(Registry& registry, Device::Context& context, const std::vector<Entity>& entities);
-
-        void ProcessIndividualRender(Registry& registry, Device::Context& context, const std::vector<Entity>& entities);
-
-        // 3. 実際に D2D の描画コマンドを発行する（副作用をこの関数に限定）
-        void ExecuteDrawBatch(
-            Device::Context& context,
-            ID2D1Bitmap* bitmap,
-            const std::vector<D2D1_RECT_F>& rects,
-            const std::vector<D2D1_MATRIX_3X2_F>& matrices
-        );
-
-        // 4. Transformコンポーネントから行列を再計算する
-        void UpdateSpriteTransform(Transform& transform, Sprite& sprite);
-
-    private:
-        // --- メモリ再確保を避けるためのキャッシュ用メンバ変数 ---
-        
-        // レイヤー仕分け用バケツ
-        std::array<std::vector<Entity>, (size_t)RenderGroup::Limited> m_Buckets;
-
-        // SpriteBatchに流し込むための一時バッファ
-        std::vector<D2D1_RECT_F> m_DestRects;
-        std::vector<D2D1_MATRIX_3X2_F> m_Matrices;
+        std::unordered_map<Entity, D2D1_MATRIX_3X2_F> m_TransformCache;
     };
 
 } // namespace N503::Renderer2D::System

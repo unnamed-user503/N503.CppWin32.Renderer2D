@@ -26,12 +26,7 @@ namespace N503::Renderer2D::System
         {
             auto& sprite = registry.GetComponent<Sprite>(entity);
 
-            if (!sprite.IsDirty)
-            {
-                continue;
-            }
-
-            if (!sprite.ResourceHandle || sprite.Bitmap)
+            if (sprite.Bitmap)
             {
                 continue;
             }
@@ -58,10 +53,7 @@ namespace N503::Renderer2D::System
             {
                 // ビットマップの作成に失敗した場合は、リソースハンドルを無効化する
                 sprite.ResourceHandle = { .ID = Handle::ResourceID::Invalid, .Type = Handle::ResourceType::None, .Generation = Handle::Generation::Default };
-                continue;
             }
-
-            sprite.IsDirty = false;
         }
     }
 

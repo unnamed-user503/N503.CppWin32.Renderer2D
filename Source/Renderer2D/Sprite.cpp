@@ -75,6 +75,21 @@ namespace N503::Renderer2D
     {
     }
 
+    auto Sprite::SetRenderGroup(const RenderGroup group) -> void
+    {
+        if (!m_Entity)
+        {
+            return;
+        }
+
+        auto packet = Message::Packets::SetRenderGroup{
+            .ID          = m_Entity->ID,
+            .RenderGroup = group,
+        };
+
+        Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
+    }
+
     Sprite::Sprite(Sprite&& other) = default;
 
     auto Sprite::operator=(Sprite&& other) -> Sprite& = default;

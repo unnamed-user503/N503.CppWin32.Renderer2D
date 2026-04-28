@@ -40,6 +40,8 @@ namespace N503::Renderer2D
 
         auto SetOpacity(float opacity) -> void;
 
+        auto SetRenderGroup(const RenderGroup group) -> void;
+
     public:
         struct Entity;
 

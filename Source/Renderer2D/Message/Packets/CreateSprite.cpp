@@ -48,9 +48,11 @@ namespace N503::Renderer2D::Message::Packets
             transform.ScaleY   = 1.0f;
             transform.Rotation = 0.0f;
 
-            auto& sprite  = context.Registry.AddComponent(entity, System::Sprite{ handle });
-            sprite.Width  = static_cast<float>(resource->Pixels.Width);
-            sprite.Height = static_cast<float>(resource->Pixels.Height);
+            auto& sprite                  = context.Registry.AddComponent(entity, System::Sprite{ handle });
+            sprite.DestinationRect.left   = 0.0f;
+            sprite.DestinationRect.top    = 0.0f;
+            sprite.DestinationRect.right  = static_cast<float>(resource->Pixels.Width);
+            sprite.DestinationRect.bottom = static_cast<float>(resource->Pixels.Height);
 
             *Result = entity;
         }

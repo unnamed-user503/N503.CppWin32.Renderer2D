@@ -21,8 +21,6 @@ namespace N503::Renderer2D
     struct SpriteGroup::Entity
     {
         std::vector<System::Entity> ID{};
-
-        std::vector<Transform> Transforms{};
     };
 
 } // namespace N503::Renderer2D
