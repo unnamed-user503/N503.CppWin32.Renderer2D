@@ -53,6 +53,15 @@ namespace N503::Renderer2D::System
         }
     };
 
+    template <> struct ComponentTraits<Component::Color>
+    {
+        static constexpr ComponentType Type = ComponentType::Color;
+        static auto& Get(World& world, std::size_t index)
+        {
+            return world.Colors[index];
+        }
+    };
+
     // -----------------------------------
     // View
     // -----------------------------------

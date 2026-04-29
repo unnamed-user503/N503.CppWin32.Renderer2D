@@ -5,11 +5,10 @@
 #include "Engine.hpp"
 #include "Message/Packets/CreateSprite.hpp"
 #include "Message/Packets/DestroyEntity.hpp"
+#include "Message/Packets/SetColor.hpp"
 #include "Message/Packets/SetTransform.hpp"
 #include "Message/Queue.hpp"
 
-#include "System/Entity.hpp"
-#include "System/Registry.hpp"
 
 // 2. Project Dependencies
 #include <N503/Renderer2D/Sprite.hpp>
@@ -25,6 +24,8 @@
 #include <memory>
 #include <string_view>
 #include <utility>
+#include <N503/Renderer2D/Geometry/Transform.hpp>
+#include "Message/Packets/SetRenderGroup.hpp"
 
 namespace N503::Renderer2D
 {
@@ -71,8 +72,19 @@ namespace N503::Renderer2D
         Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
     }
 
-    auto Sprite::SetOpacity(float opacity) -> void
+    auto Sprite::SetColor(const ColorF color) -> void
     {
+        if (!m_Entity)
+        {
+            return;
+        }
+
+        auto packet = Message::Packets::SetColor{
+            .ID    = m_Entity->ID,
+            .Color = { color.Red, color.Green, color.Blue, color.Alpha },
+        };
+
+        Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
     }
 
     auto Sprite::SetRenderGroup(const RenderGroup group) -> void

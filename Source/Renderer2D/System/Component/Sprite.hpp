@@ -30,17 +30,13 @@ namespace N503::Renderer2D::System::Component
 
         D2D1_RECT_F SourceRect{};
 
-        D2D1_COLOR_F Color;
-
         auto Reset() noexcept -> void
         {
             ResourceHandle = { .ID = Handle::ResourceID::Invalid, .Type = Handle::ResourceType::None, .Generation = Handle::Generation::Default };
             Bitmap.reset();
             Group           = RenderGroup::Normal;
-
             DestinationRect = {};
             SourceRect      = {};
-            Color           = {};
         }
     };
 

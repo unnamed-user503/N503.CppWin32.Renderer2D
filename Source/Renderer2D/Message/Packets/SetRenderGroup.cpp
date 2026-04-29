@@ -2,12 +2,10 @@
 #include "SetRenderGroup.hpp"
 
 // 1. Project Headers
-#include "../../Device/Context.hpp"
-#include "../../Engine.hpp"
 #include "../../Message/Context.hpp"
-#include "../../Resource/Container.hpp"
 #include "../../System/Entity.hpp"
 #include "../../System/Registry.hpp"
+
 
 // 2. Project Dependencies
 

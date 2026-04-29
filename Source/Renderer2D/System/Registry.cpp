@@ -46,6 +46,7 @@ namespace N503::Renderer2D::System
         m_World->Transforms[index].Reset();
         m_World->Sprites[index].Reset();
         m_World->Texts[index].Reset();
+        m_World->Colors[index].Reset();
 
         return entityID;
     }
@@ -67,6 +68,7 @@ namespace N503::Renderer2D::System
         m_World->Transforms[index].Reset();
         m_World->Sprites[index].Reset();
         m_World->Texts[index].Reset();
+        m_World->Colors[index].Reset();
 
         // エンティティIDを再利用可能なリストに戻す
         m_AvailableEntityIds.push_back(entity);

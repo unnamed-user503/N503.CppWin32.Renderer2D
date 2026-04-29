@@ -2,7 +2,6 @@
 #include "CreateSprite.hpp"
 
 // 1. Project Headers
-#include "../../Device/Context.hpp"
 #include "../../Message/Context.hpp"
 #include "../../Resource/Container.hpp"
 #include "../../System/Entity.hpp"
@@ -23,6 +22,12 @@ namespace N503::Renderer2D::Message::Packets
 
     auto CreateSprite::operator()(Message::Context& context) const -> void
     {
+        // レジストリにエンティティを作成するための空きがあるかどうかを確認する
+        if (context.Registry.GetAvailableEntityCount() < 1)
+        {
+            return;
+        }
+
         // ResourceContainerにリソースを追加し、リソースハンドルを取得する
         auto handle = context.ResourceContainer.Add(Path);
 
@@ -44,20 +49,18 @@ namespace N503::Renderer2D::Message::Packets
             // レジストリにエンティティを作成し、TransformコンポーネントとSpriteコンポーネントを追加する
             auto entity = context.Registry.CreateEntity();
 
-            // Transformコンポーネントを追加する
-            auto& transform    = context.Registry.AddComponent(entity, System::Component::Transform{});
-            transform.Position.X  = 0.0f;
-            transform.Position.Y  = 0.0f;
-            transform.Scale.X     = 0.0f;
-            transform.Scale.Y     = 0.0f;
-            transform.Rotation    = 0.0f;
-
             // Spriteコンポーネントを追加する
             auto& sprite                  = context.Registry.AddComponent(entity, System::Component::Sprite{ handle });
             sprite.DestinationRect.left   = 0.0f;
             sprite.DestinationRect.top    = 0.0f;
             sprite.DestinationRect.right  = static_cast<float>(resource->Pixels.Width);
             sprite.DestinationRect.bottom = static_cast<float>(resource->Pixels.Height);
+
+            // Colorコンポーネントを追加する
+            auto& color = context.Registry.AddComponent(entity, System::Component::Color{});
+
+            // Transformコンポーネントを追加する
+            auto& transform = context.Registry.AddComponent(entity, System::Component::Transform{});
 
             // CreateSpriteパケットのResultにエンティティIDを書き込む
             *Result = entity;

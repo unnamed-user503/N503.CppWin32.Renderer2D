@@ -1,11 +1,10 @@
 #include "Pch.hpp"
-#include "SetTransform.hpp"
+#include "SetColor.hpp"
 
 // 1. Project Headers
 #include "../../Message/Context.hpp"
 #include "../../System/Entity.hpp"
 #include "../../System/Registry.hpp"
-
 
 // 2. Project Dependencies
 
@@ -20,22 +19,18 @@
 namespace N503::Renderer2D::Message::Packets
 {
 
-    auto SetTransform::operator()(Context& context) const -> void
+    auto SetColor::operator()(Context& context) const -> void
     {
         if (!context.Registry.HasComponent<System::Component::Transform>(ID))
         {
             return;
         }
 
-        auto& transform = context.Registry.GetComponent<System::Component::Transform>(ID);
-
-        transform.Position.X = Transform.Position.X;
-        transform.Position.Y = Transform.Position.Y;
-        transform.Position.Z = Transform.Position.Z;
-        transform.Rotation   = Transform.Rotation;
-        transform.Scale.X    = Transform.Scale.X;
-        transform.Scale.Y    = Transform.Scale.Y;
-        transform.IsDirty  = true;
+        auto& color = context.Registry.GetComponent<System::Component::Color>(ID);
+        color.Red   = Color.Red;
+        color.Green = Color.Green;
+        color.Blue  = Color.Blue;
+        color.Alpha = Color.Alpha;
     }
 
 } // namespace N503::Renderer2D::Message::Packets

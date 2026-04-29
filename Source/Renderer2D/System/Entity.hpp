@@ -1,6 +1,7 @@
 #pragma once
 
 // 1. Project Headers
+#include "Component/Color.hpp"
 #include "Component/Sprite.hpp"
 #include "Component/Text.hpp"
 #include "Component/Transform.hpp"
@@ -26,7 +27,7 @@ namespace N503::Renderer2D::System
 
     static constexpr std::size_t MaxComponents = 4;
 
-    using Entity = std::uint32_t;
+    using Entity = std::uint16_t;
 
     [[nodiscard]]
     constexpr std::size_t ToArrayIndex(Entity entity) noexcept
@@ -39,6 +40,7 @@ namespace N503::Renderer2D::System
         Transform = 0,
         Sprite    = 1,
         Text      = 2,
+        Color     = 3,
     };
 
     // require:
@@ -54,6 +56,8 @@ namespace N503::Renderer2D::System
         std::array<Component::Sprite, MaxEntities> Sprites;
 
         std::array<Component::Text, MaxEntities> Texts;
+
+        std::array<Component::Color, MaxEntities> Colors;
     };
 
 } // namespace N503::Renderer2D::System

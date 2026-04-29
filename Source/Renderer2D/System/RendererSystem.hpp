@@ -35,13 +35,22 @@ namespace N503::Renderer2D::System
             ID2D1Bitmap1* Bitmap{ nullptr };
             D2D1_RECT_F DestinationRect{};
             D2D1_MATRIX_3X2_F Matrix{};
+            D2D1_COLOR_F Color{};
+        };
+
+        struct IdentityHash
+        {
+            auto operator()(std::uint16_t value) const -> std::size_t
+            {
+                return static_cast<std::size_t>(value);
+            }
         };
 
     public:
         auto Update(Registry& registry, Device::Context& context) -> void;
 
     private:
-        std::unordered_map<Entity, D2D1_MATRIX_3X2_F> m_TransformCache;
+        std::unordered_map<Entity, D2D1_MATRIX_3X2_F, IdentityHash> m_TransformCache;
     };
 
 } // namespace N503::Renderer2D::System

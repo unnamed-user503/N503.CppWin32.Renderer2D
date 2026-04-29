@@ -3,7 +3,6 @@
 // 1. Project Headers
 
 // 2. Project Dependencies
-#include <N503/Renderer2D/Types.hpp>
 
 // 3. WIL (Windows Implementation Library)
 

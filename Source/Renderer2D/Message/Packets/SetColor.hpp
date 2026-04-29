@@ -1,13 +1,10 @@
-#include "Pch.hpp"
-#include "DestroyEntity.hpp"
+#pragma once
 
 // 1. Project Headers
-#include "../../Message/Context.hpp"
 #include "../../System/Entity.hpp"
-#include "../../System/Registry.hpp"
-
 
 // 2. Project Dependencies
+#include <N503/Renderer2D/Types.hpp>
 
 // 3. WIL (Windows Implementation Library)
 
@@ -16,13 +13,23 @@
 // 5. Windows Headers
 
 // 6. C++ Standard Libraries
+#include <string_view>
+
+namespace N503::Renderer2D::Message
+{
+    struct Context;
+}
 
 namespace N503::Renderer2D::Message::Packets
 {
 
-    auto DestroyEntity::operator()(Context& context) const -> void
+    struct SetColor
     {
-        context.Registry.DestroyEntity(ID);
-    }
+        System::Entity ID{};
+
+        ColorF Color{};
+
+        auto operator()(Message::Context& context) const -> void;
+    };
 
 } // namespace N503::Renderer2D::Message::Packets

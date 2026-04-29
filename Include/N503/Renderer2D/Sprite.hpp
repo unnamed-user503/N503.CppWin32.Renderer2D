@@ -38,7 +38,7 @@ namespace N503::Renderer2D
     public:
         auto SetTransform(const Geometry::Transform& transform) -> void;
 
-        auto SetOpacity(float opacity) -> void;
+        auto SetColor(const ColorF color) -> void;
 
         auto SetRenderGroup(const RenderGroup group) -> void;
 

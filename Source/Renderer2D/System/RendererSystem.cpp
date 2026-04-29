@@ -27,13 +27,21 @@ namespace N503::Renderer2D::System
 
         for (auto entity : registry.GetView<Component::Transform, Sprite>())
         {
-            auto& transform = registry.GetComponent<Transform>(entity);
-            auto& sprite    = registry.GetComponent<Sprite>(entity);
+            auto& color = registry.GetComponent<Color>(entity);
+
+            if (color.Alpha <= 0.0f)
+            {
+                continue;
+            }
+
+            auto& sprite = registry.GetComponent<Sprite>(entity);
 
             if (!sprite.Bitmap)
             {
                 continue;
             }
+
+            auto& transform = registry.GetComponent<Transform>(entity);
 
             // Transformが変更された場合のみ、トランスフォームキャッシュを更新する
             if (transform.IsDirty)
@@ -49,6 +57,7 @@ namespace N503::Renderer2D::System
                 .Bitmap          = sprite.Bitmap.get(),
                 .DestinationRect = sprite.DestinationRect,
                 .Matrix          = m_TransformCache[entity],
+                .Color           = D2D1::ColorF(color.Red, color.Green, color.Blue, color.Alpha),
             });
         }
 
@@ -75,10 +84,10 @@ namespace N503::Renderer2D::System
                     1,                        // スプライト数
                     &command.DestinationRect, // 描画先
                     nullptr,                  // ソース矩形（nullptrならビットマップ全体）
-                    nullptr,                  // 色（nullptrなら白/不透明）
+                    &command.Color,           // 色（nullptrなら白/不透明）
                     &command.Matrix,          // 個別のトランスフォーム
                     sizeof(D2D1_RECT_F),      // ストライド
-                    0,                        // ストライド
+                    sizeof(D2D1_COLOR_F),     // ストライド
                     0,                        // ストライド
                     sizeof(D2D1_MATRIX_3X2_F) // ストライド
                 );
