@@ -22,6 +22,8 @@ namespace N503::Renderer2D::System
 
     auto SpriteSystem::Update(Registry& registry, Device::Context& context, Resource::Container& container) -> void
     {
+        using namespace Component;
+
         for (auto entity : registry.GetView<Sprite>())
         {
             auto& sprite = registry.GetComponent<Sprite>(entity);

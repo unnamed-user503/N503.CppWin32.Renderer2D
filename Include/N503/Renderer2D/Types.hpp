@@ -1,6 +1,11 @@
 #pragma once
 
 // 1. Project Headers
+#include <N503/Renderer2D/Geometry/Rect.hpp>
+#include <N503/Renderer2D/Geometry/Size.hpp>
+#include <N503/Renderer2D/Geometry/Point.hpp>
+#include <N503/Renderer2D/Geometry/Transform.hpp>
+#include <N503/Renderer2D/Geometry/Matrix.hpp>
 
 // 2. Project Dependencies
 
@@ -16,31 +21,6 @@
 namespace N503::Renderer2D
 {
 
-    struct RectF
-    {
-        float X{ 0.0f };
-
-        float Y{ 0.0f };
-
-        float Width{ 0.0f };
-
-        float Height{ 0.0f };
-    };
-
-    struct PointF
-    {
-        float X{ 0.0f };
-
-        float Y{ 0.0f };
-    };
-
-    struct SizeF
-    {
-        float Width{ 0.0f };
-
-        float Height{ 0.0f };
-    };
-
     struct ColorF
     {
         float Red{ 0.0f };
@@ -50,27 +30,6 @@ namespace N503::Renderer2D
         float Blue{ 0.0f };
 
         float Alpha{ 0.0f };
-    };
-
-    struct Transform
-    {
-        struct
-        {
-            float X{ 0.0f };
-
-            float Y{ 0.0f };
-
-            float Z{ 0.0f };
-        } Position;
-
-        float Rotation{ 0.0f };
-
-        struct
-        {
-            float X{ 0.0f };
-
-            float Y{ 0.0f };
-        } Scale;
     };
 
     enum class PixelFormat

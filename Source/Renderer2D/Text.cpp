@@ -28,7 +28,7 @@
 namespace N503::Renderer2D
 {
 
-    Text::Text(const std::string_view text, const std::string_view font, const float size, Renderer2D::ColorF color)
+    Text::Text(const std::string_view text, const std::string_view font, const float size, ColorF color)
     {
         m_Entity = std::make_unique<Entity>();
 
@@ -58,7 +58,7 @@ namespace N503::Renderer2D
         Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
     }
 
-    auto Text::SetTransform(const Transform& transform) -> void
+    auto Text::SetTransform(const Geometry::Transform& transform) -> void
     {
         if (!m_Entity)
         {

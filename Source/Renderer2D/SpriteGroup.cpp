@@ -86,7 +86,7 @@ namespace N503::Renderer2D
         Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packets));
     }
 
-    auto SpriteGroup::SetTransform(std::function<bool(const std::uint64_t index, Transform&)> delegate) -> void
+    auto SpriteGroup::SetTransform(std::function<bool(const std::uint64_t index, Geometry::Transform&)> delegate) -> void
     {
         if (!m_Entity)
         {
@@ -99,7 +99,7 @@ namespace N503::Renderer2D
 
         for (std::size_t i = 0; i < m_Entity->ID.size(); ++i)
         {
-            Renderer2D::Transform transform{};
+            Geometry::Transform transform{};
 
             // デリゲートを呼び出して、Transformの変更が必要かどうかを判断する
             auto isDirty = delegate(i, transform);

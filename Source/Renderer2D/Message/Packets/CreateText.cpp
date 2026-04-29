@@ -50,14 +50,15 @@ namespace N503::Renderer2D::Message::Packets
         {
             auto entity = context.Registry.CreateEntity();
 
-            auto& transform    = context.Registry.AddComponent(entity, System::Transform{});
-            transform.X        = 0.0f;
-            transform.Y        = 0.0f;
-            transform.ScaleX   = 0.0f;
-            transform.ScaleY   = 0.0f;
-            transform.Rotation = 0.0f;
+            auto& transform      = context.Registry.AddComponent(entity, System::Component::Transform{});
+            transform.Position.X = 0.0f;
+            transform.Position.Y = 0.0f;
+            transform.Rotation   = 0.0f;
+            transform.Scale.X    = 0.0f;
+            transform.Scale.Y    = 0.0f;
 
-            auto& text      = context.Registry.AddComponent(entity, System::Text{});
+            auto& text      = context.Registry.AddComponent(entity, System::Component::Text{});
+            text.Content    = TranscodeUtf8ToWide(Text);
             text.FontName   = TranscodeUtf8ToWide(FontName);
             text.FontSize   = FontSize;
             text.Color      = D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f);
@@ -65,7 +66,6 @@ namespace N503::Renderer2D::Message::Packets
             text.TextFormat = nullptr;
             text.TextLayout = nullptr;
             text.IsDirty    = true;
-            text.Content    = L"Hello";
 
             *Result = entity;
         }

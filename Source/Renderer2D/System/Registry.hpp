@@ -2,6 +2,9 @@
 
 // 1. Project Headers
 #include "Entity.hpp"
+#include "Component/Sprite.hpp"
+#include "Component/Text.hpp"
+#include "Component/Transform.hpp"
 
 // 2. Project Dependencies
 #include <N503/Renderer2D/Types.hpp>
@@ -23,7 +26,7 @@ namespace N503::Renderer2D::System
     // -----------------------------------
     template <typename T> struct ComponentTraits;
 
-    template <> struct ComponentTraits<Transform>
+    template <> struct ComponentTraits<Component::Transform>
     {
         static constexpr ComponentType Type = ComponentType::Transform;
         static auto& Get(World& world, std::size_t index)
@@ -32,7 +35,7 @@ namespace N503::Renderer2D::System
         }
     };
 
-    template <> struct ComponentTraits<Sprite>
+    template <> struct ComponentTraits<Component::Sprite>
     {
         static constexpr ComponentType Type = ComponentType::Sprite;
         static auto& Get(World& world, std::size_t index)
@@ -41,7 +44,7 @@ namespace N503::Renderer2D::System
         }
     };
 
-    template <> struct ComponentTraits<Text>
+    template <> struct ComponentTraits<Component::Text>
     {
         static constexpr ComponentType Type = ComponentType::Text;
         static auto& Get(World& world, std::size_t index)

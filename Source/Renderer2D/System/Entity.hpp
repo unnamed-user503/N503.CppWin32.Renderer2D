@@ -1,18 +1,17 @@
 #pragma once
 
 // 1. Project Headers
+#include "Component/Sprite.hpp"
+#include "Component/Text.hpp"
+#include "Component/Transform.hpp"
 
 // 2. Project Dependencies
-#include <N503/Renderer2D/Types.hpp>
 
 // 3. WIL (Windows Implementation Library)
-#include <wil/com.h>
 
 // 4. Third-party Libraries
 
 // 5. Windows Headers
-#include <d2d1_1.h>
-#include <dwrite.h>
 
 // 6. C++ Standard Libraries
 #include <array>
@@ -42,87 +41,6 @@ namespace N503::Renderer2D::System
         Text      = 2,
     };
 
-    struct Transform
-    {
-        float X{ 0.0f };
-
-        float Y{ 0.0f };
-
-        float Z{ 0.0f };
-
-        float Rotation{ 0.0f };
-
-        float ScaleX{ 0.0f };
-
-        float ScaleY{ 0.0f };
-
-        bool IsDirty{ false };
-
-        auto Reset() noexcept -> void
-        {
-            X        = 0.0f;
-            Y        = 0.0f;
-            Z        = 0.0f;
-            Rotation = 0.0f;
-            ScaleX   = 0.0f;
-            ScaleY   = 0.0f;
-            IsDirty  = false;
-        }
-    };
-
-    struct Sprite
-    {
-        Renderer2D::ResourceHandle ResourceHandle;
-
-        wil::com_ptr<ID2D1Bitmap1> Bitmap;
-
-        RenderGroup Group{ RenderGroup::Normal };
-
-        D2D1_RECT_F DestinationRect{};
-
-        D2D1_RECT_F SourceRect{};
-
-        D2D1_COLOR_F Color;
-
-        auto Reset() noexcept -> void
-        {
-            ResourceHandle = { .ID = Handle::ResourceID::Invalid, .Type = Handle::ResourceType::None, .Generation = Handle::Generation::Default };
-            Bitmap.reset();
-            Group           = RenderGroup::Normal;
-            DestinationRect = {};
-            SourceRect      = {};
-            Color           = {};
-        }
-    };
-
-    struct Text
-    {
-        std::wstring Content;
-
-        std::wstring FontName;
-
-        float FontSize{ 0.0f };
-
-        D2D1_COLOR_F Color;
-
-        wil::com_ptr<IDWriteTextFormat> TextFormat;
-
-        wil::com_ptr<IDWriteTextLayout> TextLayout;
-
-        wil::com_ptr<ID2D1SolidColorBrush> Brush;
-
-        bool IsDirty{ true };
-
-        auto Reset() noexcept -> void
-        {
-            Content.clear();
-            TextFormat.reset();
-            TextLayout.reset();
-            Brush.reset();
-            IsDirty = false;
-        }
-    };
-
     // require:
     // auto world = std::make_unique<N503::Renderer2D::System::World>();
     struct World
@@ -131,11 +49,11 @@ namespace N503::Renderer2D::System
 
         std::array<std::bitset<4>, MaxEntities> ComponentMasks;
 
-        std::array<Transform, MaxEntities> Transforms;
+        std::array<Component::Transform, MaxEntities> Transforms;
 
-        std::array<Sprite, MaxEntities> Sprites;
+        std::array<Component::Sprite, MaxEntities> Sprites;
 
-        std::array<Text, MaxEntities> Texts;
+        std::array<Component::Text, MaxEntities> Texts;
     };
 
 } // namespace N503::Renderer2D::System

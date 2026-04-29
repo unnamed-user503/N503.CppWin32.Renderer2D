@@ -45,7 +45,7 @@ namespace N503::Renderer2D::Device
     public:
         auto CreateBitmap(const Pixels::Buffer& pixels) -> wil::com_ptr<ID2D1Bitmap1>;
 
-        auto CreateSolidColorBrush(const Renderer2D::ColorF color) -> wil::com_ptr<ID2D1SolidColorBrush>;
+        auto CreateSolidColorBrush(const ColorF color) -> wil::com_ptr<ID2D1SolidColorBrush>;
 
         auto CreateTextFormat(const std::string_view fontName, const float fontSize) -> wil::com_ptr<IDWriteTextFormat>;
 
@@ -57,12 +57,12 @@ namespace N503::Renderer2D::Device
 
         auto DrawBitmap(wil::com_ptr<ID2D1Bitmap1> bitmap, const D2D1_RECT_F destination) -> void;
 
-        auto DrawTextLayout(const Renderer2D::PointF origin, wil::com_ptr<IDWriteTextLayout> textLayout, wil::com_ptr<ID2D1SolidColorBrush> brush) -> void;
+        auto DrawTextLayout(const Geometry::Point2F origin, wil::com_ptr<IDWriteTextLayout> textLayout, wil::com_ptr<ID2D1SolidColorBrush> brush) -> void;
 
         auto SetTransform(const D2D1_MATRIX_3X2_F& transform) -> void;
 
     public:
-        auto BeginDraw(const Renderer2D::ColorF clearColor) -> bool;
+        auto BeginDraw(const ColorF clearColor) -> bool;
 
         auto EndDraw() -> HRESULT;
 

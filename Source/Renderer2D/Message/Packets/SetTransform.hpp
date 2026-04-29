@@ -27,7 +27,7 @@ namespace N503::Renderer2D::Message::Packets
     {
         System::Entity ID{};
 
-        Renderer2D::Transform Transform{};
+        Geometry::Transform Transform{};
 
         auto operator()(Message::Context& context) const -> void;
     };

@@ -27,7 +27,7 @@ namespace N503::Renderer2D
             const std::string_view text,
             const std::string_view font = "MS ゴシック",
             const float size            = 24,
-            Renderer2D::ColorF color    = { 1.0f, 1.0f, 1.0f, 1.0f }
+            ColorF color      = { 1.0f, 1.0f, 1.0f, 1.0f }
         );
 
         ~Text();
@@ -41,7 +41,7 @@ namespace N503::Renderer2D
         auto operator=(Text&&) -> Text&;
 
     public:
-        auto SetTransform(const Transform& transform) -> void;
+        auto SetTransform(const Geometry::Transform& transform) -> void;
 
     public:
         struct Entity;

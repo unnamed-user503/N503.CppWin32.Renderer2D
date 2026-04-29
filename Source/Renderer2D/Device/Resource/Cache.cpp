@@ -84,7 +84,7 @@ namespace N503::Renderer2D::Device::Resource
         return m_Bitmaps[key];
     }
 
-    auto Cache::GetOrCreateBrush(const Renderer2D::ColorF color) -> wil::com_ptr<ID2D1SolidColorBrush>
+    auto Cache::GetOrCreateBrush(const ColorF color) -> wil::com_ptr<ID2D1SolidColorBrush>
     {
         // clang-format off
         const uint32_t key = (static_cast<uint32_t>(color.Red   * 255) << 24) |

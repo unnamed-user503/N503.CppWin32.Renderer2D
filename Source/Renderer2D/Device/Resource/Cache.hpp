@@ -39,7 +39,7 @@ namespace N503::Renderer2D::Device::Resource
 
         auto GetOrCreateBitmap(ResourceHandle handle, const Pixels::Buffer& pixels) -> wil::com_ptr<ID2D1Bitmap1>;
 
-        auto GetOrCreateBrush(const Renderer2D::ColorF color) -> wil::com_ptr<ID2D1SolidColorBrush>;
+        auto GetOrCreateBrush(const ColorF color) -> wil::com_ptr<ID2D1SolidColorBrush>;
 
         auto GetOrCreateTextFormat(std::string_view fontName, float fontSize) -> wil::com_ptr<IDWriteTextFormat>;
 

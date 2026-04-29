@@ -36,7 +36,7 @@ namespace N503::Renderer2D
         auto operator=(Sprite&&) -> Sprite&;
 
     public:
-        auto SetTransform(const Transform& transform) -> void;
+        auto SetTransform(const Geometry::Transform& transform) -> void;
 
         auto SetOpacity(float opacity) -> void;
 

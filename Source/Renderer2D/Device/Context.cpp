@@ -117,7 +117,7 @@ namespace N503::Renderer2D::Device
         return bitmap;
     }
 
-    auto Context::CreateSolidColorBrush(const Renderer2D::ColorF color) -> wil::com_ptr<ID2D1SolidColorBrush>
+    auto Context::CreateSolidColorBrush(const ColorF color) -> wil::com_ptr<ID2D1SolidColorBrush>
     {
         wil::com_ptr<ID2D1SolidColorBrush> solidBrush;
 
@@ -185,7 +185,7 @@ namespace N503::Renderer2D::Device
         m_D2DContext->DrawBitmap(bitmap.get(), destination);
     }
 
-    auto Device::Context::DrawTextLayout(const Renderer2D::PointF origin, wil::com_ptr<IDWriteTextLayout> textLayout, wil::com_ptr<ID2D1SolidColorBrush> brush)
+    auto Device::Context::DrawTextLayout(const Geometry::Point2F origin, wil::com_ptr<IDWriteTextLayout> textLayout, wil::com_ptr<ID2D1SolidColorBrush> brush)
         -> void
     {
         m_D2DContext->DrawTextLayout(D2D1::Point2F(origin.X, origin.Y), textLayout.get(), brush.get());
@@ -196,7 +196,7 @@ namespace N503::Renderer2D::Device
         m_D2DContext->SetTransform(transform);
     }
 
-    auto Context::BeginDraw(const Renderer2D::ColorF clearColor) -> bool
+    auto Context::BeginDraw(const ColorF clearColor) -> bool
     {
         if (!m_D2DContext)
         {

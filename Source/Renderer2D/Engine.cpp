@@ -74,9 +74,6 @@ namespace N503::Renderer2D
                 // レンダラー スレッドの初期化が完了したことを通知する
                 signal.release();
 
-                // レンダラー スレッドの初期化が完了したことを示すイベントをシグナル状態にする
-                // m_StartedEvent.SetEvent();
-
                 // COM を初期化する
                 auto coinit = wil::CoInitializeEx(COINIT_MULTITHREADED);
 
@@ -211,10 +208,9 @@ namespace N503::Renderer2D
             // コマンドリストにコマンドが存在する場合は、デバイスコンテキストを使用してコマンドを実行し、レンダリングターゲットを提示します。
             if (deviceContext->BeginDraw({ 0.1f, 0.2f, 0.4f, 1.0f }))
             {
+                auto start = std::chrono::steady_clock::now();
                 spriteSystem->Update(*m_SystemRegistry, *deviceContext, *resources);
                 rendererSystem->Update(*m_SystemRegistry, *deviceContext);
-
-                auto start = std::chrono::steady_clock::now();
                 textSystem->Update(*m_SystemRegistry, *deviceContext);
                 auto end = std::chrono::steady_clock::now();
 

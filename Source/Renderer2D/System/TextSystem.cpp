@@ -21,6 +21,8 @@ namespace N503::Renderer2D::System
 
     void TextSystem::Update(Registry& registry, Device::Context& context)
     {
+        using namespace Component;
+
         for (auto entity : registry.GetView<Transform, Text>())
         {
             auto& transform = registry.GetComponent<Transform>(entity);
@@ -53,7 +55,7 @@ namespace N503::Renderer2D::System
 
             if (text.TextLayout && text.Brush)
             {
-                context.DrawTextLayout({ transform.X, transform.Y }, text.TextLayout, text.Brush);
+                context.DrawTextLayout({ transform.Position.X, transform.Position.Y }, text.TextLayout, text.Brush);
             }
         }
     }

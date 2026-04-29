@@ -56,7 +56,7 @@ namespace N503::Renderer2D
         Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
     }
 
-    auto Sprite::SetTransform(const Transform& transform) -> void
+    auto Sprite::SetTransform(const Geometry::Transform& transform) -> void
     {
         if (!m_Entity)
         {

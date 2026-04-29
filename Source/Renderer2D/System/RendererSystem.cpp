@@ -21,9 +21,11 @@ namespace N503::Renderer2D::System
 
     auto RendererSystem::Update(Registry& registry, Device::Context& context) -> void
     {
+        using namespace Component;
+
         std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)> renderGroup;
 
-        for (auto entity : registry.GetView<Transform, Sprite>())
+        for (auto entity : registry.GetView<Component::Transform, Sprite>())
         {
             auto& transform = registry.GetComponent<Transform>(entity);
             auto& sprite    = registry.GetComponent<Sprite>(entity);
@@ -37,8 +39,8 @@ namespace N503::Renderer2D::System
             if (transform.IsDirty)
             {
                 m_TransformCache[entity] = D2D1::Matrix3x2F::Translation(-sprite.DestinationRect.right * 0.5f, -sprite.DestinationRect.bottom * 0.5f) *
-                                           D2D1::Matrix3x2F::Scale(transform.ScaleX, transform.ScaleY) * D2D1::Matrix3x2F::Rotation(transform.Rotation) *
-                                           D2D1::Matrix3x2F::Translation(transform.X, transform.Y);
+                                           D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y) * D2D1::Matrix3x2F::Rotation(transform.Rotation) *
+                                           D2D1::Matrix3x2F::Translation(transform.Position.X, transform.Position.Y);
                 transform.IsDirty = false;
             }
 

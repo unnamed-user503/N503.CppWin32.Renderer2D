@@ -24,12 +24,12 @@ namespace N503::Renderer2D::Message::Packets
 
     auto SetRenderGroup::operator()(Context& context) const -> void
     {
-        if (!context.Registry.HasComponent<System::Transform>(ID))
+        if (!context.Registry.HasComponent<System::Component::Transform>(ID))
         {
             return;
         }
 
-        auto& sprite = context.Registry.GetComponent<System::Sprite>(ID);
+        auto& sprite = context.Registry.GetComponent<System::Component::Sprite>(ID);
         sprite.Group = RenderGroup;
     }
 
