@@ -8,9 +8,7 @@
 #include "Entry.hpp"
 
 // 2. Project Dependencies
-#include <N503/Diagnostics/Entry.hpp>
-#include <N503/Diagnostics/Severity.hpp>
-#include <N503/Diagnostics/Sink.hpp>
+#include <N503/Diagnostics/Reporter.hpp>
 #include <N503/Renderer2D/Types.hpp>
 // 3. WIL (Windows Implementation Library)
 
@@ -95,7 +93,7 @@ namespace N503::Renderer2D::Resource
         m_AvailableHandles.pop_back();
 
 #ifdef _DEBUG
-        Engine::GetInstance().GetDiagnosticsSink().Verbose(std::format("[Renderer2D] <Resource::Container>: Add to ResourceID={}", static_cast<std::uint64_t>(handle.ID)));
+        Engine::GetInstance().GetDiagnosticsReporter().Verbose(std::format("[Renderer2D] <Resource::Container>: Add to ResourceID={}", static_cast<std::uint64_t>(handle.ID)));
 #endif
 
         return handle;

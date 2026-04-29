@@ -7,9 +7,7 @@
 #include "Packet.hpp"
 
 // 2. Project Dependencies
-#include <N503/Diagnostics/Entry.hpp>
-#include <N503/Diagnostics/Severity.hpp>
-#include <N503/Diagnostics/Sink.hpp>
+#include <N503/Diagnostics/Reporter.hpp>
 
 // 3. WIL (Windows Implementation Library)
 
@@ -169,7 +167,7 @@ namespace N503::Renderer2D::Message
 
         if (isCongested)
         {
-            Engine::GetInstance().GetDiagnosticsSink().Warning(std::format("EventQueue is congesting: CurrentSize={}, Capacity={}\n", currentSize, capacity).data());
+            Engine::GetInstance().GetDiagnosticsReporter().Warning(std::format("EventQueue is congesting: CurrentSize={}, Capacity={}\n", currentSize, capacity).data());
         }
 #endif
         return isCongested;

@@ -3,9 +3,7 @@
 // 1. Project Headers
 
 // 2. Project Dependencies
-#include <N503/Diagnostics/Entry.hpp>
-#include <N503/Diagnostics/Severity.hpp>
-#include <N503/Diagnostics/Sink.hpp>
+#include <N503/Diagnostics/Reporter.hpp>
 
 // 3. WIL (Windows Implementation Library)
 #include <wil/resource.h>
@@ -61,14 +59,9 @@ namespace N503::Renderer2D
             return *m_SystemRegistry;
         }
 
-        auto GetDiagnosticsSink() const -> const Diagnostics::Sink&
+        auto GetDiagnosticsReporter() -> Diagnostics::Reporter&
         {
-            return m_DiagnosticsSink;
-        }
-
-        auto GetDiagnosticsSink() -> Diagnostics::Sink&
-        {
-            return m_DiagnosticsSink;
+            return *m_DiagnosticsReporter;
         }
 
     private:
@@ -76,13 +69,13 @@ namespace N503::Renderer2D
 
         wil::unique_event m_StartedEvent{ ::CreateEventW(nullptr, TRUE, FALSE, L"Local\\N503.CppWin32.Renderer2D.Event.EngineStarted") };
 
-        Diagnostics::Sink m_DiagnosticsSink;
-
         std::unique_ptr<System::Registry> m_SystemRegistry;
 
         std::unique_ptr<Message::Queue> m_MessageQueue;
 
         std::jthread m_RendererThread;
+
+        std::unique_ptr<Diagnostics::Reporter> m_DiagnosticsReporter;
     };
 
 } // namespace N503::Renderer2D

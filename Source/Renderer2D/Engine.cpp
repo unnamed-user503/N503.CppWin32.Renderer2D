@@ -15,11 +15,7 @@
 #include "System/TextSystem.hpp"
 
 // 2. Project Dependencies
-#include <N503/Diagnostics/ConsoleSink.hpp>
-#include <N503/Diagnostics/Entry.hpp>
 #include <N503/Diagnostics/Reporter.hpp>
-#include <N503/Diagnostics/Severity.hpp>
-#include <N503/Diagnostics/Sink.hpp>
 
 // 3. WIL (Windows Implementation Library)
 #include <wil/resource.h>
@@ -52,6 +48,8 @@ namespace N503::Renderer2D
     {
         m_MessageQueue   = std::make_unique<Message::Queue>();
         m_SystemRegistry = std::make_unique<System::Registry>();
+        m_DiagnosticsReporter = std::make_unique<Diagnostics::Reporter>();
+        m_DiagnosticsReporter->AddSink(std::make_unique<Diagnostics::ConsoleSink>());
     }
 
     auto Engine::Start() -> void
@@ -103,7 +101,7 @@ namespace N503::Renderer2D
     {
         if (!::PostThreadMessage(::GetThreadId(m_RendererThread.native_handle()), WM_QUIT, 0, 0))
         {
-            m_DiagnosticsSink.Error(std::format(L"PostThreadMessage failed: Reason={}, Handle={}\n", ::GetLastError(), m_RendererThread.native_handle()).data());
+            m_DiagnosticsReporter->Error(std::format(L"PostThreadMessage failed: Reason={}, Handle={}\n", ::GetLastError(), m_RendererThread.native_handle()).data());
         }
     }
 
@@ -117,9 +115,6 @@ namespace N503::Renderer2D
 
     auto Engine::Run(const std::stop_token stopToken) -> void
     {
-        Diagnostics::Reporter diagnosticsReporter;
-        diagnosticsReporter.AddSink(std::make_shared<Diagnostics::ConsoleSink>());
-
         auto resources     = std::make_unique<Resource::Container>();
         auto deviceContext = std::make_unique<Device::Context>();
 
@@ -227,7 +222,7 @@ namespace N503::Renderer2D
                 }
             }
 
-            diagnosticsReporter.Submit(m_DiagnosticsSink);
+            m_DiagnosticsReporter->Report();
         }
     }
 
