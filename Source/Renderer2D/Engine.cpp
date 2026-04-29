@@ -143,7 +143,7 @@ namespace N503::Renderer2D
         );
 
         // OS メッセージをディスパッチするラムダ式
-        auto OSMessageDispatch = []() -> bool
+        auto ProcessMessage = []() -> bool
         {
             MSG message{};
 
@@ -194,7 +194,7 @@ namespace N503::Renderer2D
             }
             else if (result == WAIT_OBJECT_0 + count)
             {
-                if (!OSMessageDispatch())
+                if (!ProcessMessage())
                 {
                     return;
                 }
