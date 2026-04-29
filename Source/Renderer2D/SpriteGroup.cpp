@@ -49,13 +49,11 @@ namespace N503::Renderer2D
         // CreateSpriteパケットを作成し、ResultにIDの書き込み先を指定する
         for (std::size_t i = 0; i < count; ++i)
         {
-            auto packet = Message::Packets::CreateSprite{
+            packets.emplace_back(Message::Packets::CreateSprite{
                 .Result     = &m_Entity->ID[i],
                 .Path       = path,
                 .SourceRect = sourceRect
-            };
-
-            packets.push_back(std::move(packet));
+            });
         }
 
         // パケットを送信する前にエンジンが起動していない場合は起動する
@@ -77,11 +75,9 @@ namespace N503::Renderer2D
         // DestroyEntityパケットを作成する
         for (std::size_t i = 0; i < m_Entity->ID.size(); ++i)
         {
-            auto packet = Message::Packets::DestroyEntity{
+            packets.emplace_back(Message::Packets::DestroyEntity{
                 .ID = m_Entity->ID[i],
-            };
-
-            packets.push_back(std::move(packet));
+            });
         }
 
         Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packets));
@@ -111,12 +107,10 @@ namespace N503::Renderer2D
             }
 
             // Transformが変更された場合のみ、SetTransformパケットを作成して送信する
-            auto packet = Message::Packets::SetTransform{
+            packets.emplace_back(Message::Packets::SetTransform{
                 .ID        = m_Entity->ID[i],
                 .Transform = std::move(transform),
-            };
-
-            packets.push_back(std::move(packet));
+            });
         }
 
         Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packets));
@@ -146,12 +140,10 @@ namespace N503::Renderer2D
             }
 
             // Transformが変更された場合のみ、SetTransformパケットを作成して送信する
-            auto packet = Message::Packets::SetColor{
+            packets.emplace_back(Message::Packets::SetColor{
                 .ID    = m_Entity->ID[i],
                 .Color = std::move(color),
-            };
-
-            packets.push_back(std::move(packet));
+            });
         }
 
         Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packets));

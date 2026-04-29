@@ -41,6 +41,9 @@ namespace N503::Renderer2D::Resource
         // すでに同じパスのリソースが存在する場合は、そのハンドルを返します。
         if (auto it = m_Indexes.find(key); it != m_Indexes.end())
         {
+#ifdef _DEBUG
+            //Engine::GetInstance().GetDiagnosticsReporter().Verbose(std::format("[Renderer2D] <Resource::Container>: contain={}", path));
+#endif
             return it->second;
         }
 

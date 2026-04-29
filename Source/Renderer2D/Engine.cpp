@@ -49,7 +49,7 @@ namespace N503::Renderer2D
         m_MessageQueue   = std::make_unique<Message::Queue>();
         m_SystemRegistry = std::make_unique<System::Registry>();
         m_DiagnosticsReporter = std::make_unique<Diagnostics::Reporter>();
-        m_DiagnosticsReporter->AddSink(std::make_unique<Diagnostics::ConsoleSink>());
+        m_DiagnosticsReporter->AddSink(std::make_unique<Diagnostics::DebugStringSink>());
     }
 
     auto Engine::Start() -> void
@@ -69,15 +69,15 @@ namespace N503::Renderer2D
                 // スレッド名を設定する
                 ::SetThreadDescription(::GetCurrentThread(), L"N503.CppWin32.Renderer2D");
 
-                // レンダラー スレッドの初期化が完了したことを通知する
-                signal.release();
-
                 // COM を初期化する
                 auto coinit = wil::CoInitializeEx(COINIT_MULTITHREADED);
 
                 // PeekMessageWを呼び出して、レンダラースレッドのメッセージキューを作成する
                 MSG msg{};
                 ::PeekMessageW(&msg, nullptr, WM_USER, WM_USER, PM_NOREMOVE);
+
+                // レンダラー スレッドの初期化が完了したことを通知する
+                signal.release();
 
                 // レンダラースレッドを開始する
                 Run(stopToken);
