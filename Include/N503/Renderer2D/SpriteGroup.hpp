@@ -24,7 +24,7 @@ namespace N503::Renderer2D
     class N503_API SpriteGroup final
     {
     public:
-        explicit SpriteGroup(const std::string_view path, std::size_t count);
+        explicit SpriteGroup(const std::string_view path, std::size_t count, const Geometry::RectU sourceRect = {});
 
         ~SpriteGroup();
 

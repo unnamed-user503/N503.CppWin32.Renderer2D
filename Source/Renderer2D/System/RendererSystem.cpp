@@ -56,6 +56,7 @@ namespace N503::Renderer2D::System
             renderGroup[static_cast<size_t>(sprite.Group)].emplace_back(DrawCommand{
                 .Bitmap          = sprite.Bitmap.get(),
                 .DestinationRect = sprite.DestinationRect,
+                .SourceRect      = sprite.SourceRect,
                 .Matrix          = m_TransformCache[entity],
                 .Color           = D2D1::ColorF(color.Red, color.Green, color.Blue, color.Alpha),
             });
@@ -83,12 +84,12 @@ namespace N503::Renderer2D::System
                 spriteBatch->AddSprites(
                     1,                        // スプライト数
                     &command.DestinationRect, // 描画先
-                    nullptr,                  // ソース矩形（nullptrならビットマップ全体）
+                    &command.SourceRect,      // ソース矩形（nullptrならビットマップ全体）
                     &command.Color,           // 色（nullptrなら白/不透明）
                     &command.Matrix,          // 個別のトランスフォーム
                     sizeof(D2D1_RECT_F),      // ストライド
+                    sizeof(D2D1_RECT_F),      // ストライド
                     sizeof(D2D1_COLOR_F),     // ストライド
-                    0,                        // ストライド
                     sizeof(D2D1_MATRIX_3X2_F) // ストライド
                 );
             }

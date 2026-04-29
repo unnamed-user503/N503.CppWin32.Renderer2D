@@ -16,6 +16,7 @@
 // 5. Windows Headers
 
 // 6. C++ Standard Libraries
+#include <algorithm>
 
 namespace N503::Renderer2D::Message::Packets
 {
@@ -55,6 +56,11 @@ namespace N503::Renderer2D::Message::Packets
             sprite.DestinationRect.top    = 0.0f;
             sprite.DestinationRect.right  = static_cast<float>(resource->Pixels.Width);
             sprite.DestinationRect.bottom = static_cast<float>(resource->Pixels.Height);
+
+            sprite.SourceRect.left   = SourceRect.Left;
+            sprite.SourceRect.top    = SourceRect.Top;
+            sprite.SourceRect.right  = SourceRect.Right  == 0 ? static_cast<std::uint32_t>(resource->Pixels.Width)  : std::min(SourceRect.Right,  static_cast<std::uint32_t>(resource->Pixels.Width));
+            sprite.SourceRect.bottom = SourceRect.Bottom == 0 ? static_cast<std::uint32_t>(resource->Pixels.Height) : std::min(SourceRect.Bottom, static_cast<std::uint32_t>(resource->Pixels.Height));
 
             // Colorコンポーネントを追加する
             auto& color = context.Registry.AddComponent(entity, System::Component::Color{});

@@ -29,6 +29,8 @@ namespace N503::Renderer2D::Message::Packets
 
         std::string_view Path{};
 
+        Geometry::RectU SourceRect{};
+
         auto operator()(Message::Context& context) const -> void;
     };
 

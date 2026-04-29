@@ -30,13 +30,14 @@
 namespace N503::Renderer2D
 {
 
-    Sprite::Sprite(const std::string_view path)
+    Sprite::Sprite(const std::string_view path, const Geometry::RectU sourceRect)
     {
         m_Entity = std::make_unique<Entity>();
 
         auto packet = Message::Packets::CreateSprite{
-            .Result = &m_Entity->ID,
-            .Path   = path,
+            .Result     = &m_Entity->ID,
+            .Path       = path,
+            .SourceRect = sourceRect,
         };
 
         Engine::GetInstance().Start();

@@ -30,7 +30,7 @@
 namespace N503::Renderer2D
 {
 
-    SpriteGroup::SpriteGroup(const std::string_view path, std::size_t count)
+    SpriteGroup::SpriteGroup(const std::string_view path, std::size_t count, const Geometry::RectU sourceRect)
     {
         if (Engine::GetInstance().GetSystemRegistry().GetAvailableEntityCount() < count)
         {
@@ -50,8 +50,9 @@ namespace N503::Renderer2D
         for (std::size_t i = 0; i < count; ++i)
         {
             auto packet = Message::Packets::CreateSprite{
-                .Result = &m_Entity->ID[i],
-                .Path   = path,
+                .Result     = &m_Entity->ID[i],
+                .Path       = path,
+                .SourceRect = sourceRect
             };
 
             packets.push_back(std::move(packet));

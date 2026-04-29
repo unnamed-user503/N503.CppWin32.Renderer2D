@@ -28,7 +28,7 @@ namespace N503::Renderer2D::System::Component
 
         D2D1_RECT_F DestinationRect{};
 
-        D2D1_RECT_F SourceRect{};
+        D2D1_RECT_U SourceRect{};
 
         auto Reset() noexcept -> void
         {

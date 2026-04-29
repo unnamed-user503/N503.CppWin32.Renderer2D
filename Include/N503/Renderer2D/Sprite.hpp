@@ -23,7 +23,7 @@ namespace N503::Renderer2D
     class N503_API Sprite final
     {
     public:
-        explicit Sprite(const std::string_view path);
+        explicit Sprite(const std::string_view path, const Geometry::RectU sourceRect = {});
 
         ~Sprite();
 
