@@ -209,7 +209,7 @@ namespace N503::Renderer2D
                 textSystem->Update(*m_SystemRegistry, *deviceContext);
                 auto end = std::chrono::steady_clock::now();
 
-                std::cout << "[Renderer2D] <Profile> : " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " us\n";
+                m_DiagnosticsReporter->Verbose(std::format("<Profile> : {} us", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()));
 
                 const auto endDrawResult = deviceContext->EndDraw();
                 const auto presentResult = renderTarget->Present();
