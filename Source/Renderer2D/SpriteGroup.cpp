@@ -86,7 +86,7 @@ namespace N503::Renderer2D
         Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packets));
     }
 
-    auto SpriteGroup::SetTransform(std::function<bool(const std::uint64_t index, Geometry::Transform&)> delegate) -> void
+    auto SpriteGroup::SetTransform(std::function<bool(const std::uint64_t, Geometry::Transform&)> delegate) -> void
     {
         if (!m_Entity)
         {
@@ -113,6 +113,41 @@ namespace N503::Renderer2D
             auto packet = Message::Packets::SetTransform{
                 .ID        = m_Entity->ID[i],
                 .Transform = std::move(transform),
+            };
+
+            packets.push_back(std::move(packet));
+        }
+
+        Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packets));
+    }
+
+    auto SpriteGroup::SetColor(std::function<bool(const std::uint64_t, ColorF&)> delegate) -> void
+    {
+        if (!m_Entity)
+        {
+            return;
+        }
+
+        // Transformの変更が必要なスプライトに対してのみ、SetTransformパケットを作成して送信するための準備
+        std::vector<Message::Packet> packets;
+        packets.reserve(m_Entity->ID.size());
+
+        for (std::size_t i = 0; i < m_Entity->ID.size(); ++i)
+        {
+            ColorF color{};
+
+            // デリゲートを呼び出して、Transformの変更が必要かどうかを判断する
+            auto isDirty = delegate(i, color);
+
+            if (!isDirty)
+            {
+                continue;
+            }
+
+            // Transformが変更された場合のみ、SetTransformパケットを作成して送信する
+            auto packet = Message::Packets::SetColor{
+                .ID    = m_Entity->ID[i],
+                .Color = std::move(color),
             };
 
             packets.push_back(std::move(packet));
