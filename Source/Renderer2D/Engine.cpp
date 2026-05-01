@@ -165,6 +165,9 @@ namespace N503::Renderer2D
         auto waitHandles = { m_MessageQueue->GetWakeupEventHandle() };
         auto isAnyActive = true;
 
+        std::chrono::steady_clock::time_point m_lastLogTime = std::chrono::steady_clock::now();
+        std::vector<long long> m_durations;
+
         while (!stopToken.stop_requested())
         {
             HWND hwnd = nullptr;
@@ -209,7 +212,31 @@ namespace N503::Renderer2D
                 textSystem->Update(*m_SystemRegistry, *deviceContext);
                 auto end = std::chrono::steady_clock::now();
 
-                m_DiagnosticsReporter->Verbose(std::format("<Profile> : {} us", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()));
+                // 今回の経過時間(us)を保存
+                auto elapsedUs = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+                m_durations.push_back(elapsedUs);
+
+                // 前回のログ出力から16ms以上経過したかチェック
+                auto now = std::chrono::steady_clock::now();
+                auto timeSinceLastLog = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_lastLogTime).count();
+
+                if (timeSinceLastLog >= 1000 && !m_durations.empty()) {
+                    // 合計を計算
+                    long long sum = 0;
+                    for (auto d : m_durations) sum += d;
+    
+                    double average = static_cast<double>(sum) / m_durations.size();
+    
+                    // 蓄積されたデータ数がそのままFPS（1秒あたりのフレーム数）になる
+                    size_t fps = m_durations.size();
+
+                    m_DiagnosticsReporter->Verbose(std::format("<Profile> Avg: {:.2f} us | FPS: {} | Total Frames: {}", average, fps, fps));
+
+                    m_durations.clear();
+                    m_lastLogTime = now;
+                }
+
+                //m_DiagnosticsReporter->Verbose(std::format("<Profile> : {} us", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()));
 
                 const auto endDrawResult = deviceContext->EndDraw();
                 const auto presentResult = renderTarget->Present();
