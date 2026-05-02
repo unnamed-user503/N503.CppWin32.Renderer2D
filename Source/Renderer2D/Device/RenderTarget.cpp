@@ -27,7 +27,9 @@
 namespace N503::Renderer2D::Device
 {
 
-    RenderTarget::RenderTarget(Device::Context& context, HWND hwnd) : m_TargetWindow(hwnd)
+    RenderTarget::RenderTarget(Device::Context& context, HWND hwnd)
+        : m_DeviceContext(context)
+        , m_TargetWindow(hwnd)
     {
         auto d3dDevice  = context.GetD3DDevice();
         auto dxgiDevice = d3dDevice.query<IDXGIDevice>();
@@ -47,23 +49,23 @@ namespace N503::Renderer2D::Device
 
         THROW_IF_FAILED(dxgiFactory->CreateSwapChainForHwnd(d3dDevice.get(), m_TargetWindow, &description, nullptr, nullptr, m_SwapChain.put()));
 
-        wil::com_ptr<IDXGISurface> backBuffer;
-        THROW_IF_FAILED(m_SwapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.put())));
+        RECT clientRect = {};
 
-        D2D1_BITMAP_PROPERTIES1 bitmapProperties = D2D1::BitmapProperties1(
-            D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
-            D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED),
-            96.0f, // dpiX: 96に固定
-            96.0f  // dpiY: 96に固定
-        );
+        if (::GetClientRect(m_TargetWindow, &clientRect))
+        {
+            m_Width  = clientRect.right - clientRect.top;
+            m_Height = clientRect.bottom - clientRect.top;
+        }
+        else
+        {
+            m_Width  = 1280;
+            m_Height = 720;
+        }
 
-        THROW_IF_FAILED(context.GetD2DContext()->CreateBitmapFromDxgiSurface(backBuffer.get(), &bitmapProperties, m_TargetBitmap.put()));
-
-        // デバイスコンテキスト自体にも DPI をセットする
-        context.GetD2DContext()->SetDpi(96.0f, 96.0f);
+        Resize(m_Width, m_Height);
     }
 
-    auto RenderTarget::Resize(const Device::Context& context, UINT width, UINT height) -> void
+    auto RenderTarget::Resize(UINT width, UINT height) -> void
     {
         if (!m_SwapChain)
         {
@@ -74,13 +76,7 @@ namespace N503::Renderer2D::Device
         m_TargetBitmap.reset();
 
         // SwapChain のサイズ変更
-        THROW_IF_FAILED(m_SwapChain->ResizeBuffers(
-            0, // バッファ数は変更しない
-            width,
-            height,
-            DXGI_FORMAT_UNKNOWN,
-            0
-        ));
+        THROW_IF_FAILED(m_SwapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0));
 
         // 新しい BackBuffer を取得
         wil::com_ptr<IDXGISurface> backBuffer;
@@ -89,20 +85,32 @@ namespace N503::Renderer2D::Device
         // D2D Bitmap 再作成
         D2D1_BITMAP_PROPERTIES1 bitmapProperties = D2D1::BitmapProperties1(
             D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
-            D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED),
-            96.0f, // dpiX: 96に固定
-            96.0f  // dpiY: 96に固定
+            D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED)
         );
 
-        THROW_IF_FAILED(context.GetD2DContext()->CreateBitmapFromDxgiSurface(backBuffer.get(), &bitmapProperties, m_TargetBitmap.put()));
-
-        // デバイスコンテキスト自体にも DPI をセットする
-        context.GetD2DContext()->SetDpi(96.0f, 96.0f);
+        THROW_IF_FAILED(m_DeviceContext.GetD2DContext()->CreateBitmapFromDxgiSurface(backBuffer.get(), &bitmapProperties, m_TargetBitmap.put()));
     }
 
-    auto RenderTarget::Present() const noexcept -> HRESULT
+    auto RenderTarget::Present() noexcept -> HRESULT
     {
-        return m_SwapChain->Present(1, 0);
+        auto result = m_SwapChain->Present(1, 0);
+
+        m_Timer.Update([this]
+        {
+            RECT rc{};
+            if (::GetClientRect(m_TargetWindow, &rc))
+            {
+                const auto width  = static_cast<std::uint32_t>(rc.right - rc.left);
+                const auto height = static_cast<std::uint32_t>(rc.bottom - rc.top);
+
+                if (width > 0 && height > 0 && (width != m_Width || height != m_Height))
+                {
+                    Resize(width, height);
+                }
+            }
+        });
+
+        return result;
     }
 
 } // namespace N503::Renderer2D::Device
