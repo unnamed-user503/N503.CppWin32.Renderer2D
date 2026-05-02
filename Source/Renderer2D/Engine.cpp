@@ -79,6 +79,9 @@ namespace N503::Renderer2D
                 // レンダラー スレッドの初期化が完了したことを通知する
                 signal.release();
 
+                // エンジンが開始されたことを示すイベントをシグナル状態にする
+                m_IsRunning.store(true, std::memory_order_release);
+
                 // レンダラースレッドを開始する
                 Run(stopToken);
 
@@ -92,9 +95,6 @@ namespace N503::Renderer2D
 
         // レンダラースレッドが描画可能な状態になるまで待機する
         m_StartedEvent.wait();
-
-        // エンジンが開始されたことを示すイベントをシグナル状態にする
-        m_IsRunning.store(true, std::memory_order_release);
     }
 
     auto Engine::Stop() -> void
