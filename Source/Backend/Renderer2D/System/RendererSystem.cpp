@@ -7,53 +7,40 @@
 #include "Registry.hpp"
 
 // 2. Project Dependencies
-
-// 3. WIL (Windows Implementation Library)
-
-// 4. Third-party Libraries
-
-// 5. Windows Headers
-
-// 6. C++ Standard Libraries
+#include <algorithm> // std::sort のため
 
 namespace N503::Renderer2D::System
 {
-
     auto RendererSystem::Update(Registry& registry, Device::Context& context) -> void
     {
         using namespace Component;
 
-        std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)> renderGroup;
+        // RenderGroup ごとに DrawCommand を格納するバッファ
+        std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)> renderGroups;
 
+        // 1. 全エンティティを走査してコマンドを収集
         for (auto entity : registry.GetView<Component::Transform, Sprite>())
         {
             auto& color = registry.GetComponent<Color>(entity);
-
-            if (color.Alpha <= 0.0f)
-            {
-                continue;
-            }
+            if (color.Alpha <= 0.0f) continue;
 
             auto& sprite = registry.GetComponent<Sprite>(entity);
-
-            if (!sprite.Bitmap)
-            {
-                continue;
-            }
+            if (!sprite.Bitmap) continue;
 
             auto& transform = registry.GetComponent<Transform>(entity);
 
-            // Transformが変更された場合のみ、トランスフォームキャッシュを更新する
+            // トランスフォームキャッシュの更新
             if (transform.IsDirty)
             {
+                // スプライトの中心を基準とした行列合成
                 m_TransformCache[entity] = D2D1::Matrix3x2F::Translation(-sprite.DestinationRect.right * 0.5f, -sprite.DestinationRect.bottom * 0.5f) *
-                                           D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y) * D2D1::Matrix3x2F::Rotation(transform.Rotation) *
+                                           D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y) * 
+                                           D2D1::Matrix3x2F::Rotation(transform.Rotation) *
                                            D2D1::Matrix3x2F::Translation(transform.Position.X, transform.Position.Y);
                 transform.IsDirty = false;
             }
 
-            // RenderGroupごとにDrawCommandを振り分ける
-            renderGroup[static_cast<size_t>(sprite.Group)].emplace_back(DrawCommand{
+            renderGroups[static_cast<size_t>(sprite.Group)].emplace_back(DrawCommand{
                 .Bitmap          = sprite.Bitmap.get(),
                 .DestinationRect = sprite.DestinationRect,
                 .SourceRect      = sprite.SourceRect,
@@ -65,51 +52,60 @@ namespace N503::Renderer2D::System
         auto d2dContext3 = context.GetD2DContext3();
         auto spriteBatch = context.GetSpriteBatch();
 
-        // スプライトバッチはアンチエイリアスが効かないため、アンチエイリアスモードを切り替える
         const auto beforeAntialiasMode = d2dContext3->GetAntialiasMode();
         d2dContext3->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
 
-        // RenderGroupの順番に描画する
-        for (int i = 0; i < static_cast<int>(RenderGroup::Threshold); ++i)
+        // 2. RenderGroup の順番に処理[cite: 10]
+        for (auto& commands : renderGroups)
         {
-            if (renderGroup[i].empty())
-            {
-                continue;
-            }
+            if (commands.empty()) continue;
 
-            spriteBatch->Clear();
+            // --- 重要: Bitmap ポインタでソートして、同じ Bitmap を隣接させる ---
+            std::sort(commands.begin(), commands.end(), [](const DrawCommand& a, const DrawCommand& b) {
+                return a.Bitmap < b.Bitmap;
+            });
 
-            for (const auto& command : renderGroup[i])
+            // 3. 同じ Bitmap を持つ連続した区間をバッチとして描画
+            for (size_t i = 0; i < commands.size(); )
             {
+                ID2D1Bitmap* currentBitmap = commands[i].Bitmap;
+                size_t batchStart = i;
+
+                // 同じビットマップが続く限りインデックスを進める
+                while (i < commands.size() && commands[i].Bitmap == currentBitmap)
+                {
+                    i++;
+                }
+
+                size_t batchSize = i - batchStart;
+
+                // スプライトバッチをクリアして、同じビットマップのものを一括登録
+                spriteBatch->Clear();
+
+                // AddSprites のストライド機能を利用して DrawCommand 構造体の配列をそのまま流し込む
                 spriteBatch->AddSprites(
-                    1,                        // スプライト数
-                    &command.DestinationRect, // 描画先
-                    &command.SourceRect,      // ソース矩形（nullptrならビットマップ全体）
-                    &command.Color,           // 色（nullptrなら白/不透明）
-                    &command.Matrix,          // 個別のトランスフォーム
-                    sizeof(D2D1_RECT_F),      // ストライド
-                    sizeof(D2D1_RECT_F),      // ストライド
-                    sizeof(D2D1_COLOR_F),     // ストライド
-                    sizeof(D2D1_MATRIX_3X2_F) // ストライド
+                    static_cast<uint32_t>(batchSize),
+                    &commands[batchStart].DestinationRect,
+                    &commands[batchStart].SourceRect,
+                    &commands[batchStart].Color,
+                    &commands[batchStart].Matrix,
+                    sizeof(DrawCommand), // 各データのストライド（構造体のサイズ）を指定
+                    sizeof(DrawCommand),
+                    sizeof(DrawCommand),
+                    sizeof(DrawCommand)
                 );
-            }
 
-            if (!renderGroup[i].empty())
-            {
+                // バッチ描画の実行[cite: 10]
                 d2dContext3->DrawSpriteBatch(
                     spriteBatch.get(),
-                    renderGroup[i][0].Bitmap, // 共通のビットマップ
+                    currentBitmap,
                     D2D1_BITMAP_INTERPOLATION_MODE_LINEAR,
                     D2D1_SPRITE_OPTIONS_NONE
                 );
             }
         }
 
-        // アンチエイリアスモードを元に戻す
         d2dContext3->SetAntialiasMode(beforeAntialiasMode);
-
-        // 描画後はトランスフォームをリセットする
         context.SetTransform(D2D1::Matrix3x2F::Identity());
     }
-
-} // namespace N503::Renderer2D::System
+}
