@@ -55,7 +55,7 @@ namespace N503::Renderer2D::System
         const auto beforeAntialiasMode = d2dContext3->GetAntialiasMode();
         d2dContext3->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
 
-        // 2. RenderGroup の順番に処理[cite: 10]
+        // 2. RenderGroup の順番に処理
         for (auto& commands : renderGroups)
         {
             if (commands.empty()) continue;
@@ -95,7 +95,7 @@ namespace N503::Renderer2D::System
                     sizeof(DrawCommand)
                 );
 
-                // バッチ描画の実行[cite: 10]
+                // バッチ描画の実行
                 d2dContext3->DrawSpriteBatch(
                     spriteBatch.get(),
                     currentBitmap,
