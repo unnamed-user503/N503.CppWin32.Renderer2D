@@ -38,6 +38,10 @@ namespace N503::Renderer2D::System
             D2D1_COLOR_F Color{};
             D2D1_MATRIX_3X2_F Matrix{};
         };
+        // 「AddSprites が期待する順序通りに並んでいること」だけを保証する
+        static_assert(offsetof(DrawCommand, DestinationRect) < offsetof(DrawCommand, SourceRect));
+        static_assert(offsetof(DrawCommand, SourceRect)      < offsetof(DrawCommand, Color));
+        static_assert(offsetof(DrawCommand, Color)           < offsetof(DrawCommand, Matrix));
 
         struct IdentityHash
         {
