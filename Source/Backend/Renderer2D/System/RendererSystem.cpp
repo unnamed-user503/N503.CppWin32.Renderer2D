@@ -19,7 +19,7 @@ namespace N503::Renderer2D::System
         std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)> renderGroups;
 
         // 1. 全エンティティを走査してコマンドを収集
-        for (auto entity : registry.GetView<Component::Transform, Sprite>())
+        for (auto entity : registry.GetView<Component::Transform, Sprite, Color>())
         {
             auto& color = registry.GetComponent<Color>(entity);
             if (color.Alpha <= 0.0f) continue;
@@ -44,8 +44,8 @@ namespace N503::Renderer2D::System
                 .Bitmap          = sprite.Bitmap.get(),
                 .DestinationRect = sprite.DestinationRect,
                 .SourceRect      = sprite.SourceRect,
-                .Matrix          = m_TransformCache[entity],
                 .Color           = D2D1::ColorF(color.Red, color.Green, color.Blue, color.Alpha),
+                .Matrix          = m_TransformCache[entity],
             });
         }
 

@@ -35,8 +35,8 @@ namespace N503::Renderer2D::System
             ID2D1Bitmap1* Bitmap{ nullptr };
             D2D1_RECT_F DestinationRect{};
             D2D1_RECT_U SourceRect{};
-            D2D1_MATRIX_3X2_F Matrix{};
             D2D1_COLOR_F Color{};
+            D2D1_MATRIX_3X2_F Matrix{};
         };
 
         struct IdentityHash
