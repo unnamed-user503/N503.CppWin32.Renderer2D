@@ -1,66 +1,107 @@
 #pragma once
 
 // 1. Project Headers
-
-// 2. Project Dependencies
-#include <N503/Abi/Api.hpp>
-
-// 3. WIL (Windows Implementation Library)
+#include <N503/Renderer2D/Details/Api.h>
 #include <N503/Renderer2D/Types.hpp>
 
-// 4. Third-party Libraries
-
-// 5. Windows Headers
+// 2. Project Dependencies
 
 // 6. C++ Standard Libraries
 #include <cstdint>
-#include <memory>
 #include <string_view>
+#include <utility> // std::exchange
 
 namespace N503::Renderer2D
 {
-
-    class N503_API Sprite final
+    class Sprite final
     {
     public:
-        explicit Sprite(const std::string_view path, const Geometry::RectU sourceRect = {});
+        /// @brief 指定されたテクスチャパスと矩形領域からスプライトを生成します。
+        explicit Sprite(const std::string_view path, const Geometry::RectU sourceRect = {})
+            : m_Handle(nullptr)
+        {
+            // C-API を呼び出し、構造体をバラして渡す
+            m_Handle = n503_renderer2d_sprite_create(
+                path.data(), 
+                sourceRect.Left, sourceRect.Top, sourceRect.Right, sourceRect.Bottom
+            );
+        }
 
-        ~Sprite();
+        /// @brief リソースを解放します。
+        ~Sprite()
+        {
+            if (m_Handle)
+            {
+                n503_renderer2d_sprite_destroy(m_Handle);
+                m_Handle = nullptr;
+            }
+        }
 
+        // コピー禁止
         Sprite(const Sprite&) = delete;
-
         auto operator=(const Sprite&) -> Sprite& = delete;
 
-        Sprite(Sprite&&);
-
-        auto operator=(Sprite&&) -> Sprite&;
-
-    public:
-        auto SetTransform(const Geometry::Transform& transform) -> void;
-
-        auto SetColor(const ColorF color) -> void;
-
-        auto SetRenderGroup(const RenderGroup group) -> void;
-
-    public:
-        struct Entity;
-
-#ifdef N503_DLL_EXPORTS
-        /// @brief 内部の実装実体（Entity）への参照を取得します。
-        /// @note このメソッドはライブラリ内部（DLL境界の内側）でのみ使用されます。
-        /// @return Entity を管理する unique_ptr への参照。
-        [[nodiscard]]
-        auto GetEntity() -> std::unique_ptr<Entity>&
+        // ムーブ許可
+        Sprite(Sprite&& other) noexcept
+            : m_Handle(std::exchange(other.m_Handle, nullptr))
         {
-            return m_Entity;
         }
-#endif
+
+        auto operator=(Sprite&& other) noexcept -> Sprite&
+        {
+            if (this != &other)
+            {
+                if (m_Handle) n503_renderer2d_sprite_destroy(m_Handle);
+                m_Handle = std::exchange(other.m_Handle, nullptr);
+            }
+            return *this;
+        }
+
+    public:
+        /// @brief 位置、回転、スケールを一括で設定します。
+        auto SetTransform(const Geometry::Transform& transform) -> void
+        {
+            if (m_Handle)
+            {
+                n503_renderer2d_sprite_set_transform(
+                    m_Handle, 
+                    transform.Position.X, transform.Position.Y, 
+                    transform.Scale.X, transform.Scale.Y, 
+                    transform.Rotation
+                );
+            }
+        }
+
+        /// @brief 色（RGBA）を設定します。
+        auto SetColor(const ColorF color) -> void
+        {
+            if (m_Handle)
+            {
+                n503_renderer2d_sprite_set_color(m_Handle, color.Red, color.Green, color.Blue, color.Alpha);
+            }
+        }
+
+        /// @brief 描画グループ（優先順位）を設定します。
+        auto SetRenderGroup(const RenderGroup group) -> void
+        {
+            if (m_Handle)
+            {
+                n503_renderer2d_sprite_set_render_group(m_Handle, static_cast<uint32_t>(group));
+            }
+        }
+
+        /// @brief 表示・非表示を切り替えます。
+        auto SetVisible(bool visible) -> void
+        {
+            if (m_Handle)
+            {
+                n503_renderer2d_sprite_set_visible(m_Handle, visible ? 1 : 0);
+            }
+        }
 
     private:
-#pragma warning(push)
-#pragma warning(disable : 4251) // DLL境界を越える際の unique_ptr に関する警告を抑制
-        std::unique_ptr<Entity> m_Entity;
-#pragma warning(pop)
+        /// @brief DLL 内部で管理される実体へのハンドル
+        n503_renderer2d_sprite_h m_Handle;
     };
 
 } // namespace N503::Renderer2D

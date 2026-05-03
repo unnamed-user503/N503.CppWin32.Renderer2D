@@ -1,12 +1,11 @@
 #pragma once
 
 // 1. Project Headers
-#include "System/Entity.hpp"
+#include "../../Backend/Renderer2D/System/Entity.hpp"
 
 // 2. Project Dependencies
 
 // 3. WIL (Windows Implementation Library)
-#include <N503/Renderer2D/Sprite.hpp>
 #include <N503/Renderer2D/Types.hpp>
 
 // 4. Third-party Libraries
@@ -18,9 +17,9 @@
 namespace N503::Renderer2D
 {
 
-    struct Sprite::Entity
+    struct TextEntity
     {
-        System::Entity ID{};
+        System::Entity EntityID{};
     };
 
 } // namespace N503::Renderer2D

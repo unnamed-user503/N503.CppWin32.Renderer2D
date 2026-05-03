@@ -1,67 +1,109 @@
 #pragma once
 
 // 1. Project Headers
-
-// 2. Project Dependencies
 #include <N503/Abi/Api.hpp>
-
-// 3. WIL (Windows Implementation Library)
+#include <N503/Renderer2D/Details/Api.h>
 #include <N503/Renderer2D/Types.hpp>
 
-// 4. Third-party Libraries
-
-// 5. Windows Headers
+// 2. Project Dependencies
 
 // 6. C++ Standard Libraries
-#include <cstdint>
-#include <memory>
 #include <string_view>
+#include <utility> // std::exchange
 
 namespace N503::Renderer2D
 {
-
-    class N503_API Text final
+    class Text final
     {
     public:
+        /// @brief テキストオブジェクトを生成します。
         explicit Text(
             const std::string_view text,
             const std::string_view font = "MS ゴシック",
-            const float size            = 24,
-            ColorF color      = { 1.0f, 1.0f, 1.0f, 1.0f }
-        );
+            const float size            = 24.0f,
+            ColorF color                = { 1.0f, 1.0f, 1.0f, 1.0f }
+        )
+            : m_Handle(nullptr)
+        {
+            // C-API を呼び出し、初期プロパティを一括で渡す
+            m_Handle = n503_renderer2d_text_create(
+                text.data(),
+                font.data(),
+                size,
+                color.Red, color.Green, color.Blue, color.Alpha
+            );
+        }
 
-        ~Text();
+        /// @brief リソースを解放します。
+        ~Text()
+        {
+            if (m_Handle)
+            {
+                // 先ほど定義した destroy API を呼び出す
+                n503_renderer2d_text_destroy(m_Handle);
+                m_Handle = nullptr;
+            }
+        }
 
+        // コピー禁止
         Text(const Text&) = delete;
-
         auto operator=(const Text&) -> Text& = delete;
 
-        Text(Text&&);
-
-        auto operator=(Text&&) -> Text&;
-
-    public:
-        auto SetTransform(const Geometry::Transform& transform) -> void;
-
-    public:
-        struct Entity;
-
-#ifdef N503_DLL_EXPORTS
-        /// @brief 内部の実装実体（Entity）への参照を取得します。
-        /// @note このメソッドはライブラリ内部（DLL境界の内側）でのみ使用されます。
-        /// @return Entity を管理する unique_ptr への参照。
-        [[nodiscard]]
-        auto GetEntity() -> std::unique_ptr<Entity>&
+        // ムーブ許可
+        Text(Text&& other) noexcept
+            : m_Handle(std::exchange(other.m_Handle, nullptr))
         {
-            return m_Entity;
         }
-#endif
+
+        auto operator=(Text&& other) noexcept -> Text&
+        {
+            if (this != &other)
+            {
+                if (m_Handle) n503_renderer2d_text_destroy(m_Handle);
+                m_Handle = std::exchange(other.m_Handle, nullptr);
+            }
+            return *this;
+        }
+
+    public:
+        /// @brief 配置、スケール、回転を設定します。
+        auto SetTransform(const Geometry::Transform& transform) -> void
+        {
+            if (m_Handle)
+            {
+                n503_renderer2d_text_set_transform(
+                    m_Handle,
+                    transform.Position.X, transform.Position.Y,
+                    transform.Scale.X, transform.Scale.Y,
+                    transform.Rotation
+                );
+            }
+        }
+
+        /// @brief テキストの色を設定します。
+        auto SetColor(const ColorF color) -> void
+        {
+            if (m_Handle)
+            {
+                n503_renderer2d_text_set_color(m_Handle, color.Red, color.Green, color.Blue, color.Alpha);
+            }
+        }
+
+        /// @brief 表示・非表示を切り替えます。
+        auto SetVisible(bool visible) -> void
+        {
+            if (m_Handle)
+            {
+                n503_renderer2d_text_set_visible(m_Handle, visible ? 1 : 0);
+            }
+        }
+
+        // 必要に応じて将来的に追加可能なメソッド例：
+        // auto SetString(const std::string_view text) -> void;
 
     private:
-#pragma warning(push)
-#pragma warning(disable : 4251) // DLL境界を越える際の unique_ptr に関する警告を抑制
-        std::unique_ptr<Entity> m_Entity;
-#pragma warning(pop)
+        /// @brief DLL 内部で管理されるテキストエンティティへのハンドル
+        n503_renderer2d_text_h m_Handle;
     };
 
 } // namespace N503::Renderer2D
