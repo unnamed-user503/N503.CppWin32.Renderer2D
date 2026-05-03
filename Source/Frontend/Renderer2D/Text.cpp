@@ -31,7 +31,8 @@ extern "C"
             auto entity = std::make_unique<TextEntity>();
 
             auto packet = Message::Packets::CreateText{
-                .Result     = &entity->EntityID,
+                .Result   = &entity->EntityID,
+                .Text     = text,
                 .FontName = font,
                 .FontSize = size,
                 .Color = { r, g, b, a },
@@ -84,7 +85,11 @@ extern "C"
 
             auto packet = Message::Packets::SetTransform{
                 .ID = entity->EntityID,
-                .Transform = { x, y, rotation, scaleX, scaleY },
+                .Transform = {
+                    .Position = { x, y, 0.0f },
+                    .Rotation = rotation,
+                    .Scale    = { scaleX, scaleY }
+                },
             };
 
             Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
