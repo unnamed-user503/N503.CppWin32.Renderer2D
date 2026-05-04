@@ -35,7 +35,7 @@ namespace N503::Renderer2D::System
             }
 
             // GPU側にリソースを作成済みの場合は再利用する
-            sprite.Bitmap = device.GetCache().Get(sprite.ResourceHandle);
+            sprite.Bitmap = device.GetCache().FindBitmap(sprite.ResourceHandle);
 
             if (sprite.Bitmap)
             {
@@ -50,7 +50,7 @@ namespace N503::Renderer2D::System
                 continue;
             }
 
-            sprite.Bitmap = device.GetCache().GetOrCreateBitmap(sprite.ResourceHandle, resource->Pixels);
+            sprite.Bitmap = device.GetOrCreateBitmap(sprite.ResourceHandle, resource->Pixels);
 
             if (!sprite.Bitmap)
             {

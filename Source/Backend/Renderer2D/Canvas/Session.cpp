@@ -62,13 +62,13 @@ namespace N503::Renderer2D::Canvas
     auto Session::FillRect(const D2D1_RECT_F& rect, const D2D1_COLOR_F& color) -> void
     {
         // Cache クラスの GetOrCreateBrush を使用 (D2D1_COLOR_F は ColorF と互換)
-        auto brush = m_Device->GetCache().GetOrCreateBrush({ color.r, color.g, color.b, color.a });
+        auto brush = m_Device->GetOrCreateBrush({ color.r, color.g, color.b, color.a });
         m_Device->GetD2D1DeviceContext().FillRectangle(rect, brush.get());
     }
 
     auto Session::DrawRect(const D2D1_RECT_F& rect, const D2D1_COLOR_F& color, float strokeWidth) -> void
     {
-        auto brush = m_Device->GetCache().GetOrCreateBrush({ color.r, color.g, color.b, color.a });
+        auto brush = m_Device->GetOrCreateBrush({ color.r, color.g, color.b, color.a });
         m_Device->GetD2D1DeviceContext().DrawRectangle(rect, brush.get(), strokeWidth);
     }
 
@@ -122,13 +122,13 @@ namespace N503::Renderer2D::Canvas
     auto Session::DrawString(std::wstring_view text, std::wstring_view fontName, float fontSize, const D2D1_POINT_2F& origin, const D2D1_COLOR_F& color) -> void
     {
         // 1. テキスト形式の取得
-        auto format = m_Device->GetCache().GetOrCreateTextFormat(fontName, fontSize);
+        auto format = m_Device->GetOrCreateTextFormat(fontName, fontSize);
 
         // 2. ブラシの取得
-        auto brush = m_Device->GetCache().GetOrCreateBrush({ color.r, color.g, color.b, color.a });
+        auto brush = m_Device->GetOrCreateBrush({ color.r, color.g, color.b, color.a });
 
         // 3. テキストレイアウトの生成 (wil::com_ptr をそのまま渡す)
-        auto layout = m_Device->GetCache().GetOrCreateTextLayout(text, format);
+        auto layout = m_Device->GetOrCreateTextLayout(text, format);
 
         // 4. 描画
         m_Device->GetD2D1DeviceContext().DrawTextLayout(origin, layout.get(), brush.get());

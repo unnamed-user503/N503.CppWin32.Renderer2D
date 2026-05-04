@@ -9,7 +9,7 @@
 // 5. Windows Headers
 #include <d2d1_3.h>
 #include <d3d11.h>
-#include <dwrite.h>
+#include <dwrite_3.h>
 
 // 6. C++ Standard Libraries
 #include <memory>
@@ -23,6 +23,7 @@ namespace N503::Renderer2D::Pixels
 namespace N503::Renderer2D::Canvas
 {
     class Cache;
+    class FontAtlas;
 
     class Device
     {
@@ -35,8 +36,6 @@ namespace N503::Renderer2D::Canvas
         auto operator=(const Device&) -> Device& = delete;
 
         // ---- アクセッサ ----
-        // 生の参照を返すことで、利用側での .get() 呼び出しを減らし、
-        // かつ生存期間が Device に紐付いていることを明示します
         auto GetD3D11Device() const noexcept -> ID3D11Device&
         {
             return *m_D3DDevice.get();
@@ -50,31 +49,45 @@ namespace N503::Renderer2D::Canvas
             return *m_ResourceCache;
         }
 
-        // ---- リソース作成メソッド (主に Cache から呼ばれる)[cite: 7, 15] ----
-        auto CreateBitmap(const Pixels::Buffer& pixels) -> wil::com_ptr<ID2D1Bitmap1>;
-        auto CreateSolidColorBrush(const D2D1_COLOR_F& color) -> wil::com_ptr<ID2D1SolidColorBrush>;
-        auto CreateTextFormat(std::wstring_view fontName, float fontSize) -> wil::com_ptr<IDWriteTextFormat>;
-        auto CreateTextLayout(std::wstring_view text, IDWriteTextFormat* format) -> wil::com_ptr<IDWriteTextLayout>;
+        // ---- キャッシュ統合リソース取得 (呼び出し側が使う唯一のAPI) ----
+        // フロー: Cache::Find → (miss時) Create → Cache::Store → return
+        auto GetOrCreateBitmap(ResourceHandle handle, const Pixels::Buffer& pixels) -> wil::com_ptr<ID2D1Bitmap1>;
+        auto GetOrCreateBrush(ColorF color) -> wil::com_ptr<ID2D1SolidColorBrush>;
+        auto GetOrCreateTextFormat(std::wstring_view fontName, float fontSize) -> wil::com_ptr<IDWriteTextFormat>;
+        auto GetOrCreateTextFormat(std::string_view fontName, float fontSize) -> wil::com_ptr<IDWriteTextFormat>;
+        auto GetOrCreateTextLayout(std::wstring_view text, wil::com_ptr<IDWriteTextFormat> textFormat) -> wil::com_ptr<IDWriteTextLayout>;
+        auto GetOrCreateTextLayout(std::string_view text, wil::com_ptr<IDWriteTextFormat> textFormat) -> wil::com_ptr<IDWriteTextLayout>;
+        auto GetOrCreateFontAtlas(std::wstring_view familyName, float emSize) -> FontAtlas*;
+
+        // ---- SpriteBatch (キャッシュ対象外・単一インスタンス) ----
         auto GetDefaultSpriteBatch() -> ID2D1SpriteBatch&;
 
     private:
         auto InitializeDirectX() -> void;
 
+        // ---- 実生成メソッド (Device 内部からのみ呼ばれる) ----
+        auto CreateBitmap(const Pixels::Buffer& pixels) -> wil::com_ptr<ID2D1Bitmap1>;
+        auto CreateSolidColorBrush(const D2D1_COLOR_F& color) -> wil::com_ptr<ID2D1SolidColorBrush>;
+        auto CreateTextFormat(std::wstring_view fontName, float fontSize) -> wil::com_ptr<IDWriteTextFormat>;
+        auto CreateTextLayout(std::wstring_view text, IDWriteTextFormat* format) -> wil::com_ptr<IDWriteTextLayout>;
+        auto CreateFontAtlas(std::wstring_view familyName, float emSize) -> std::unique_ptr<FontAtlas>;
+
+        auto TranscodeUtf8ToWide(std::string_view utf8) -> std::wstring;
+
     private:
-        // 命名規則: m_PascalCase[cite: 6, 16]
-        wil::com_ptr<ID3D11Device> m_D3DDevice;
-        wil::com_ptr<ID3D11DeviceContext> m_D3DContext;
+        // 命名規則: m_PascalCase
+        wil::com_ptr<ID3D11Device>        m_D3DDevice;
+        wil::com_ptr<ID3D11DeviceContext>  m_D3DContext;
 
-        wil::com_ptr<ID2D1Factory3> m_D2DFactory;
-        wil::com_ptr<ID2D1Device2> m_D2DDevice;
-        wil::com_ptr<ID2D1DeviceContext3> m_D2DContext;
+        wil::com_ptr<ID2D1Factory3>        m_D2DFactory;
+        wil::com_ptr<ID2D1Device2>         m_D2DDevice;
+        wil::com_ptr<ID2D1DeviceContext3>  m_D2DContext;
 
-        wil::com_ptr<IDWriteFactory> m_DWriteFactory;
+        wil::com_ptr<IDWriteFactory3>      m_DWriteFactory;
 
-        wil::com_ptr<ID2D1SpriteBatch> m_DefaultSpriteBatch;
+        wil::com_ptr<ID2D1SpriteBatch>     m_DefaultSpriteBatch;
 
-        // リソースキャッシュ
-        std::unique_ptr<Canvas::Cache> m_ResourceCache;
+        std::unique_ptr<Canvas::Cache>     m_ResourceCache;
     };
 
 } // namespace N503::Renderer2D::Canvas

@@ -12,6 +12,7 @@
 
 // 6. C++ Standard Libraries
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -24,8 +25,13 @@ namespace N503::Renderer2D::Pixels
 namespace N503::Renderer2D::Canvas
 {
     class Device;
+    class FontAtlas;
+}
 
-    // リソースの再利用を管理するキャッシュクラス[cite: 16]
+namespace N503::Renderer2D::Canvas
+{
+    // リソースの保管・検索のみを担うキャッシュクラス
+    // 生成ロジックは持たない。全ての GetOrCreate フローは Device が制御する。
     class Cache
     {
     public:
@@ -36,31 +42,60 @@ namespace N503::Renderer2D::Canvas
         Cache(const Cache&)                    = delete;
         auto operator=(const Cache&) -> Cache& = delete;
 
-        // ---- ビットマップ管理 ----
-        auto Get(ResourceHandle handle) -> wil::com_ptr<ID2D1Bitmap1>;
-        auto GetOrCreateBitmap(ResourceHandle handle, const Pixels::Buffer& pixels) -> wil::com_ptr<ID2D1Bitmap1>;
+        // ---- ビットマップ ----
+        auto FindBitmap(ResourceHandle handle) -> wil::com_ptr<ID2D1Bitmap1>;
+        auto StoreBitmap(ResourceHandle handle, wil::com_ptr<ID2D1Bitmap1> bitmap) -> void;
 
-        // ---- ブラシ管理 (ColorFをキーとする)[cite: 15] ----
-        auto GetOrCreateBrush(const ColorF color) -> wil::com_ptr<ID2D1SolidColorBrush>;
+        // ---- ブラシ ----
+        auto FindBrush(ColorF color) -> wil::com_ptr<ID2D1SolidColorBrush>;
+        auto StoreBrush(ColorF color, wil::com_ptr<ID2D1SolidColorBrush> brush) -> void;
 
-        // ---- テキスト形式管理 ----
-        auto GetOrCreateTextFormat(std::string_view fontName, float fontSize) -> wil::com_ptr<IDWriteTextFormat>;
-        auto GetOrCreateTextFormat(std::wstring_view fontName, float fontSize) -> wil::com_ptr<IDWriteTextFormat>;
+        // ---- テキスト形式 ----
+        auto FindTextFormat(std::wstring_view fontName, float fontSize) -> wil::com_ptr<IDWriteTextFormat>;
+        auto StoreTextFormat(std::wstring_view fontName, float fontSize, wil::com_ptr<IDWriteTextFormat> format) -> void;
 
-        // ---- テキストレイアウト管理 ----
-        auto GetOrCreateTextLayout(std::string_view text, wil::com_ptr<IDWriteTextFormat> textFormat) -> wil::com_ptr<IDWriteTextLayout>;
-        auto GetOrCreateTextLayout(std::wstring_view text, wil::com_ptr<IDWriteTextFormat> textFormat) -> wil::com_ptr<IDWriteTextLayout>;
+        // ---- テキストレイアウト ----
+        auto FindTextLayout(std::wstring_view text, IDWriteTextFormat* format) -> wil::com_ptr<IDWriteTextLayout>;
+        auto StoreTextLayout(std::wstring_view text, IDWriteTextFormat* format, wil::com_ptr<IDWriteTextLayout> layout) -> void;
 
-        // キャッシュのクリア
+        // ---- フォントアトラス ----
+        auto FindFontAtlas(std::wstring_view familyName, float emSize) -> FontAtlas*;
+        auto StoreFontAtlas(std::wstring_view familyName, float emSize, std::unique_ptr<FontAtlas> atlas) -> FontAtlas*;
+
+        // ---- キャッシュのクリア ----
         auto Clear() -> void;
 
     private:
-        Device& m_Device; // 命名規則: m_PascalCase[cite: 16]
+        static auto MakeTextLayoutKey(std::wstring_view text, IDWriteTextFormat* format) -> std::wstring;
+        static auto MakeTextFormatKey(std::wstring_view fontName, float fontSize) -> std::wstring;
+        static auto MakeBrushKey(ColorF color) -> std::uint32_t;
 
-        std::unordered_map<Handle::ResourceID, wil::com_ptr<ID2D1Bitmap1>> m_Bitmaps;
-        std::unordered_map<std::uint32_t, wil::com_ptr<ID2D1SolidColorBrush>> m_Brushes;
-        std::unordered_map<std::wstring, wil::com_ptr<IDWriteTextFormat>> m_TextFormats;
-        std::unordered_map<std::wstring, wil::com_ptr<IDWriteTextLayout>> m_TextLayouts;
+        struct FontAtlasKey
+        {
+            std::wstring FamilyName;
+            float        EmSize;
+
+            auto operator==(const FontAtlasKey&) const -> bool = default;
+        };
+
+        struct FontAtlasKeyHash
+        {
+            auto operator()(const FontAtlasKey& k) const -> size_t
+            {
+                size_t h = std::hash<std::wstring>{}(k.FamilyName);
+                h ^= std::hash<float>{}(k.EmSize) + 0x9e3779b9 + (h << 6) + (h >> 2);
+                return h;
+            }
+        };
+
+    private:
+        Device& m_Device;
+
+        std::unordered_map<Handle::ResourceID, wil::com_ptr<ID2D1Bitmap1>>            m_Bitmaps;
+        std::unordered_map<std::uint32_t, wil::com_ptr<ID2D1SolidColorBrush>>         m_Brushes;
+        std::unordered_map<std::wstring, wil::com_ptr<IDWriteTextFormat>>              m_TextFormats;
+        std::unordered_map<std::wstring, wil::com_ptr<IDWriteTextLayout>>              m_TextLayouts;
+        std::unordered_map<FontAtlasKey, std::unique_ptr<FontAtlas>, FontAtlasKeyHash> m_FontAtlases;
     };
 
 } // namespace N503::Renderer2D::Canvas

@@ -36,7 +36,7 @@ namespace N503::Renderer2D::System
 
             if (!text.TextFormat)
             {
-                text.TextFormat = device.GetCache().GetOrCreateTextFormat(text.FontName, text.FontSize);
+                text.TextFormat = device.GetOrCreateTextFormat(text.FontName, text.FontSize);
 
                 if (!text.TextFormat)
                 {
@@ -46,12 +46,12 @@ namespace N503::Renderer2D::System
 
             if (!text.TextLayout)
             {
-                text.TextLayout = device.GetCache().GetOrCreateTextLayout(text.Content, text.TextFormat);
+                text.TextLayout = device.GetOrCreateTextLayout(text.Content, text.TextFormat);
             }
 
             if (!text.Brush)
             {
-                text.Brush = device.GetCache().GetOrCreateBrush({ text.Color.r, text.Color.g, text.Color.b, text.Color.a });
+                text.Brush = device.GetOrCreateBrush({ text.Color.r, text.Color.g, text.Color.b, text.Color.a });
             }
             /*
             if (text.TextLayout && text.Brush)
