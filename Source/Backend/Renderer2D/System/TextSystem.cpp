@@ -2,7 +2,8 @@
 #include "TextSystem.hpp"
 
 // 1. Project Headers
-#include "../Device/Context.hpp"
+#include "../Canvas/Cache.hpp"
+#include "../Canvas/Device.hpp"
 #include "Entity.hpp"
 #include "Registry.hpp"
 
@@ -19,7 +20,7 @@
 namespace N503::Renderer2D::System
 {
 
-    void TextSystem::Update(Registry& registry, Device::Context& context)
+    void TextSystem::Update(Registry& registry, Canvas::Device& device)
     {
         using namespace Component;
 
@@ -35,7 +36,7 @@ namespace N503::Renderer2D::System
 
             if (!text.TextFormat)
             {
-                text.TextFormat = context.GetResourceCache().GetOrCreateTextFormat(text.FontName, text.FontSize);
+                text.TextFormat = device.GetCache().GetOrCreateTextFormat(text.FontName, text.FontSize);
 
                 if (!text.TextFormat)
                 {
@@ -45,18 +46,19 @@ namespace N503::Renderer2D::System
 
             if (!text.TextLayout)
             {
-                text.TextLayout = context.GetResourceCache().GetOrCreateTextLayout(text.Content, text.TextFormat);
+                text.TextLayout = device.GetCache().GetOrCreateTextLayout(text.Content, text.TextFormat);
             }
 
             if (!text.Brush)
             {
-                text.Brush = context.GetResourceCache().GetOrCreateBrush({ text.Color.r, text.Color.g, text.Color.b, text.Color.a });
+                text.Brush = device.GetCache().GetOrCreateBrush({ text.Color.r, text.Color.g, text.Color.b, text.Color.a });
             }
-
+            /*
             if (text.TextLayout && text.Brush)
             {
-                context.DrawTextLayout({ transform.Position.X, transform.Position.Y }, text.TextLayout, text.Brush);
+                device.DrawTextLayout({ transform.Position.X, transform.Position.Y }, text.TextLayout, text.Brush);
             }
+            */
         }
     }
 

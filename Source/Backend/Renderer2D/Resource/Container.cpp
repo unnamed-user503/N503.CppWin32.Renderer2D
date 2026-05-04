@@ -42,7 +42,7 @@ namespace N503::Renderer2D::Resource
         if (auto it = m_Indexes.find(key); it != m_Indexes.end())
         {
 #ifdef _DEBUG
-            //Engine::GetInstance().GetDiagnosticsReporter().Verbose(std::format("[Renderer2D] <Resource::Container>: contain={}", path));
+            // Engine::GetInstance().GetDiagnosticsReporter().Verbose(std::format("[Renderer2D] <Resource::Container>: contain={}", path));
 #endif
             return it->second;
         }
@@ -96,7 +96,9 @@ namespace N503::Renderer2D::Resource
         m_AvailableHandles.pop_back();
 
 #ifdef _DEBUG
-        Engine::GetInstance().GetDiagnosticsReporter().Verbose(std::format("[Renderer2D] <Resource::Container>: Add to ResourceID={}", static_cast<std::uint64_t>(handle.ID)));
+        Engine::GetInstance().GetDiagnosticsReporter().Verbose(
+            std::format("[Renderer2D] <Resource::Container>: Add to ResourceID={}", static_cast<std::uint64_t>(handle.ID))
+        );
 #endif
 
         return handle;

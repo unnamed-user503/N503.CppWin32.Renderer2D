@@ -6,7 +6,6 @@
 #include "../../System/Entity.hpp"
 #include "../../System/Registry.hpp"
 
-
 // 2. Project Dependencies
 
 // 3. WIL (Windows Implementation Library)
@@ -35,7 +34,7 @@ namespace N503::Renderer2D::Message::Packets
         transform.Rotation   = Transform.Rotation;
         transform.Scale.X    = Transform.Scale.X;
         transform.Scale.Y    = Transform.Scale.Y;
-        transform.IsDirty  = true;
+        transform.IsDirty    = true;
     }
 
 } // namespace N503::Renderer2D::Message::Packets

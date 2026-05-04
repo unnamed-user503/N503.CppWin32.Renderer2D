@@ -6,7 +6,6 @@
 #include "../../System/Entity.hpp"
 #include "../../System/Registry.hpp"
 
-
 // 2. Project Dependencies
 
 // 3. WIL (Windows Implementation Library)

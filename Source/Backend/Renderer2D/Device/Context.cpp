@@ -143,14 +143,7 @@ namespace N503::Renderer2D::Device
         wil::com_ptr<IDWriteTextFormat> textFormat;
 
         auto hr = m_DWriteFactory->CreateTextFormat(
-            fontName.data(),
-            nullptr,
-            DWRITE_FONT_WEIGHT_NORMAL,
-            DWRITE_FONT_STYLE_NORMAL,
-            DWRITE_FONT_STRETCH_NORMAL,
-            fontSize,
-            L"ja-jp",
-            textFormat.put()
+            fontName.data(), nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja-jp", textFormat.put()
         );
 
         if (FAILED(hr))

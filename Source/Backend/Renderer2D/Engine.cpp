@@ -5,6 +5,12 @@
 #include "Device/Context.hpp"
 #include "Device/RenderTarget.hpp"
 #include "Device/Viewport.hpp"
+
+#include "Canvas/Device.hpp"
+#include "Canvas/Session.hpp"
+#include "Canvas/Surface.hpp"
+#include "Canvas/Window.hpp"
+
 #include "Message/Context.hpp"
 #include "Message/Dispatcher.hpp"
 #include "Message/Queue.hpp"
@@ -46,8 +52,8 @@ namespace N503::Renderer2D
 
     Engine::Engine()
     {
-        m_MessageQueue   = std::make_unique<Message::Queue>();
-        m_SystemRegistry = std::make_unique<System::Registry>();
+        m_MessageQueue        = std::make_unique<Message::Queue>();
+        m_SystemRegistry      = std::make_unique<System::Registry>();
         m_DiagnosticsReporter = std::make_unique<Diagnostics::Reporter>();
         m_DiagnosticsReporter->AddSink(std::make_unique<Diagnostics::DebugStringSink>());
     }
@@ -101,7 +107,9 @@ namespace N503::Renderer2D
     {
         if (!::PostThreadMessage(::GetThreadId(m_RendererThread.native_handle()), WM_QUIT, 0, 0))
         {
-            m_DiagnosticsReporter->Error(std::format(L"PostThreadMessage failed: Reason={}, Handle={}\n", ::GetLastError(), m_RendererThread.native_handle()).data());
+            m_DiagnosticsReporter->Error(
+                std::format(L"PostThreadMessage failed: Reason={}, Handle={}\n", ::GetLastError(), m_RendererThread.native_handle()).data()
+            );
         }
     }
 
@@ -115,14 +123,14 @@ namespace N503::Renderer2D
 
     auto Engine::Run(const std::stop_token stopToken) -> void
     {
-        auto resources     = std::make_unique<Resource::Container>();
-        auto deviceContext = std::make_unique<Device::Context>();
+        auto resources    = std::make_unique<Resource::Container>();
+        auto canvasDevice = std::make_unique<Canvas::Device>();
 
         auto spriteSystem   = std::make_unique<System::SpriteSystem>();
         auto textSystem     = std::make_unique<System::TextSystem>();
         auto rendererSystem = std::make_unique<System::RendererSystem>();
 
-        std::unique_ptr<Device::RenderTarget> renderTarget = nullptr;
+        std::unique_ptr<Canvas::Surface> canvasSurface = nullptr;
 
         // メッセージ ディスパッチャーを初期化する
         Message::Dispatcher messageDispatcher;
@@ -137,8 +145,8 @@ namespace N503::Renderer2D
 
                 m_SystemRegistry.reset();
 
-                renderTarget.reset();
-                deviceContext.reset();
+                canvasSurface.reset();
+                canvasDevice.reset();
             }
         );
 
@@ -172,10 +180,9 @@ namespace N503::Renderer2D
         {
             HWND hwnd = nullptr;
 
-            if (renderTarget == nullptr && (hwnd = Device::Viewport::GetInstance().GetRenderTargetWindow()))
+            if (canvasSurface == nullptr && (hwnd = Device::Viewport::GetInstance().GetRenderTargetWindow()))
             {
-                renderTarget = std::make_unique<Device::RenderTarget>(*deviceContext, hwnd);
-                deviceContext->SetRenderTarget(renderTarget.get());
+                canvasSurface = std::make_unique<Canvas::Surface>(*canvasDevice, hwnd);
                 m_StartedEvent.SetEvent();
             }
 
@@ -191,7 +198,7 @@ namespace N503::Renderer2D
                 Message::Context context{
                     .ResourceContainer = *resources,
                     .Registry          = *m_SystemRegistry,
-                    .DeviceContext     = *deviceContext,
+                    .CanvasDevice      = *canvasDevice,
                 };
                 messageDispatcher.Dispatch(*m_MessageQueue, context);
             }
@@ -203,13 +210,16 @@ namespace N503::Renderer2D
                 }
             }
 
-            // コマンドリストにコマンドが存在する場合は、デバイスコンテキストを使用してコマンドを実行し、レンダリングターゲットを提示します。
-            if (deviceContext->BeginDraw({ 0.1f, 0.2f, 0.4f, 1.0f }))
+            if (canvasSurface)
             {
+                auto canvasSession = canvasSurface->Begin({ 0.1f, 0.2f, 0.4f, 1.0f });
+
                 auto start = std::chrono::steady_clock::now();
-                spriteSystem->Update(*m_SystemRegistry, *deviceContext, *resources);
-                rendererSystem->Update(*m_SystemRegistry, *deviceContext);
-                textSystem->Update(*m_SystemRegistry, *deviceContext);
+
+                spriteSystem->Update(*m_SystemRegistry, *canvasDevice, *resources);
+                textSystem->Update(*m_SystemRegistry, *canvasDevice);
+                rendererSystem->Update(*m_SystemRegistry, canvasSession);
+
                 auto end = std::chrono::steady_clock::now();
 
                 // 今回の経過時間(us)を保存
@@ -217,16 +227,20 @@ namespace N503::Renderer2D
                 m_durations.push_back(elapsedUs);
 
                 // 前回のログ出力から16ms以上経過したかチェック
-                auto now = std::chrono::steady_clock::now();
+                auto now              = std::chrono::steady_clock::now();
                 auto timeSinceLastLog = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_lastLogTime).count();
 
-                if (timeSinceLastLog >= 1000 && !m_durations.empty()) {
+                if (timeSinceLastLog >= 1000 && !m_durations.empty())
+                {
                     // 合計を計算
                     long long sum = 0;
-                    for (auto d : m_durations) sum += d;
-    
+                    for (auto d : m_durations)
+                    {
+                        sum += d;
+                    }
+
                     double average = static_cast<double>(sum) / m_durations.size();
-    
+
                     // 蓄積されたデータ数がそのままFPS（1秒あたりのフレーム数）になる
                     size_t fps = m_durations.size();
 
@@ -236,16 +250,13 @@ namespace N503::Renderer2D
                     m_lastLogTime = now;
                 }
 
-                //m_DiagnosticsReporter->Verbose(std::format("<Profile> : {} us", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()));
+                // m_DiagnosticsReporter->Verbose(std::format("<Profile> : {} us", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()));
 
-                const auto endDrawResult = deviceContext->EndDraw();
-                const auto presentResult = renderTarget->Present();
+                const auto endDrawResult = canvasSession.End();
+                const auto presentResult = canvasSurface->Present();
 
                 if (endDrawResult == D2DERR_RECREATE_TARGET || presentResult == DXGI_ERROR_DEVICE_REMOVED || presentResult == DXGI_ERROR_DEVICE_RESET)
                 {
-                    // デバイスが削除されたかリセットされた場合は、デバイス コンテキストとレンダリング ターゲットを再作成する
-                    deviceContext = std::make_unique<Device::Context>();
-                    renderTarget  = std::make_unique<Device::RenderTarget>(*deviceContext, renderTarget->GetTargetWindow());
                 }
             }
 

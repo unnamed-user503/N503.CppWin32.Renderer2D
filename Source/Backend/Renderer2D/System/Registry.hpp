@@ -1,10 +1,10 @@
 #pragma once
 
 // 1. Project Headers
-#include "Entity.hpp"
 #include "Component/Sprite.hpp"
 #include "Component/Text.hpp"
 #include "Component/Transform.hpp"
+#include "Entity.hpp"
 
 // 2. Project Dependencies
 #include <N503/Renderer2D/Types.hpp>

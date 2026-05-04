@@ -15,9 +15,9 @@
 #include <unordered_map>
 #include <vector>
 
-namespace N503::Renderer2D::Device
+namespace N503::Renderer2D::Canvas
 {
-    class Context;
+    class Session;
 }
 
 namespace N503::Renderer2D::System
@@ -40,8 +40,8 @@ namespace N503::Renderer2D::System
         };
         // 「AddSprites が期待する順序通りに並んでいること」だけを保証する
         static_assert(offsetof(DrawCommand, DestinationRect) < offsetof(DrawCommand, SourceRect));
-        static_assert(offsetof(DrawCommand, SourceRect)      < offsetof(DrawCommand, Color));
-        static_assert(offsetof(DrawCommand, Color)           < offsetof(DrawCommand, Matrix));
+        static_assert(offsetof(DrawCommand, SourceRect) < offsetof(DrawCommand, Color));
+        static_assert(offsetof(DrawCommand, Color) < offsetof(DrawCommand, Matrix));
 
         struct IdentityHash
         {
@@ -52,7 +52,7 @@ namespace N503::Renderer2D::System
         };
 
     public:
-        auto Update(Registry& registry, Device::Context& context) -> void;
+        auto Update(Registry& registry, Canvas::Session& session) -> void;
 
     private:
         std::unordered_map<Entity, D2D1_MATRIX_3X2_F, IdentityHash> m_TransformCache;

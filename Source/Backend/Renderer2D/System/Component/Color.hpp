@@ -27,11 +27,11 @@ namespace N503::Renderer2D::System::Component
 
         auto Reset() noexcept -> void
         {
-            Red     = 1.0f;
-            Green   = 1.0f;
-            Blue    = 1.0f;
-            Alpha   = 1.0f;
+            Red   = 1.0f;
+            Green = 1.0f;
+            Blue  = 1.0f;
+            Alpha = 1.0f;
         }
     };
 
-}
+} // namespace N503::Renderer2D::System::Component

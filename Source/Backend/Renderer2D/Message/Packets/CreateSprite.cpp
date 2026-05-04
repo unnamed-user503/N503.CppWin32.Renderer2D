@@ -59,8 +59,10 @@ namespace N503::Renderer2D::Message::Packets
 
             sprite.SourceRect.left   = SourceRect.Left;
             sprite.SourceRect.top    = SourceRect.Top;
-            sprite.SourceRect.right  = SourceRect.Right  == 0 ? static_cast<std::uint32_t>(resource->Pixels.Width)  : std::min(SourceRect.Right,  static_cast<std::uint32_t>(resource->Pixels.Width));
-            sprite.SourceRect.bottom = SourceRect.Bottom == 0 ? static_cast<std::uint32_t>(resource->Pixels.Height) : std::min(SourceRect.Bottom, static_cast<std::uint32_t>(resource->Pixels.Height));
+            sprite.SourceRect.right  = SourceRect.Right == 0 ? static_cast<std::uint32_t>(resource->Pixels.Width)
+                                                             : std::min(SourceRect.Right, static_cast<std::uint32_t>(resource->Pixels.Width));
+            sprite.SourceRect.bottom = SourceRect.Bottom == 0 ? static_cast<std::uint32_t>(resource->Pixels.Height)
+                                                              : std::min(SourceRect.Bottom, static_cast<std::uint32_t>(resource->Pixels.Height));
 
             // Colorコンポーネントを追加する
             auto& color = context.Registry.AddComponent(entity, System::Component::Color{});

@@ -15,9 +15,9 @@
 #include <dxgi1_2.h>
 
 // 6. C++ Standard Libraries
-#include <memory>
 #include <chrono>
 #include <functional>
+#include <memory>
 
 namespace N503::Renderer2D::Device
 {
@@ -29,9 +29,7 @@ namespace N503::Renderer2D::Device::Details
     class Timer
     {
     public:
-        explicit Timer(const std::chrono::microseconds interval)
-            : m_Interval(interval)
-            , m_LastUpdateTime(std::chrono::high_resolution_clock::now())
+        explicit Timer(const std::chrono::microseconds interval) : m_Interval(interval), m_LastUpdateTime(std::chrono::high_resolution_clock::now())
         {
         }
 
@@ -51,7 +49,7 @@ namespace N503::Renderer2D::Device::Details
         std::chrono::microseconds m_Interval;
         std::chrono::high_resolution_clock::time_point m_LastUpdateTime;
     };
-}
+} // namespace N503::Renderer2D::Device::Details
 
 namespace N503::Renderer2D::Device
 {

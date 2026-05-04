@@ -14,9 +14,9 @@
 
 // 6. C++ Standard Libraries
 
-namespace N503::Renderer2D::Device
+namespace N503::Renderer2D::Canvas
 {
-    class Context;
+    class Device;
 }
 
 namespace N503::Renderer2D::System
@@ -30,7 +30,7 @@ namespace N503::Renderer2D::System
     class TextSystem
     {
     public:
-        auto Update(Registry& registry, Device::Context& context) -> void;
+        auto Update(Registry& registry, Canvas::Device& context) -> void;
     };
 
 } // namespace N503::Renderer2D::System

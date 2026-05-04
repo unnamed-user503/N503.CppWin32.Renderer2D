@@ -2,7 +2,7 @@
 #include "RendererSystem.hpp"
 
 // 1. Project Headers
-#include "../Device/Context.hpp"
+#include "../Canvas/Session.hpp"
 #include "Entity.hpp"
 #include "Registry.hpp"
 
@@ -11,7 +11,7 @@
 
 namespace N503::Renderer2D::System
 {
-    auto RendererSystem::Update(Registry& registry, Device::Context& context) -> void
+    auto RendererSystem::Update(Registry& registry, Canvas::Session& session) -> void
     {
         using namespace Component;
 
@@ -22,10 +22,18 @@ namespace N503::Renderer2D::System
         for (auto entity : registry.GetView<Component::Transform, Sprite, Color>())
         {
             auto& color = registry.GetComponent<Color>(entity);
-            if (color.Alpha <= 0.0f) continue;
+
+            if (color.Alpha <= 0.0f)
+            {
+                continue;
+            }
 
             auto& sprite = registry.GetComponent<Sprite>(entity);
-            if (!sprite.Bitmap) continue;
+
+            if (!sprite.Bitmap)
+            {
+                continue;
+            }
 
             auto& transform = registry.GetComponent<Transform>(entity);
 
@@ -34,8 +42,7 @@ namespace N503::Renderer2D::System
             {
                 // スプライトの中心を基準とした行列合成
                 m_TransformCache[entity] = D2D1::Matrix3x2F::Translation(-sprite.DestinationRect.right * 0.5f, -sprite.DestinationRect.bottom * 0.5f) *
-                                           D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y) * 
-                                           D2D1::Matrix3x2F::Rotation(transform.Rotation) *
+                                           D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y) * D2D1::Matrix3x2F::Rotation(transform.Rotation) *
                                            D2D1::Matrix3x2F::Translation(transform.Position.X, transform.Position.Y);
                 transform.IsDirty = false;
             }
@@ -49,32 +56,32 @@ namespace N503::Renderer2D::System
             });
         }
 
-        auto d2dContext3 = context.GetD2DContext3();
-        auto spriteBatch = context.GetSpriteBatch();
+        auto spriteBatch = session.GetDefaultSpriteBatch();
 
-        const auto beforeAntialiasMode = d2dContext3->GetAntialiasMode();
-        d2dContext3->SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
+        const auto beforeAntialiasMode = session.GetAntialiasMode();
+        session.SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
 
         // 2. RenderGroup の順番に処理
         for (auto& commands : renderGroups)
         {
-            if (commands.empty()) continue;
+            if (commands.empty())
+            {
+                continue;
+            }
 
             // --- 重要: Bitmap ポインタでソートして、同じ Bitmap を隣接させる ---
-            std::sort(commands.begin(), commands.end(), [](const DrawCommand& a, const DrawCommand& b) {
-                return a.Bitmap < b.Bitmap;
-            });
+            std::sort(commands.begin(), commands.end(), [](const DrawCommand& a, const DrawCommand& b) { return a.Bitmap < b.Bitmap; });
 
             // 3. 同じ Bitmap を持つ連続した区間をバッチとして描画
-            for (size_t i = 0; i < commands.size(); )
+            for (size_t i = 0; i < commands.size();)
             {
                 ID2D1Bitmap* currentBitmap = commands[i].Bitmap;
-                size_t batchStart = i;
+                size_t batchStart          = i;
 
                 // 同じビットマップが続く限りインデックスを進める
                 while (i < commands.size() && commands[i].Bitmap == currentBitmap)
                 {
-                    i++;
+                    ++i;
                 }
 
                 size_t batchSize = i - batchStart;
@@ -83,7 +90,8 @@ namespace N503::Renderer2D::System
                 spriteBatch->Clear();
 
                 // AddSprites のストライド機能を利用して DrawCommand 構造体の配列をそのまま流し込む
-                spriteBatch->AddSprites(
+                session.AddSprites(
+                    spriteBatch,
                     static_cast<uint32_t>(batchSize),
                     &commands[batchStart].DestinationRect,
                     &commands[batchStart].SourceRect,
@@ -96,16 +104,11 @@ namespace N503::Renderer2D::System
                 );
 
                 // バッチ描画の実行
-                d2dContext3->DrawSpriteBatch(
-                    spriteBatch.get(),
-                    currentBitmap,
-                    D2D1_BITMAP_INTERPOLATION_MODE_LINEAR,
-                    D2D1_SPRITE_OPTIONS_NONE
-                );
+                session.DrawSpriteBatch(spriteBatch, currentBitmap, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, D2D1_SPRITE_OPTIONS_NONE);
             }
         }
 
-        d2dContext3->SetAntialiasMode(beforeAntialiasMode);
-        context.SetTransform(D2D1::Matrix3x2F::Identity());
+        session.SetAntialiasMode(beforeAntialiasMode);
+        session.ResetTransform();
     }
-}
+} // namespace N503::Renderer2D::System

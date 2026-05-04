@@ -2,7 +2,8 @@
 #include "SpriteSystem.hpp"
 
 // 1. Project Headers
-#include "../Device/Context.hpp"
+#include "../Canvas/Cache.hpp"
+#include "../Canvas/Device.hpp"
 #include "../Resource/Container.hpp"
 #include "Entity.hpp"
 #include "Registry.hpp"
@@ -20,7 +21,7 @@
 namespace N503::Renderer2D::System
 {
 
-    auto SpriteSystem::Update(Registry& registry, Device::Context& context, Resource::Container& container) -> void
+    auto SpriteSystem::Update(Registry& registry, Canvas::Device& device, Resource::Container& container) -> void
     {
         using namespace Component;
 
@@ -34,7 +35,7 @@ namespace N503::Renderer2D::System
             }
 
             // GPU側にリソースを作成済みの場合は再利用する
-            sprite.Bitmap = context.GetResourceCache().Get(sprite.ResourceHandle);
+            sprite.Bitmap = device.GetCache().Get(sprite.ResourceHandle);
 
             if (sprite.Bitmap)
             {
@@ -49,7 +50,7 @@ namespace N503::Renderer2D::System
                 continue;
             }
 
-            sprite.Bitmap = context.GetResourceCache().GetOrCreateBitmap(sprite.ResourceHandle, resource->Pixels);
+            sprite.Bitmap = device.GetCache().GetOrCreateBitmap(sprite.ResourceHandle, resource->Pixels);
 
             if (!sprite.Bitmap)
             {

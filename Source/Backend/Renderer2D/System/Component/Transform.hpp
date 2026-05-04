@@ -33,11 +33,11 @@ namespace N503::Renderer2D::System::Component
 
             Rotation = 0.0f;
 
-            Scale.X  = 0.0f;
-            Scale.Y  = 0.0f;
+            Scale.X = 0.0f;
+            Scale.Y = 0.0f;
 
-            IsDirty  = false;
+            IsDirty = false;
         }
     };
 
-}
+} // namespace N503::Renderer2D::System::Component

@@ -67,7 +67,9 @@ namespace N503::Renderer2D::Device::Resource
         if (m_Bitmaps.find(key) == m_Bitmaps.end())
         {
 #ifdef _DEBUG
-            Engine::GetInstance().GetDiagnosticsReporter().Verbose(std::format("[Renderer2D] <Device::Resource::Cache>: CreateBitmap for ResourceID={}", static_cast<std::uint64_t>(handle.ID)));
+            Engine::GetInstance().GetDiagnosticsReporter().Verbose(
+                std::format("[Renderer2D] <Device::Resource::Cache>: CreateBitmap for ResourceID={}", static_cast<std::uint64_t>(handle.ID))
+            );
 #endif
             auto bitmap = m_DeviceContext.CreateBitmap(pixels);
 
@@ -121,7 +123,8 @@ namespace N503::Renderer2D::Device::Resource
         if (m_TextFormats.find(key) == m_TextFormats.end())
         {
 #ifdef _DEBUG
-            Engine::GetInstance().GetDiagnosticsReporter().Verbose(std::format(L"[Renderer2D] <Device::Resource::Cache>: CreateTextFormat for Key={}", fontName));
+            Engine::GetInstance().GetDiagnosticsReporter().Verbose(std::format(L"[Renderer2D] <Device::Resource::Cache>: CreateTextFormat for Key={}", fontName)
+            );
 #endif
             auto textFormat = m_DeviceContext.CreateTextFormat(fontName, fontSize);
 

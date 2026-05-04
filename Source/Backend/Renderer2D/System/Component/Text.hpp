@@ -51,4 +51,4 @@ namespace N503::Renderer2D::System::Component
         }
     };
 
-}
+} // namespace N503::Renderer2D::System::Component

@@ -14,9 +14,9 @@
 
 // 6. C++ Standard Libraries
 
-namespace N503::Renderer2D::Device
+namespace N503::Renderer2D::Canvas
 {
-    class Context;
+    class Device;
 }
 
 namespace N503::Renderer2D::Resource
@@ -35,7 +35,7 @@ namespace N503::Renderer2D::System
     class SpriteSystem
     {
     public:
-        auto Update(Registry& registry, Device::Context& context, Resource::Container& container) -> void;
+        auto Update(Registry& registry, Canvas::Device& context, Resource::Container& container) -> void;
     };
 
 } // namespace N503::Renderer2D::System

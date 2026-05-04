@@ -27,9 +27,7 @@
 namespace N503::Renderer2D::Device
 {
 
-    RenderTarget::RenderTarget(Device::Context& context, HWND hwnd)
-        : m_DeviceContext(context)
-        , m_TargetWindow(hwnd)
+    RenderTarget::RenderTarget(Device::Context& context, HWND hwnd) : m_DeviceContext(context), m_TargetWindow(hwnd)
     {
         auto d3dDevice  = context.GetD3DDevice();
         auto dxgiDevice = d3dDevice.query<IDXGIDevice>();
@@ -84,8 +82,7 @@ namespace N503::Renderer2D::Device
 
         // D2D Bitmap 再作成
         D2D1_BITMAP_PROPERTIES1 bitmapProperties = D2D1::BitmapProperties1(
-            D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
-            D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED)
+            D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW, D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED)
         );
 
         THROW_IF_FAILED(m_DeviceContext.GetD2DContext()->CreateBitmapFromDxgiSurface(backBuffer.get(), &bitmapProperties, m_TargetBitmap.put()));
@@ -95,20 +92,22 @@ namespace N503::Renderer2D::Device
     {
         auto result = m_SwapChain->Present(1, 0);
 
-        m_Timer.Update([this]
-        {
-            RECT rc{};
-            if (::GetClientRect(m_TargetWindow, &rc))
+        m_Timer.Update(
+            [this]
             {
-                const auto width  = static_cast<std::uint32_t>(rc.right - rc.left);
-                const auto height = static_cast<std::uint32_t>(rc.bottom - rc.top);
-
-                if (width > 0 && height > 0 && (width != m_Width || height != m_Height))
+                RECT rc{};
+                if (::GetClientRect(m_TargetWindow, &rc))
                 {
-                    Resize(width, height);
+                    const auto width  = static_cast<std::uint32_t>(rc.right - rc.left);
+                    const auto height = static_cast<std::uint32_t>(rc.bottom - rc.top);
+
+                    if (width > 0 && height > 0 && (width != m_Width || height != m_Height))
+                    {
+                        Resize(width, height);
+                    }
                 }
             }
-        });
+        );
 
         return result;
     }

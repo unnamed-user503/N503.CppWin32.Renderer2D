@@ -22,9 +22,9 @@ namespace N503::Renderer2D::System
     class Registry;
 }
 
-namespace N503::Renderer2D::Device
+namespace N503::Renderer2D::Canvas
 {
-    class Context;
+    class Device;
 }
 
 namespace N503::Renderer2D::Message
@@ -36,7 +36,7 @@ namespace N503::Renderer2D::Message
 
         System::Registry& Registry;
 
-        Device::Context& DeviceContext;
+        Canvas::Device& CanvasDevice;
     };
 
 } // namespace N503::Renderer2D::Message
