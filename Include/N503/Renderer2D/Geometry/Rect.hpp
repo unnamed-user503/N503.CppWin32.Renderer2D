@@ -24,5 +24,5 @@ namespace N503::Renderer2D::Geometry
 
         std::uint32_t Bottom{ 0 };
     };
-    
+
 } // namespace N503::Renderer2D::Geometry

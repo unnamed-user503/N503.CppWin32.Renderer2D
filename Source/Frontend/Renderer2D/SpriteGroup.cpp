@@ -26,8 +26,9 @@
 
 extern "C"
 {
-
-    n503_renderer2d_sprite_group_h n503_renderer2d_sprite_group_create(const char* path, uint32_t count, uint32_t left, uint32_t top, uint32_t right, uint32_t bottom)
+    n503_renderer2d_sprite_group_h n503_renderer2d_sprite_group_create(
+        const char* path, uint32_t count, uint32_t left, uint32_t top, uint32_t right, uint32_t bottom
+    )
     {
         using namespace N503::Renderer2D;
 
@@ -92,7 +93,9 @@ extern "C"
         return -1;
     }
 
-    int n503_renderer2d_sprite_group_set_transform(n503_renderer2d_sprite_group_h instance, n503_renderer2d_sprite_group_set_transform_delegate_t delegate, void* user_data)
+    int n503_renderer2d_sprite_group_set_transform(
+        n503_renderer2d_sprite_group_h instance, n503_renderer2d_sprite_group_set_transform_delegate_t delegate, void* user_data
+    )
     {
         using namespace N503::Renderer2D;
 
@@ -105,9 +108,10 @@ extern "C"
 
             for (std::size_t i = 0; i < entity->Entities.size(); ++i)
             {
-                Geometry::Transform transform{};
+                n503_transform_t transform{};
 
-                auto isDirty = delegate(i, &transform.Position.X, &transform.Position.Y, &transform.Scale.X, &transform.Scale.Y, &transform.Rotation, user_data);
+                auto
+                    isDirty = delegate(i, &transform, user_data);
 
                 if (!isDirty)
                 {
@@ -116,7 +120,11 @@ extern "C"
 
                 packets.emplace_back(Message::Packets::SetTransform{
                     .ID        = entity->Entities[i],
-                    .Transform = std::move(transform),
+                    .Transform = {
+                        .Position = { .X = transform.position.x, .Y = transform.position.y, .Z = transform.position.z },
+                        .Rotation = transform.rotation,
+                        .Scale    = { .X = transform.scale.x, .Y = transform.scale.y },
+                    },
                 });
             }
 
@@ -129,7 +137,9 @@ extern "C"
         return -1;
     }
 
-    int n503_renderer2d_sprite_group_set_color(n503_renderer2d_sprite_group_h instance, n503_renderer2d_sprite_group_set_color_delegate_t delegate, void* user_data)
+    int n503_renderer2d_sprite_group_set_color(
+        n503_renderer2d_sprite_group_h instance, n503_renderer2d_sprite_group_set_color_delegate_t delegate, void* user_data
+    )
     {
         using namespace N503::Renderer2D;
 
@@ -142,9 +152,9 @@ extern "C"
 
             for (std::size_t i = 0; i < entity->Entities.size(); ++i)
             {
-                ColorF color{};
+                n503_color_t color{};
 
-                auto isDirty = delegate(i, &color.Red, &color.Green, &color.Blue, &color.Alpha, user_data);
+                auto isDirty = delegate(i, &color, user_data);
 
                 if (!isDirty)
                 {
@@ -152,8 +162,8 @@ extern "C"
                 }
 
                 packets.emplace_back(Message::Packets::SetColor{
-                    .ID        = entity->Entities[i],
-                    .Color = std::move(color),
+                    .ID    = entity->Entities[i],
+                    .Color = { .Red = color.red, .Green = color.green, .Blue = color.blue, .Alpha = color.alpha, },
                 });
             }
 
@@ -193,5 +203,4 @@ extern "C"
 
         return -1;
     }
-
 }

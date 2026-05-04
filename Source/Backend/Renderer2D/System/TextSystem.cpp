@@ -104,7 +104,7 @@ namespace N503::Renderer2D::System
                             static_cast<UINT32>(glyph->SourceRect.right),
                             static_cast<UINT32>(glyph->SourceRect.bottom)
                         ),
-                        .Group      = RenderGroup::Text,
+                        .Group = RenderGroup::Text,
                     }
                 );
 

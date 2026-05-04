@@ -17,7 +17,7 @@ namespace N503::Renderer2D::System
     class TextSystem
     {
     public:
-        TextSystem()  = default;
+        TextSystem() = default;
 
         ~TextSystem() = default;
 

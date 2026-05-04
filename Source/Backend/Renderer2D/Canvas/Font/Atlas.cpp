@@ -19,6 +19,15 @@ namespace N503::Renderer2D::Canvas::Font
 
     Atlas::Atlas(ID2D1DeviceContext3* deviceContext, IDWriteFactory3* dwriteFactory, IDWriteFontFace3* fontFace, float emSize, std::u32string_view charset)
     {
+        if (charset.empty())
+        {
+            m_Charset = BuildFullCharset();
+        }
+        else
+        {
+            m_Charset = charset;
+        }
+
         D2D1_BITMAP_PROPERTIES1 properties{};
         properties.pixelFormat   = { DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED };
         properties.dpiX          = 96.0f;
@@ -44,9 +53,9 @@ namespace N503::Renderer2D::Canvas::Font
         float cursorY   = 1.0f;
         float rowHeight = 0.0f;
 
-        for (const char32_t cp : charset)
+        for (const char32_t codePage : m_Charset)
         {
-            UINT32 ucp        = static_cast<UINT32>(cp);
+            UINT32 ucp        = static_cast<UINT32>(codePage);
             UINT16 glyphIndex = 0;
             fontFace->GetGlyphIndices(&ucp, 1, &glyphIndex);
 
@@ -77,7 +86,7 @@ namespace N503::Renderer2D::Canvas::Font
             const D2D1_POINT_2F baseline{ cursorX + bearingX, cursorY + bearingY };
             deviceContext->DrawGlyphRun(baseline, &run, brush.get());
 
-            m_Glyphs[cp] = Glyph{
+            m_Glyphs[codePage] = Glyph{
                 .SourceRect = D2D1::RectU(
                     static_cast<UINT32>(std::floor(cursorX)),
                     static_cast<UINT32>(std::floor(cursorY)),

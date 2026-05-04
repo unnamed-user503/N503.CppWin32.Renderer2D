@@ -12,21 +12,21 @@ namespace N503::Renderer2D::Geometry
         float _31, _32; // 平行移動 (dx, dy)
 
         // 単位行列
-        static constexpr Matrix3x2 Identity() {
+        static constexpr Matrix3x2 Identity()
+        {
             return { 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f };
         }
 
         // 行列の乗算 (Direct2Dと同じ A * B の順序)
         // Aを適用した後にBを適用する「左から右」の合成
-        Matrix3x2 operator*(const Matrix3x2& other) const {
-            return {
-                _11 * other._11 + _12 * other._21,
-                _11 * other._12 + _12 * other._22,
-                _21 * other._11 + _22 * other._21,
-                _21 * other._12 + _22 * other._22,
-                _31 * other._11 + _32 * other._21 + other._31,
-                _31 * other._12 + _32 * other._22 + other._32
-            };
+        Matrix3x2 operator*(const Matrix3x2& other) const
+        {
+            return { _11 * other._11 + _12 * other._21,
+                     _11 * other._12 + _12 * other._22,
+                     _21 * other._11 + _22 * other._21,
+                     _21 * other._12 + _22 * other._22,
+                     _31 * other._11 + _32 * other._21 + other._31,
+                     _31 * other._12 + _32 * other._22 + other._32 };
         }
 
         // 基本的な静的ファクトリ
@@ -44,15 +44,11 @@ namespace N503::Renderer2D::Geometry
         {
             // 度数法からラジアンへ変換
             float radian = angleDegree * (3.1415926535f / 180.0f);
-            float sin = std::sin(radian);
-            float cos = std::cos(radian);
+            float sin    = std::sin(radian);
+            float cos    = std::cos(radian);
 
             // Direct2D互換の回転行列レイアウト
-            return {
-                 cos, sin,
-                -sin, cos,
-                 0, 0
-            };
+            return { cos, sin, -sin, cos, 0, 0 };
         }
     };
-}
+} // namespace N503::Renderer2D::Geometry

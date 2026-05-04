@@ -72,6 +72,8 @@ namespace N503::Renderer2D::Canvas
         wil::com_ptr<ID2D1DeviceContext> baseContext;
         THROW_IF_FAILED(m_D2DDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, baseContext.put()));
         THROW_IF_FAILED(baseContext->QueryInterface(IID_PPV_ARGS(m_D2DContext.put())));
+
+        DumpInstalledFonts();
     }
 
     // =========================================================
@@ -236,7 +238,7 @@ namespace N503::Renderer2D::Canvas
         fontFaceBase.query_to(&fontFace);
 
         // 4. FontAtlas を生成して返す
-        return std::make_unique<Font::Atlas>(m_D2DContext.get(), m_DWriteFactory.get(), fontFace.get(), emSize, Font::Atlas::BasicLatin);
+        return std::make_unique<Font::Atlas>(m_D2DContext.get(), m_DWriteFactory.get(), fontFace.get(), emSize);
     }
 
     auto Device::TranscodeUtf8ToWide(std::string_view utf8) -> std::wstring

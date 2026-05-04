@@ -21,7 +21,6 @@
 
 extern "C"
 {
-
     n503_renderer2d_text_h n503_renderer2d_text_create(const char* text, const char* font, float size, float r, float g, float b, float a)
     {
         using namespace N503::Renderer2D;
@@ -35,7 +34,7 @@ extern "C"
                 .Text     = text,
                 .FontName = font,
                 .FontSize = size,
-                .Color = { r, g, b, a },
+                .Color    = { r, g, b, a },
             };
 
             Engine::GetInstance().Start();
@@ -84,12 +83,8 @@ extern "C"
             auto entity = reinterpret_cast<TextEntity*>(instance);
 
             auto packet = Message::Packets::SetTransform{
-                .ID = entity->EntityID,
-                .Transform = {
-                    .Position = { x, y, 0.0f },
-                    .Rotation = rotation,
-                    .Scale    = { scaleX, scaleY }
-                },
+                .ID        = entity->EntityID,
+                .Transform = { .Position = { x, y, 0.0f }, .Rotation = rotation, .Scale = { scaleX, scaleY } },
             };
 
             Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
@@ -128,5 +123,4 @@ extern "C"
 
         return -1;
     }
-
 }

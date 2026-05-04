@@ -17,21 +17,11 @@ namespace N503::Renderer2D
     {
     public:
         /// @brief テキストオブジェクトを生成します。
-        explicit Text(
-            const std::string_view text,
-            const std::string_view font = "Consolas",
-            const float size            = 24.0f,
-            ColorF color                = { 1.0f, 1.0f, 1.0f, 1.0f }
-        )
+        explicit Text(const std::string_view text, const std::string_view font = "", const float size = 24.0f, ColorF color = { 1.0f, 1.0f, 1.0f, 1.0f })
             : m_Handle(nullptr)
         {
             // C-API を呼び出し、初期プロパティを一括で渡す
-            m_Handle = n503_renderer2d_text_create(
-                text.data(),
-                font.data(),
-                size,
-                color.Red, color.Green, color.Blue, color.Alpha
-            );
+            m_Handle = n503_renderer2d_text_create(text.data(), font.data(), size, color.Red, color.Green, color.Blue, color.Alpha);
         }
 
         /// @brief リソースを解放します。
@@ -46,12 +36,11 @@ namespace N503::Renderer2D
         }
 
         // コピー禁止
-        Text(const Text&) = delete;
+        Text(const Text&)                    = delete;
         auto operator=(const Text&) -> Text& = delete;
 
         // ムーブ許可
-        Text(Text&& other) noexcept
-            : m_Handle(std::exchange(other.m_Handle, nullptr))
+        Text(Text&& other) noexcept : m_Handle(std::exchange(other.m_Handle, nullptr))
         {
         }
 
@@ -59,7 +48,10 @@ namespace N503::Renderer2D
         {
             if (this != &other)
             {
-                if (m_Handle) n503_renderer2d_text_destroy(m_Handle);
+                if (m_Handle)
+                {
+                    n503_renderer2d_text_destroy(m_Handle);
+                }
                 m_Handle = std::exchange(other.m_Handle, nullptr);
             }
             return *this;
@@ -72,10 +64,7 @@ namespace N503::Renderer2D
             if (m_Handle)
             {
                 n503_renderer2d_text_set_transform(
-                    m_Handle,
-                    transform.Position.X, transform.Position.Y,
-                    transform.Scale.X, transform.Scale.Y,
-                    transform.Rotation
+                    m_Handle, transform.Position.X, transform.Position.Y, transform.Scale.X, transform.Scale.Y, transform.Rotation
                 );
             }
         }
