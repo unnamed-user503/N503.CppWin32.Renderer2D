@@ -21,7 +21,7 @@ namespace N503::Renderer2D
         explicit SpriteGroup(const std::string_view path, std::size_t count, const Geometry::RectU sourceRect = {}) : m_Handle(nullptr)
         {
             m_Handle = n503_renderer2d_sprite_group_create(
-                path.data(), static_cast<uint32_t>(count), sourceRect.Left, sourceRect.Top, sourceRect.Right, sourceRect.Bottom
+                path.data(), static_cast<uint32_t>(count), { sourceRect.Left, sourceRect.Top, sourceRect.Right, sourceRect.Bottom }
             );
         }
 

@@ -27,7 +27,7 @@
 extern "C"
 {
     n503_renderer2d_sprite_group_h n503_renderer2d_sprite_group_create(
-        const char* path, uint32_t count, uint32_t left, uint32_t top, uint32_t right, uint32_t bottom
+        const char* path, uint32_t count, const n503_rect_t source
     )
     {
         using namespace N503::Renderer2D;
@@ -51,7 +51,7 @@ extern "C"
                 packets.emplace_back(Message::Packets::CreateSprite{
                     .Result     = &entity->Entities[i],
                     .Path       = path,
-                    .SourceRect = { left, top, right, bottom },
+                    .SourceRect = { source.left, source.top, source.right, source.bottom },
                 });
             }
 
