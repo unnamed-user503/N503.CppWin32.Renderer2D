@@ -17,13 +17,7 @@
 namespace N503::Renderer2D::Device
 {
 
-    auto Window::GetInstance() noexcept -> Window&
-    {
-        static Window instance;
-        return instance;
-    }
-
-    auto Window::GetRenderTargetWindow() const noexcept -> HWND
+    auto Window::FindRenderTargetWindow() -> HWND
     {
         wil::unique_event_nothrow createWindowCompletion;
 

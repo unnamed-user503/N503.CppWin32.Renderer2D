@@ -2,10 +2,6 @@
 #include "Engine.hpp"
 
 // 1. Project Headers
-#include "Device/Context.hpp"
-#include "Device/RenderTarget.hpp"
-#include "Device/Viewport.hpp"
-
 #include "Canvas/Device.hpp"
 #include "Canvas/Session.hpp"
 #include "Canvas/Surface.hpp"
@@ -180,7 +176,7 @@ namespace N503::Renderer2D
         {
             HWND hwnd = nullptr;
 
-            if (canvasSurface == nullptr && (hwnd = Device::Viewport::GetInstance().GetRenderTargetWindow()))
+            if (canvasSurface == nullptr && (hwnd = Device::Window::FindRenderTargetWindow()))
             {
                 canvasSurface = std::make_unique<Canvas::Surface>(*canvasDevice, hwnd);
                 m_StartedEvent.SetEvent();
@@ -257,6 +253,8 @@ namespace N503::Renderer2D
 
                 if (endDrawResult == D2DERR_RECREATE_TARGET || presentResult == DXGI_ERROR_DEVICE_REMOVED || presentResult == DXGI_ERROR_DEVICE_RESET)
                 {
+                    canvasDevice  = std::make_unique<Canvas::Device>();
+                    canvasSurface = std::make_unique<Canvas::Surface>(*canvasDevice, canvasSurface->GetTargetWindow());
                 }
             }
 

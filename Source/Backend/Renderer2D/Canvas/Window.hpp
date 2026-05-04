@@ -19,10 +19,7 @@ namespace N503::Renderer2D::Device
     class Window
     {
     public:
-        static auto GetInstance() noexcept -> Window&;
-
-    public:
-        auto GetRenderTargetWindow() const noexcept -> HWND;
+        static auto FindRenderTargetWindow() -> HWND;
     };
 
 } // namespace N503::Renderer2D::Device

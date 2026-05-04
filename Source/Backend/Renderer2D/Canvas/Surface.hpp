@@ -40,15 +40,22 @@ namespace N503::Renderer2D::Canvas
         auto Present(UINT syncInterval = 1) noexcept -> HRESULT;
 
         // アクセサ
-        auto TargetBitmap() const noexcept -> ID2D1Bitmap1*
+        auto GetTargetWindow() const noexcept -> HWND
+        {
+            return m_TargetWindow;
+        }
+
+        auto GetTargetBitmap() const noexcept -> ID2D1Bitmap1*
         {
             return m_TargetBitmap.get();
         }
-        auto Width() const noexcept -> UINT32
+
+        auto GetWidth() const noexcept -> UINT32
         {
             return m_Width;
         }
-        auto Height() const noexcept -> UINT32
+
+        auto GetHeight() const noexcept -> UINT32
         {
             return m_Height;
         }

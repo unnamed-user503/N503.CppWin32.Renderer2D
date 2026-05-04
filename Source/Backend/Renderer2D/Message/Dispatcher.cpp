@@ -2,7 +2,6 @@
 #include "Dispatcher.hpp"
 
 // 1. Project Headers
-#include "../Device/Context.hpp"
 #include "Context.hpp"
 #include "Envelope.hpp"
 #include "Queue.hpp"
