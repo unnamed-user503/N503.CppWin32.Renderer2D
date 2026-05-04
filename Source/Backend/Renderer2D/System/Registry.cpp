@@ -22,7 +22,7 @@ namespace N503::Renderer2D::System
     {
         for (std::uint64_t entityId = 0; entityId < MaxEntities; ++entityId)
         {
-            m_AvailableEntityIds.push_back(static_cast<Entity>(MaxEntities - entityId));
+            m_AvailableEntityIds.push_back(static_cast<Entity>(MaxEntities - 1 - entityId));
         }
     }
 

@@ -77,7 +77,7 @@ namespace N503::Renderer2D::Canvas
         m_Device->GetD2D1DeviceContext().DrawBitmap(bitmap, destination, opacity, interpolationMode);
     }
 
-    auto Session::GetDefaultSpriteBatch() const noexcept -> ID2D1SpriteBatch*
+    auto Session::GetDefaultSpriteBatch() -> ID2D1SpriteBatch*
     {
         return &m_Device->GetDefaultSpriteBatch();
     }

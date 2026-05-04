@@ -3,12 +3,15 @@
 
 // 1. Project Headers
 #include "../Pixels/Buffer.hpp"
+#include "../Engine.hpp"
 #include "Cache.hpp"
 #include "FontAtlas.hpp"
 #include "Surface.hpp"
 
 // 3. WIL
 #include <wil/result_macros.h>
+
+#include <format>
 
 namespace N503::Renderer2D::Canvas
 {
@@ -200,10 +203,20 @@ namespace N503::Renderer2D::Canvas
         BOOL   exists{};
         collection->FindFamilyName(familyName.data(), &familyIndex, &exists);
 
-        if (!exists)
-        {
-            return nullptr;
-        }
+    // ★ 見つからなければフォールバック
+    if (!exists)
+    {
+        constexpr std::wstring_view FallbackFont = L"Yu Gothic UI";
+        collection->FindFamilyName(FallbackFont.data(), &familyIndex, &exists);
+
+#ifdef _DEBUG
+        Engine::GetInstance().GetDiagnosticsReporter().Verbose(
+            std::format(L"[Renderer2D] FontAtlas: '{}' not found, falling back to '{}'", familyName, FallbackFont)
+        );
+#endif
+
+        if (!exists) return nullptr; // フォールバックも見つからない場合のみ nullptr
+    }
 
         // 3. FontFamily → Font → FontFace
         wil::com_ptr<IDWriteFontFamily> fontFamily;

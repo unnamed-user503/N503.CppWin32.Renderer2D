@@ -2,6 +2,7 @@
 #include "CreateText.hpp"
 
 // 1. Project Headers
+#include "../../Canvas/Device.hpp"
 #include "../../Message/Context.hpp"
 #include "../../System/Entity.hpp"
 #include "../../System/Registry.hpp"
@@ -59,11 +60,10 @@ namespace N503::Renderer2D::Message::Packets
             text.Content    = TranscodeUtf8ToWide(Text);
             text.FontName   = TranscodeUtf8ToWide(FontName);
             text.FontSize   = FontSize;
-            text.Color      = D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f);
-            text.Brush      = nullptr;
-            text.TextFormat = nullptr;
-            text.TextLayout = nullptr;
+            text.Atlas      = context.CanvasDevice.GetOrCreateFontAtlas(text.FontName, text.FontSize);
             text.IsDirty    = true;
+
+            auto& color     = context.Registry.AddComponent(entity, System::Component::Color{ 1.0f, 1.0f, 1.0f, 1.0f });
 
             *Result = entity;
         }

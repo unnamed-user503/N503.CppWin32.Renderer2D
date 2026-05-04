@@ -2,48 +2,53 @@
 #include "RendererSystem.hpp"
 
 // 1. Project Headers
+#include "../Canvas/FontAtlas.hpp"
 #include "../Canvas/Session.hpp"
 #include "Entity.hpp"
 #include "Registry.hpp"
 
 // 2. Project Dependencies
-#include <algorithm> // std::sort のため
+#include <algorithm>
 
 namespace N503::Renderer2D::System
 {
     auto RendererSystem::Update(Registry& registry, Canvas::Session& session) -> void
     {
-        using namespace Component;
-
-        // RenderGroup ごとに DrawCommand を格納するバッファ
         std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)> renderGroups;
 
-        // 1. 全エンティティを走査してコマンドを収集
-        for (auto entity : registry.GetView<Component::Transform, Sprite, Color>())
+        CollectSpriteCommands(registry, renderGroups);
+        CollectTextCommands(registry, renderGroups);
+        FlushRenderGroups(session, renderGroups);
+    }
+
+    // =========================================================
+    // Sprite コマンド収集
+    // =========================================================
+
+    auto RendererSystem::CollectSpriteCommands(
+        Registry&                                                                    registry,
+        std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups
+    ) -> void
+    {
+        using namespace Component;
+
+        for (auto entity : registry.GetView<Transform, Sprite, Color>())
         {
             auto& color = registry.GetComponent<Color>(entity);
-
-            if (color.Alpha <= 0.0f)
-            {
-                continue;
-            }
+            if (color.Alpha <= 0.0f) continue;
 
             auto& sprite = registry.GetComponent<Sprite>(entity);
-
-            if (!sprite.Bitmap)
-            {
-                continue;
-            }
+            if (!sprite.Bitmap) continue;
 
             auto& transform = registry.GetComponent<Transform>(entity);
 
-            // トランスフォームキャッシュの更新
             if (transform.IsDirty)
             {
-                // スプライトの中心を基準とした行列合成
-                m_TransformCache[entity] = D2D1::Matrix3x2F::Translation(-sprite.DestinationRect.right * 0.5f, -sprite.DestinationRect.bottom * 0.5f) *
-                                           D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y) * D2D1::Matrix3x2F::Rotation(transform.Rotation) *
-                                           D2D1::Matrix3x2F::Translation(transform.Position.X, transform.Position.Y);
+                m_TransformCache[entity] =
+                    D2D1::Matrix3x2F::Translation(-sprite.DestinationRect.right * 0.5f, -sprite.DestinationRect.bottom * 0.5f) *
+                    D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y)                                               *
+                    D2D1::Matrix3x2F::Rotation(transform.Rotation)                                                              *
+                    D2D1::Matrix3x2F::Translation(transform.Position.X, transform.Position.Y);
                 transform.IsDirty = false;
             }
 
@@ -55,41 +60,113 @@ namespace N503::Renderer2D::System
                 .Matrix          = m_TransformCache[entity],
             });
         }
+    }
 
+    // =========================================================
+    // Text コマンド収集
+    // グリフ子エンティティを生成せず、直接 DrawCommand に変換する
+    // =========================================================
+
+auto RendererSystem::CollectTextCommands(
+    Registry& registry,
+    std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups
+) -> void
+{
+    using namespace Component;
+
+    for (auto entity : registry.GetView<Transform, Text, Color>())
+    {
+        const auto& text = registry.GetComponent<Text>(entity);
+        if (!text.Atlas) continue;
+
+        const auto& transform = registry.GetComponent<Transform>(entity);
+
+        // ★ Group に応じて正しいバケツへ振り分け (Sprite と同じ扱い)
+        auto& targetGroup = renderGroups[static_cast<size_t>(text.Group)];
+
+        float penX = 0.0f;
+
+        const auto& color = registry.GetComponent<Color>(entity);
+
+        for (const wchar_t wc : text.Content)
+        {
+            const Canvas::GlyphInfo* glyph = text.Atlas->GetGlyph(static_cast<char32_t>(wc));
+            if (!glyph) continue;
+
+            if (glyph->AdvanceWidth <= 0.0f)
+            {
+                penX += text.LetterSpacing;
+                continue;
+            }
+
+            const float glyphW = glyph->SourceRect.right  - glyph->SourceRect.left;
+            const float glyphH = glyph->SourceRect.bottom - glyph->SourceRect.top;
+
+            const D2D1_MATRIX_3X2_F matrix =
+                D2D1::Matrix3x2F::Translation(-glyphW * 0.5f, -glyphH * 0.5f) *
+                D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y)  *
+                D2D1::Matrix3x2F::Rotation(transform.Rotation)                 *
+                D2D1::Matrix3x2F::Translation(
+                    transform.Position.X + penX + glyph->BearingX,
+                    transform.Position.Y
+                );
+
+            // ★ text.Atlas->GetBitmap() がフォント×サイズごとに異なる Bitmap を返す
+            //    FlushRenderGroups の Bitmap ソートで自動的にバッチ化される
+            targetGroup.emplace_back(DrawCommand{
+                .Bitmap          = text.Atlas->GetBitmap(),
+                .DestinationRect = D2D1::RectF(0.0f, 0.0f, glyphW, glyphH),
+                .SourceRect      = D2D1::RectU(
+                                       static_cast<UINT32>(glyph->SourceRect.left),
+                                       static_cast<UINT32>(glyph->SourceRect.top),
+                                       static_cast<UINT32>(glyph->SourceRect.right),
+                                       static_cast<UINT32>(glyph->SourceRect.bottom)
+                                   ),
+                .Color           = D2D1_COLOR_F{ color.Red, color.Green, color.Blue, color.Alpha },
+                .Matrix          = matrix,
+            });
+
+            penX += glyph->AdvanceWidth + text.LetterSpacing;
+        }
+    }
+}
+
+    // =========================================================
+    // RenderGroup をフラッシュして描画
+    // =========================================================
+
+    auto RendererSystem::FlushRenderGroups(
+        Canvas::Session& session,
+        std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups
+    ) -> void
+    {
         auto spriteBatch = session.GetDefaultSpriteBatch();
 
         const auto beforeAntialiasMode = session.GetAntialiasMode();
         session.SetAntialiasMode(D2D1_ANTIALIAS_MODE_ALIASED);
 
-        // 2. RenderGroup の順番に処理
         for (auto& commands : renderGroups)
         {
-            if (commands.empty())
-            {
-                continue;
-            }
+            if (commands.empty()) continue;
 
-            // --- 重要: Bitmap ポインタでソートして、同じ Bitmap を隣接させる ---
-            std::sort(commands.begin(), commands.end(), [](const DrawCommand& a, const DrawCommand& b) { return a.Bitmap < b.Bitmap; });
+            // 同じ Bitmap を隣接させてバッチ効率を上げる
+            std::sort(commands.begin(), commands.end(),
+                [](const DrawCommand& a, const DrawCommand& b) { return a.Bitmap < b.Bitmap; });
 
-            // 3. 同じ Bitmap を持つ連続した区間をバッチとして描画
             for (size_t i = 0; i < commands.size();)
             {
                 ID2D1Bitmap* currentBitmap = commands[i].Bitmap;
-                size_t batchStart          = i;
+                const size_t batchStart    = i;
 
-                // 同じビットマップが続く限りインデックスを進める
                 while (i < commands.size() && commands[i].Bitmap == currentBitmap)
                 {
                     ++i;
                 }
 
-                size_t batchSize = i - batchStart;
+                const size_t batchSize = i - batchStart;
 
-                // スプライトバッチをクリアして、同じビットマップのものを一括登録
                 spriteBatch->Clear();
 
-                // AddSprites のストライド機能を利用して DrawCommand 構造体の配列をそのまま流し込む
                 session.AddSprites(
                     spriteBatch,
                     static_cast<uint32_t>(batchSize),
@@ -97,13 +174,12 @@ namespace N503::Renderer2D::System
                     &commands[batchStart].SourceRect,
                     &commands[batchStart].Color,
                     &commands[batchStart].Matrix,
-                    sizeof(DrawCommand), // 各データのストライド（構造体のサイズ）を指定
+                    sizeof(DrawCommand),
                     sizeof(DrawCommand),
                     sizeof(DrawCommand),
                     sizeof(DrawCommand)
                 );
 
-                // バッチ描画の実行
                 session.DrawSpriteBatch(spriteBatch, currentBitmap, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, D2D1_SPRITE_OPTIONS_NONE);
             }
         }
@@ -111,4 +187,5 @@ namespace N503::Renderer2D::System
         session.SetAntialiasMode(beforeAntialiasMode);
         session.ResetTransform();
     }
+
 } // namespace N503::Renderer2D::System

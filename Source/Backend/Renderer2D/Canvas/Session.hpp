@@ -52,7 +52,7 @@ namespace N503::Renderer2D::Canvas
         ) -> void;
 
         // デバイスが所有するデフォルトのスプライトバッチを取得する
-        auto GetDefaultSpriteBatch() const noexcept -> ID2D1SpriteBatch*;
+        auto GetDefaultSpriteBatch() -> ID2D1SpriteBatch*;
 
         auto AddSprites(
             ID2D1SpriteBatch* spriteBatch,

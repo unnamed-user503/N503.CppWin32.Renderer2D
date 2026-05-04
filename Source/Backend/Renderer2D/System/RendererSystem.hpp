@@ -3,16 +3,11 @@
 // 1. Project Headers
 #include "Entity.hpp"
 
-// 2. Project Dependencies
-
-// 3. WIL (Windows Implementation Library)
-
-// 4. Third-party Libraries
-
 // 5. Windows Headers
+#include <d2d1_1.h>
 
 // 6. C++ Standard Libraries
-#include <unordered_map>
+#include <array>
 #include <vector>
 
 namespace N503::Renderer2D::Canvas
@@ -27,35 +22,45 @@ namespace N503::Renderer2D::System
 
 namespace N503::Renderer2D::System
 {
-
     class RendererSystem
     {
-        struct DrawCommand
-        {
-            ID2D1Bitmap1* Bitmap{ nullptr };
-            D2D1_RECT_F DestinationRect{};
-            D2D1_RECT_U SourceRect{};
-            D2D1_COLOR_F Color{};
-            D2D1_MATRIX_3X2_F Matrix{};
-        };
-        // 「AddSprites が期待する順序通りに並んでいること」だけを保証する
-        static_assert(offsetof(DrawCommand, DestinationRect) < offsetof(DrawCommand, SourceRect));
-        static_assert(offsetof(DrawCommand, SourceRect) < offsetof(DrawCommand, Color));
-        static_assert(offsetof(DrawCommand, Color) < offsetof(DrawCommand, Matrix));
-
-        struct IdentityHash
-        {
-            auto operator()(std::uint16_t value) const -> std::size_t
-            {
-                return static_cast<std::size_t>(value);
-            }
-        };
-
     public:
+        RendererSystem()  = default;
+        ~RendererSystem() = default;
+
+        // コピー禁止
+        RendererSystem(const RendererSystem&)                    = delete;
+        auto operator=(const RendererSystem&) -> RendererSystem& = delete;
+
         auto Update(Registry& registry, Canvas::Session& session) -> void;
 
     private:
-        std::unordered_map<Entity, D2D1_MATRIX_3X2_F, IdentityHash> m_TransformCache;
+        struct DrawCommand
+        {
+            ID2D1Bitmap*      Bitmap;
+            D2D1_RECT_F       DestinationRect;
+            D2D1_RECT_U       SourceRect;
+            D2D1_COLOR_F      Color;
+            D2D1_MATRIX_3X2_F Matrix;
+        };
+
+        // Sprite エンティティ用トランスフォームキャッシュ
+        std::array<D2D1_MATRIX_3X2_F, MaxEntities> m_TransformCache{};
+
+        auto CollectSpriteCommands(
+            Registry&                                                                    registry,
+            std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups
+        ) -> void;
+
+        auto CollectTextCommands(
+            Registry&                                                                    registry,
+            std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups
+        ) -> void;
+
+        auto FlushRenderGroups(
+            Canvas::Session&                                                             session,
+            std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups
+        ) -> void;
     };
 
 } // namespace N503::Renderer2D::System

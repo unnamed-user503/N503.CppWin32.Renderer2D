@@ -44,6 +44,7 @@ namespace N503::Renderer2D
         Background = 0,
         World,
         Normal,
+        Text,
         Effect,
         UI,
         Threshold,

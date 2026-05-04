@@ -1,6 +1,7 @@
 #pragma once
 
 // 1. Project Headers
+#include "../../Canvas/FontAtlas.hpp"
 
 // 2. Project Dependencies
 
@@ -27,13 +28,11 @@ namespace N503::Renderer2D::System::Component
 
         float FontSize{ 0.0f };
 
-        D2D1_COLOR_F Color;
+        RenderGroup Group{ RenderGroup::Text };
 
-        wil::com_ptr<IDWriteTextFormat> TextFormat;
+        Canvas::FontAtlas* Atlas{ nullptr };
 
-        wil::com_ptr<IDWriteTextLayout> TextLayout;
-
-        wil::com_ptr<ID2D1SolidColorBrush> Brush;
+        float LetterSpacing = 0.0f;
 
         bool IsDirty{ true };
 
@@ -42,12 +41,10 @@ namespace N503::Renderer2D::System::Component
             Content.clear();
             FontName.clear();
             FontSize = 0.0f;
-
-            TextFormat.reset();
-            TextLayout.reset();
-            Brush.reset();
-
-            IsDirty = false;
+            Group = RenderGroup::Text;
+            Atlas = nullptr;
+            LetterSpacing = 0.0f;
+            IsDirty = true;
         }
     };
 

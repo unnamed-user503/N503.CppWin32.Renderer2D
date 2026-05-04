@@ -213,7 +213,7 @@ namespace N503::Renderer2D
                 auto start = std::chrono::steady_clock::now();
 
                 spriteSystem->Update(*m_SystemRegistry, *canvasDevice, *resources);
-                textSystem->Update(*m_SystemRegistry, *canvasDevice);
+                textSystem->Update(*m_SystemRegistry);
                 rendererSystem->Update(*m_SystemRegistry, canvasSession);
 
                 auto end = std::chrono::steady_clock::now();
