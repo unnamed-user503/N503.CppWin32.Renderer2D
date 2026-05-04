@@ -5,18 +5,23 @@
 
 namespace N503::Renderer2D::Canvas
 {
-    auto FontAtlas::Create(ID2D1DeviceContext3* dc, IDWriteFactory3* dwFactory, IDWriteFontFace3* fontFace, float emSize, std::u32string_view charset)
-        -> std::unique_ptr<FontAtlas>
+    auto FontAtlas::Create(
+        ID2D1DeviceContext3* dc,
+        IDWriteFactory3*     dwFactory,
+        IDWriteFontFace3*    fontFace,
+        float                emSize,
+        std::u32string_view  charset
+    ) -> std::unique_ptr<FontAtlas>
     {
         auto atlas = std::unique_ptr<FontAtlas>(new FontAtlas());
 
         // ---- オフスクリーン Bitmap を作成 ----
-        // D2D1_BITMAP_OPTIONS_TARGET    : DC のレンダーターゲットとして使用可
-        // CANNOT_DRAW を付けない        : DrawSpriteBatch のソースとして使用可
+        // D2D1_BITMAP_OPTIONS_TARGET : DC のレンダーターゲットとして使用可
+        // CANNOT_DRAW を付けない     : DrawSpriteBatch のソースとして使用可
         D2D1_BITMAP_PROPERTIES1 props{};
-        props.pixelFormat = { DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED };
-        props.dpiX = props.dpiY = 96.0f;
-        props.bitmapOptions     = D2D1_BITMAP_OPTIONS_TARGET; // ★ CANNOT_DRAW を除去
+        props.pixelFormat   = { DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED };
+        props.dpiX          = props.dpiY = 96.0f;
+        props.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET;
 
         wil::com_ptr<ID2D1Bitmap1> stagingBitmap;
         dc->CreateBitmap({ AtlasWidth, AtlasHeight }, nullptr, 0, &props, &stagingBitmap);
@@ -51,45 +56,53 @@ namespace N503::Renderer2D::Canvas
             DWRITE_GLYPH_METRICS gm{};
             fontFace->GetDesignGlyphMetrics(&glyphIndex, 1, &gm, FALSE);
 
-            const float glyphW   = gm.advanceWidth * scale;
-            const float glyphH   = static_cast<float>(fontMetrics.ascent + fontMetrics.descent) * scale;
-            const float bearingX = gm.leftSideBearing * scale;
-            const float bearingY = static_cast<float>(fontMetrics.ascent) * scale;
+            const float advanceWidth = gm.advanceWidth * scale;
+            const float bearingX     = gm.leftSideBearing * scale;
+            const float bearingY     = static_cast<float>(fontMetrics.ascent) * scale;
 
-            // 行折り返し
-            if (cursorX + glyphW + 1.0f > static_cast<float>(AtlasWidth))
+            // セル高さ = ascent + descent + lineGap で余裕を持たせる
+            // さらに ceil で切り上げてサブピクセル描画の切れを防ぐ
+            const float cellH = std::ceil(
+                static_cast<float>(fontMetrics.ascent + fontMetrics.descent + fontMetrics.lineGap) * scale
+            );
+
+            // 行折り返し (advanceWidth ベース、2px パディング込み)
+            if (cursorX + advanceWidth + 2.0f > static_cast<float>(AtlasWidth))
             {
-                cursorX    = 1.0f;
-                cursorY   += rowHeight + 1.0f;
-                rowHeight  = 0.0f;
+                cursorX   = 1.0f;
+                cursorY  += rowHeight + 2.0f; // 垂直方向も 2px パディング
+                rowHeight = 0.0f;
             }
 
-            rowHeight = std::max(rowHeight, glyphH);
+            rowHeight = std::max(rowHeight, cellH);
 
             // DirectWrite でグリフをアトラスにレンダリング
+            // baseline.x = cursorX + bearingX: DirectWrite の自然な描画位置
             DWRITE_GLYPH_RUN run{};
             run.fontFace     = fontFace;
             run.fontEmSize   = emSize;
             run.glyphCount   = 1;
             run.glyphIndices = &glyphIndex;
 
-            // ★ bearingX は加算 (左ベアリング分だけカーソルから右にオフセット)
             const D2D1_POINT_2F baseline{ cursorX + bearingX, cursorY + bearingY };
             dc->DrawGlyphRun(baseline, &run, brush.get());
 
+            // SourceRect = advanceWidth 幅のセル全体
+            // BearingX の空白も含むため、描画側では penX のみで位置が決まる
+            // right/bottom は ceil で切り上げ (float→uint 切り捨てによるサンプリング漏れ防止)
             atlas->m_Glyphs[cp] = Glyph{
-                .SourceRect = D2D1::RectU(
-                    static_cast<UINT32>(cursorX), // セル左端
-                    static_cast<UINT32>(cursorY),
-                    static_cast<UINT32>(cursorX + glyphW), // advanceWidth 分の幅
-                    static_cast<UINT32>(cursorY + glyphH)
-                ),
-                .AdvanceWidth = glyphW,
+                .SourceRect   = D2D1::RectU(
+                                    static_cast<UINT32>(std::floor(cursorX)),
+                                    static_cast<UINT32>(std::floor(cursorY)),
+                                    static_cast<UINT32>(std::ceil(cursorX + advanceWidth)),
+                                    static_cast<UINT32>(std::ceil(cursorY + cellH))
+                                ),
+                .AdvanceWidth = advanceWidth,
                 .BearingX     = bearingX,
                 .BearingY     = bearingY,
             };
 
-            cursorX += glyphW + 1.0f; // 1px パディング (グリフ滲み防止)
+            cursorX += advanceWidth + 2.0f; // 2px パディング (グリフ間のサンプリング漏れ防止)
         }
 
         dc->EndDraw();
@@ -99,9 +112,9 @@ namespace N503::Renderer2D::Canvas
         return atlas;
     }
 
-    auto FontAtlas::GetGlyph(char32_t codePage) const -> const Glyph*
+    auto FontAtlas::GetGlyph(char32_t cp) const -> const Glyph*
     {
-        const auto it = m_Glyphs.find(codePage);
+        const auto it = m_Glyphs.find(cp);
         return (it != m_Glyphs.end()) ? &it->second : nullptr;
     }
 

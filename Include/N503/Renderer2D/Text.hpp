@@ -19,7 +19,7 @@ namespace N503::Renderer2D
         /// @brief テキストオブジェクトを生成します。
         explicit Text(
             const std::string_view text,
-            const std::string_view font = "MS UI Gothic",
+            const std::string_view font = "Consolas",
             const float size            = 24.0f,
             ColorF color                = { 1.0f, 1.0f, 1.0f, 1.0f }
         )
