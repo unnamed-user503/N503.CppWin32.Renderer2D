@@ -37,30 +37,22 @@ namespace N503::Renderer2D::System
     private:
         struct DrawCommand
         {
-            ID2D1Bitmap*      Bitmap;
-            D2D1_RECT_F       DestinationRect;
-            D2D1_RECT_U       SourceRect;
-            D2D1_COLOR_F      Color;
+            ID2D1Bitmap* Bitmap;
+            D2D1_RECT_F DestinationRect;
+            D2D1_RECT_U SourceRect;
+            D2D1_COLOR_F Color;
             D2D1_MATRIX_3X2_F Matrix;
         };
 
         // Sprite エンティティ用トランスフォームキャッシュ
         std::array<D2D1_MATRIX_3X2_F, MaxEntities> m_TransformCache{};
 
-        auto CollectSpriteCommands(
-            Registry&                                                                    registry,
-            std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups
-        ) -> void;
+        auto CollectSpriteCommands(Registry& registry, std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups) -> void;
 
-        auto CollectTextCommands(
-            Registry&                                                                    registry,
-            std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups
-        ) -> void;
+        auto CollectTextCommands(Registry& registry, std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups) -> void;
 
-        auto FlushRenderGroups(
-            Canvas::Session&                                                             session,
-            std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups
-        ) -> void;
+        auto FlushRenderGroups(Canvas::Session& session, std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups)
+            -> void;
     };
 
 } // namespace N503::Renderer2D::System

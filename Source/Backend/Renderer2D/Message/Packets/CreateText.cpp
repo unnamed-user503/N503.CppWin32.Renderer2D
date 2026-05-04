@@ -56,14 +56,14 @@ namespace N503::Renderer2D::Message::Packets
             transform.Scale.X    = 0.0f;
             transform.Scale.Y    = 0.0f;
 
-            auto& text      = context.Registry.AddComponent(entity, System::Component::Text{});
-            text.Content    = TranscodeUtf8ToWide(Text);
-            text.FontName   = TranscodeUtf8ToWide(FontName);
-            text.FontSize   = FontSize;
-            text.Atlas      = context.CanvasDevice.GetOrCreateFontAtlas(text.FontName, text.FontSize);
-            text.IsDirty    = true;
+            auto& text    = context.Registry.AddComponent(entity, System::Component::Text{});
+            text.Content  = TranscodeUtf8ToWide(Text);
+            text.FontName = TranscodeUtf8ToWide(FontName);
+            text.FontSize = FontSize;
+            text.Atlas    = context.CanvasDevice.GetOrCreateFontAtlas(text.FontName, text.FontSize);
+            text.IsDirty  = true;
 
-            auto& color     = context.Registry.AddComponent(entity, System::Component::Color{ 1.0f, 1.0f, 1.0f, 1.0f });
+            auto& color = context.Registry.AddComponent(entity, System::Component::Color{ 1.0f, 1.0f, 1.0f, 1.0f });
 
             *Result = entity;
         }

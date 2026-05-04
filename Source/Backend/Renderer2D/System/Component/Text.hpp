@@ -40,11 +40,11 @@ namespace N503::Renderer2D::System::Component
         {
             Content.clear();
             FontName.clear();
-            FontSize = 0.0f;
-            Group = RenderGroup::Text;
-            Atlas = nullptr;
+            FontSize      = 0.0f;
+            Group         = RenderGroup::Text;
+            Atlas         = nullptr;
             LetterSpacing = 0.0f;
-            IsDirty = true;
+            IsDirty       = true;
         }
     };
 

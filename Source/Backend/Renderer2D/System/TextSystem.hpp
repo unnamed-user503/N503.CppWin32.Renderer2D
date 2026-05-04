@@ -21,7 +21,7 @@ namespace N503::Renderer2D::System
         ~TextSystem() = default;
 
         // コピー禁止
-        TextSystem(const TextSystem&)                    = delete;
+        TextSystem(const TextSystem&) = delete;
 
         auto operator=(const TextSystem&) -> TextSystem& = delete;
 

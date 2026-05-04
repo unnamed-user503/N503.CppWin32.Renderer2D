@@ -5,13 +5,8 @@
 
 namespace N503::Renderer2D::Canvas
 {
-    auto FontAtlas::Create(
-        ID2D1DeviceContext3* dc,
-        IDWriteFactory3*     dwFactory,
-        IDWriteFontFace3*    fontFace,
-        float                emSize,
-        std::u32string_view  charset
-    ) -> std::unique_ptr<FontAtlas>
+    auto FontAtlas::Create(ID2D1DeviceContext3* dc, IDWriteFactory3* dwFactory, IDWriteFontFace3* fontFace, float emSize, std::u32string_view charset)
+        -> std::unique_ptr<FontAtlas>
     {
         auto atlas = std::unique_ptr<FontAtlas>(new FontAtlas());
 
@@ -19,9 +14,9 @@ namespace N503::Renderer2D::Canvas
         // D2D1_BITMAP_OPTIONS_TARGET    : DC のレンダーターゲットとして使用可
         // CANNOT_DRAW を付けない        : DrawSpriteBatch のソースとして使用可
         D2D1_BITMAP_PROPERTIES1 props{};
-        props.pixelFormat   = { DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED };
-        props.dpiX          = props.dpiY = 96.0f;
-        props.bitmapOptions = D2D1_BITMAP_OPTIONS_TARGET; // ★ CANNOT_DRAW を除去
+        props.pixelFormat = { DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED };
+        props.dpiX = props.dpiY = 96.0f;
+        props.bitmapOptions     = D2D1_BITMAP_OPTIONS_TARGET; // ★ CANNOT_DRAW を除去
 
         wil::com_ptr<ID2D1Bitmap1> stagingBitmap;
         dc->CreateBitmap({ AtlasWidth, AtlasHeight }, nullptr, 0, &props, &stagingBitmap);
@@ -56,7 +51,7 @@ namespace N503::Renderer2D::Canvas
             DWRITE_GLYPH_METRICS gm{};
             fontFace->GetDesignGlyphMetrics(&glyphIndex, 1, &gm, FALSE);
 
-            const float glyphW   = gm.advanceWidth    * scale;
+            const float glyphW   = gm.advanceWidth * scale;
             const float glyphH   = static_cast<float>(fontMetrics.ascent + fontMetrics.descent) * scale;
             const float bearingX = gm.leftSideBearing * scale;
             const float bearingY = static_cast<float>(fontMetrics.ascent) * scale;
@@ -64,9 +59,9 @@ namespace N503::Renderer2D::Canvas
             // 行折り返し
             if (cursorX + glyphW + 1.0f > static_cast<float>(AtlasWidth))
             {
-                cursorX   = 1.0f;
-                cursorY  += rowHeight + 1.0f;
-                rowHeight = 0.0f;
+                cursorX    = 1.0f;
+                cursorY   += rowHeight + 1.0f;
+                rowHeight  = 0.0f;
             }
 
             rowHeight = std::max(rowHeight, glyphH);
@@ -83,12 +78,12 @@ namespace N503::Renderer2D::Canvas
             dc->DrawGlyphRun(baseline, &run, brush.get());
 
             atlas->m_Glyphs[cp] = GlyphInfo{
-                .SourceRect   = D2D1::RectU(
-                                    static_cast<UINT32>(cursorX),
-                                    static_cast<UINT32>(cursorY),
-                                    static_cast<UINT32>(cursorX + glyphW),
-                                    static_cast<UINT32>(cursorY + glyphH)
-                                ),
+                .SourceRect = D2D1::RectU(
+                    static_cast<UINT32>(cursorX), // セル左端
+                    static_cast<UINT32>(cursorY),
+                    static_cast<UINT32>(cursorX + glyphW), // advanceWidth 分の幅
+                    static_cast<UINT32>(cursorY + glyphH)
+                ),
                 .AdvanceWidth = glyphW,
                 .BearingX     = bearingX,
                 .BearingY     = bearingY,

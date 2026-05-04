@@ -26,8 +26,7 @@ namespace N503::Renderer2D::System
     // =========================================================
 
     auto RendererSystem::CollectSpriteCommands(
-        Registry&                                                                    registry,
-        std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups
+        Registry& registry, std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups
     ) -> void
     {
         using namespace Component;
@@ -35,20 +34,24 @@ namespace N503::Renderer2D::System
         for (auto entity : registry.GetView<Transform, Sprite, Color>())
         {
             auto& color = registry.GetComponent<Color>(entity);
-            if (color.Alpha <= 0.0f) continue;
+            if (color.Alpha <= 0.0f)
+            {
+                continue;
+            }
 
             auto& sprite = registry.GetComponent<Sprite>(entity);
-            if (!sprite.Bitmap) continue;
+            if (!sprite.Bitmap)
+            {
+                continue;
+            }
 
             auto& transform = registry.GetComponent<Transform>(entity);
 
             if (transform.IsDirty)
             {
-                m_TransformCache[entity] =
-                    D2D1::Matrix3x2F::Translation(-sprite.DestinationRect.right * 0.5f, -sprite.DestinationRect.bottom * 0.5f) *
-                    D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y)                                               *
-                    D2D1::Matrix3x2F::Rotation(transform.Rotation)                                                              *
-                    D2D1::Matrix3x2F::Translation(transform.Position.X, transform.Position.Y);
+                m_TransformCache[entity] = D2D1::Matrix3x2F::Translation(-sprite.DestinationRect.right * 0.5f, -sprite.DestinationRect.bottom * 0.5f) *
+                                           D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y) * D2D1::Matrix3x2F::Rotation(transform.Rotation) *
+                                           D2D1::Matrix3x2F::Translation(transform.Position.X, transform.Position.Y);
                 transform.IsDirty = false;
             }
 
@@ -67,77 +70,80 @@ namespace N503::Renderer2D::System
     // グリフ子エンティティを生成せず、直接 DrawCommand に変換する
     // =========================================================
 
-auto RendererSystem::CollectTextCommands(
-    Registry& registry,
-    std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups
-) -> void
-{
-    using namespace Component;
-
-    for (auto entity : registry.GetView<Transform, Text, Color>())
+    auto RendererSystem::CollectTextCommands(
+        Registry& registry, std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups
+    ) -> void
     {
-        const auto& text = registry.GetComponent<Text>(entity);
-        if (!text.Atlas) continue;
+        using namespace Component;
 
-        const auto& transform = registry.GetComponent<Transform>(entity);
-
-        // ★ Group に応じて正しいバケツへ振り分け (Sprite と同じ扱い)
-        auto& targetGroup = renderGroups[static_cast<size_t>(text.Group)];
-
-        float penX = 0.0f;
-
-        const auto& color = registry.GetComponent<Color>(entity);
-
-        for (const wchar_t wc : text.Content)
+        for (auto entity : registry.GetView<Transform, Text, Color>())
         {
-            const Canvas::GlyphInfo* glyph = text.Atlas->GetGlyph(static_cast<char32_t>(wc));
-            if (!glyph) continue;
-
-            if (glyph->AdvanceWidth <= 0.0f)
+            const auto& text = registry.GetComponent<Text>(entity);
+            if (!text.Atlas)
             {
-                penX += text.LetterSpacing;
                 continue;
             }
 
-            const float glyphW = glyph->SourceRect.right  - glyph->SourceRect.left;
-            const float glyphH = glyph->SourceRect.bottom - glyph->SourceRect.top;
+            const auto& transform = registry.GetComponent<Transform>(entity);
 
-            const D2D1_MATRIX_3X2_F matrix =
-                D2D1::Matrix3x2F::Translation(-glyphW * 0.5f, -glyphH * 0.5f) *
-                D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y)  *
-                D2D1::Matrix3x2F::Rotation(transform.Rotation)                 *
-                D2D1::Matrix3x2F::Translation(
-                    transform.Position.X + penX + glyph->BearingX,
-                    transform.Position.Y
-                );
+            // ★ Group に応じて正しいバケツへ振り分け (Sprite と同じ扱い)
+            auto& targetGroup = renderGroups[static_cast<size_t>(text.Group)];
 
-            // ★ text.Atlas->GetBitmap() がフォント×サイズごとに異なる Bitmap を返す
-            //    FlushRenderGroups の Bitmap ソートで自動的にバッチ化される
-            targetGroup.emplace_back(DrawCommand{
-                .Bitmap          = text.Atlas->GetBitmap(),
-                .DestinationRect = D2D1::RectF(0.0f, 0.0f, glyphW, glyphH),
-                .SourceRect      = D2D1::RectU(
-                                       static_cast<UINT32>(glyph->SourceRect.left),
-                                       static_cast<UINT32>(glyph->SourceRect.top),
-                                       static_cast<UINT32>(glyph->SourceRect.right),
-                                       static_cast<UINT32>(glyph->SourceRect.bottom)
-                                   ),
-                .Color           = D2D1_COLOR_F{ color.Red, color.Green, color.Blue, color.Alpha },
-                .Matrix          = matrix,
-            });
+            float penX = 0.0f;
 
-            penX += glyph->AdvanceWidth + text.LetterSpacing;
+            const auto& color = registry.GetComponent<Color>(entity);
+
+            for (const wchar_t wc : text.Content)
+            {
+                const Canvas::GlyphInfo* glyph = text.Atlas->GetGlyph(static_cast<char32_t>(wc));
+                if (!glyph)
+                {
+                    continue;
+                }
+
+                if (glyph->AdvanceWidth <= 0.0f)
+                {
+                    penX += text.LetterSpacing;
+                    continue;
+                }
+
+                const float glyphW = glyph->SourceRect.right - glyph->SourceRect.left;
+                const float glyphH = glyph->SourceRect.bottom - glyph->SourceRect.top;
+
+                const D2D1_MATRIX_3X2_F matrix = D2D1::Matrix3x2F::Translation(-glyphW * 0.5f, -glyphH * 0.5f) *
+                                                 D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y) *
+                                                 D2D1::Matrix3x2F::Rotation(transform.Rotation) *
+                                                 D2D1::Matrix3x2F::Translation(
+                                                     transform.Position.X + penX, // ← BearingX を除去
+                                                     transform.Position.Y
+                                                 );
+
+                // ★ text.Atlas->GetBitmap() がフォント×サイズごとに異なる Bitmap を返す
+                //    FlushRenderGroups の Bitmap ソートで自動的にバッチ化される
+                targetGroup.emplace_back(DrawCommand{
+                    .Bitmap          = text.Atlas->GetBitmap(),
+                    .DestinationRect = D2D1::RectF(0.0f, 0.0f, glyphW, glyphH),
+                    .SourceRect      = D2D1::RectU(
+                        static_cast<UINT32>(glyph->SourceRect.left),
+                        static_cast<UINT32>(glyph->SourceRect.top),
+                        static_cast<UINT32>(glyph->SourceRect.right),
+                        static_cast<UINT32>(glyph->SourceRect.bottom)
+                    ),
+                    .Color  = D2D1_COLOR_F{ color.Red, color.Green, color.Blue, color.Alpha },
+                    .Matrix = matrix,
+                });
+
+                penX += glyph->AdvanceWidth + text.LetterSpacing;
+            }
         }
     }
-}
 
     // =========================================================
     // RenderGroup をフラッシュして描画
     // =========================================================
 
     auto RendererSystem::FlushRenderGroups(
-        Canvas::Session& session,
-        std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups
+        Canvas::Session& session, std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups
     ) -> void
     {
         auto spriteBatch = session.GetDefaultSpriteBatch();
@@ -147,11 +153,13 @@ auto RendererSystem::CollectTextCommands(
 
         for (auto& commands : renderGroups)
         {
-            if (commands.empty()) continue;
+            if (commands.empty())
+            {
+                continue;
+            }
 
             // 同じ Bitmap を隣接させてバッチ効率を上げる
-            std::sort(commands.begin(), commands.end(),
-                [](const DrawCommand& a, const DrawCommand& b) { return a.Bitmap < b.Bitmap; });
+            std::sort(commands.begin(), commands.end(), [](const DrawCommand& a, const DrawCommand& b) { return a.Bitmap < b.Bitmap; });
 
             for (size_t i = 0; i < commands.size();)
             {

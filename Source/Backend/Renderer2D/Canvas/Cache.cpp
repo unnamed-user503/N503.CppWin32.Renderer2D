@@ -18,9 +18,15 @@ namespace N503::Renderer2D::Canvas
     {
         auto TranscodeUtf8ToWide(std::string_view utf8) -> std::wstring
         {
-            if (utf8.empty()) return {};
+            if (utf8.empty())
+            {
+                return {};
+            }
             int desired = ::MultiByteToWideChar(CP_UTF8, 0, utf8.data(), static_cast<int>(utf8.length()), nullptr, 0);
-            if (desired == 0) return {};
+            if (desired == 0)
+            {
+                return {};
+            }
             std::wstring result(desired, 0);
             ::MultiByteToWideChar(CP_UTF8, 0, utf8.data(), static_cast<int>(utf8.length()), &result[0], desired);
             return result;
@@ -37,10 +43,8 @@ namespace N503::Renderer2D::Canvas
 
     auto Cache::MakeBrushKey(const ColorF color) -> std::uint32_t
     {
-        return (static_cast<uint32_t>(color.Red   * 255.0f) << 24) |
-               (static_cast<uint32_t>(color.Green * 255.0f) << 16) |
-               (static_cast<uint32_t>(color.Blue  * 255.0f) <<  8) |
-                static_cast<uint32_t>(color.Alpha * 255.0f);
+        return (static_cast<uint32_t>(color.Red * 255.0f) << 24) | (static_cast<uint32_t>(color.Green * 255.0f) << 16) |
+               (static_cast<uint32_t>(color.Blue * 255.0f) << 8) | static_cast<uint32_t>(color.Alpha * 255.0f);
     }
 
     auto Cache::MakeTextFormatKey(std::wstring_view fontName, float fontSize) -> std::wstring
@@ -93,9 +97,7 @@ namespace N503::Renderer2D::Canvas
     {
         const auto key = MakeBrushKey(color);
 #ifdef _DEBUG
-        Engine::GetInstance().GetDiagnosticsReporter().Verbose(
-            std::format("[Renderer2D] <Canvas::Cache>: StoreBrush for Color=0x{:08X}", key)
-        );
+        Engine::GetInstance().GetDiagnosticsReporter().Verbose(std::format("[Renderer2D] <Canvas::Cache>: StoreBrush for Color=0x{:08X}", key));
 #endif
         m_Brushes[key] = std::move(brush);
     }
@@ -139,9 +141,7 @@ namespace N503::Renderer2D::Canvas
     auto Cache::StoreTextLayout(std::wstring_view text, IDWriteTextFormat* format, wil::com_ptr<IDWriteTextLayout> layout) -> void
     {
 #ifdef _DEBUG
-        Engine::GetInstance().GetDiagnosticsReporter().Verbose(
-            std::format(L"[Renderer2D] <Canvas::Cache>: StoreTextLayout for Text length={}", text.length())
-        );
+        Engine::GetInstance().GetDiagnosticsReporter().Verbose(std::format(L"[Renderer2D] <Canvas::Cache>: StoreTextLayout for Text length={}", text.length()));
 #endif
         m_TextLayouts[MakeTextLayoutKey(text, format)] = std::move(layout);
     }
@@ -168,7 +168,7 @@ namespace N503::Renderer2D::Canvas
             std::format(L"[Renderer2D] <Canvas::Cache>: StoreFontAtlas for Font={}, Size={}", familyName, emSize)
         );
 #endif
-        auto* raw = atlas.get();
+        auto* raw          = atlas.get();
         m_FontAtlases[key] = std::move(atlas);
         return raw;
     }

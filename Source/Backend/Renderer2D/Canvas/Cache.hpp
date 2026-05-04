@@ -26,7 +26,7 @@ namespace N503::Renderer2D::Canvas
 {
     class Device;
     class FontAtlas;
-}
+} // namespace N503::Renderer2D::Canvas
 
 namespace N503::Renderer2D::Canvas
 {
@@ -73,7 +73,7 @@ namespace N503::Renderer2D::Canvas
         struct FontAtlasKey
         {
             std::wstring FamilyName;
-            float        EmSize;
+            float EmSize;
 
             auto operator==(const FontAtlasKey&) const -> bool = default;
         };
@@ -82,8 +82,8 @@ namespace N503::Renderer2D::Canvas
         {
             auto operator()(const FontAtlasKey& k) const -> size_t
             {
-                size_t h = std::hash<std::wstring>{}(k.FamilyName);
-                h ^= std::hash<float>{}(k.EmSize) + 0x9e3779b9 + (h << 6) + (h >> 2);
+                size_t h  = std::hash<std::wstring>{}(k.FamilyName);
+                h        ^= std::hash<float>{}(k.EmSize) + 0x9e3779b9 + (h << 6) + (h >> 2);
                 return h;
             }
         };
@@ -91,10 +91,10 @@ namespace N503::Renderer2D::Canvas
     private:
         Device& m_Device;
 
-        std::unordered_map<Handle::ResourceID, wil::com_ptr<ID2D1Bitmap1>>            m_Bitmaps;
-        std::unordered_map<std::uint32_t, wil::com_ptr<ID2D1SolidColorBrush>>         m_Brushes;
-        std::unordered_map<std::wstring, wil::com_ptr<IDWriteTextFormat>>              m_TextFormats;
-        std::unordered_map<std::wstring, wil::com_ptr<IDWriteTextLayout>>              m_TextLayouts;
+        std::unordered_map<Handle::ResourceID, wil::com_ptr<ID2D1Bitmap1>> m_Bitmaps;
+        std::unordered_map<std::uint32_t, wil::com_ptr<ID2D1SolidColorBrush>> m_Brushes;
+        std::unordered_map<std::wstring, wil::com_ptr<IDWriteTextFormat>> m_TextFormats;
+        std::unordered_map<std::wstring, wil::com_ptr<IDWriteTextLayout>> m_TextLayouts;
         std::unordered_map<FontAtlasKey, std::unique_ptr<FontAtlas>, FontAtlasKeyHash> m_FontAtlases;
     };
 

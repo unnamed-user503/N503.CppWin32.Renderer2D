@@ -74,20 +74,22 @@ namespace N503::Renderer2D::Canvas
 
         auto TranscodeUtf8ToWide(std::string_view utf8) -> std::wstring;
 
+        auto DumpInstalledFonts() -> void;
+
     private:
         // 命名規則: m_PascalCase
-        wil::com_ptr<ID3D11Device>        m_D3DDevice;
-        wil::com_ptr<ID3D11DeviceContext>  m_D3DContext;
+        wil::com_ptr<ID3D11Device> m_D3DDevice;
+        wil::com_ptr<ID3D11DeviceContext> m_D3DContext;
 
-        wil::com_ptr<ID2D1Factory3>        m_D2DFactory;
-        wil::com_ptr<ID2D1Device2>         m_D2DDevice;
-        wil::com_ptr<ID2D1DeviceContext3>  m_D2DContext;
+        wil::com_ptr<ID2D1Factory3> m_D2DFactory;
+        wil::com_ptr<ID2D1Device2> m_D2DDevice;
+        wil::com_ptr<ID2D1DeviceContext3> m_D2DContext;
 
-        wil::com_ptr<IDWriteFactory3>      m_DWriteFactory;
+        wil::com_ptr<IDWriteFactory3> m_DWriteFactory;
 
-        wil::com_ptr<ID2D1SpriteBatch>     m_DefaultSpriteBatch;
+        wil::com_ptr<ID2D1SpriteBatch> m_DefaultSpriteBatch;
 
-        std::unique_ptr<Canvas::Cache>     m_ResourceCache;
+        std::unique_ptr<Canvas::Cache> m_ResourceCache;
     };
 
 } // namespace N503::Renderer2D::Canvas

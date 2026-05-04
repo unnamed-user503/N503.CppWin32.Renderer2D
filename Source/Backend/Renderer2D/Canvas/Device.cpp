@@ -2,8 +2,8 @@
 #include "Device.hpp"
 
 // 1. Project Headers
-#include "../Pixels/Buffer.hpp"
 #include "../Engine.hpp"
+#include "../Pixels/Buffer.hpp"
 #include "Cache.hpp"
 #include "FontAtlas.hpp"
 #include "Surface.hpp"
@@ -154,10 +154,7 @@ namespace N503::Renderer2D::Canvas
     {
         wil::com_ptr<ID2D1Bitmap1> bitmap;
         const auto size       = D2D1::SizeU(static_cast<UINT32>(pixels.Width), static_cast<UINT32>(pixels.Height));
-        const auto properties = D2D1::BitmapProperties1(
-            D2D1_BITMAP_OPTIONS_NONE,
-            D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED)
-        );
+        const auto properties = D2D1::BitmapProperties1(D2D1_BITMAP_OPTIONS_NONE, D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED));
         THROW_IF_FAILED(m_D2DContext->CreateBitmap(size, pixels.Bytes, pixels.Pitch, properties, bitmap.put()));
         return bitmap;
     }
@@ -173,10 +170,7 @@ namespace N503::Renderer2D::Canvas
     {
         wil::com_ptr<IDWriteTextFormat> format;
         THROW_IF_FAILED(m_DWriteFactory->CreateTextFormat(
-            fontName.data(), nullptr,
-            DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL,
-            fontSize, L"ja-jp",
-            format.put()
+            fontName.data(), nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja-jp", format.put()
         ));
         return format;
     }
@@ -184,11 +178,7 @@ namespace N503::Renderer2D::Canvas
     auto Device::CreateTextLayout(std::wstring_view text, IDWriteTextFormat* format) -> wil::com_ptr<IDWriteTextLayout>
     {
         wil::com_ptr<IDWriteTextLayout> layout;
-        THROW_IF_FAILED(m_DWriteFactory->CreateTextLayout(
-            text.data(), static_cast<UINT32>(text.length()),
-            format, 0.0f, 0.0f,
-            layout.put()
-        ));
+        THROW_IF_FAILED(m_DWriteFactory->CreateTextLayout(text.data(), static_cast<UINT32>(text.length()), format, 0.0f, 0.0f, layout.put()));
         return layout;
     }
 
@@ -200,35 +190,33 @@ namespace N503::Renderer2D::Canvas
 
         // 2. ファミリー名からインデックスを検索
         UINT32 familyIndex{};
-        BOOL   exists{};
+        BOOL exists{};
         collection->FindFamilyName(familyName.data(), &familyIndex, &exists);
 
-    // ★ 見つからなければフォールバック
-    if (!exists)
-    {
-        constexpr std::wstring_view FallbackFont = L"Yu Gothic UI";
-        collection->FindFamilyName(FallbackFont.data(), &familyIndex, &exists);
+        // ★ 見つからなければフォールバック
+        if (!exists)
+        {
+            constexpr std::wstring_view FallbackFont = L"Yu Gothic UI";
+            collection->FindFamilyName(FallbackFont.data(), &familyIndex, &exists);
 
 #ifdef _DEBUG
-        Engine::GetInstance().GetDiagnosticsReporter().Verbose(
-            std::format(L"[Renderer2D] FontAtlas: '{}' not found, falling back to '{}'", familyName, FallbackFont)
-        );
+            Engine::GetInstance().GetDiagnosticsReporter().Verbose(
+                std::format(L"[Renderer2D] FontAtlas: '{}' not found, falling back to '{}'", familyName, FallbackFont)
+            );
 #endif
 
-        if (!exists) return nullptr; // フォールバックも見つからない場合のみ nullptr
-    }
+            if (!exists)
+            {
+                return nullptr; // フォールバックも見つからない場合のみ nullptr
+            }
+        }
 
         // 3. FontFamily → Font → FontFace
         wil::com_ptr<IDWriteFontFamily> fontFamily;
         collection->GetFontFamily(familyIndex, &fontFamily);
 
         wil::com_ptr<IDWriteFont> font;
-        fontFamily->GetFirstMatchingFont(
-            DWRITE_FONT_WEIGHT_REGULAR,
-            DWRITE_FONT_STRETCH_NORMAL,
-            DWRITE_FONT_STYLE_NORMAL,
-            &font
-        );
+        fontFamily->GetFirstMatchingFont(DWRITE_FONT_WEIGHT_REGULAR, DWRITE_FONT_STRETCH_NORMAL, DWRITE_FONT_STYLE_NORMAL, &font);
 
         wil::com_ptr<IDWriteFontFace> fontFaceBase;
         font->CreateFontFace(&fontFaceBase);
@@ -242,12 +230,51 @@ namespace N503::Renderer2D::Canvas
 
     auto Device::TranscodeUtf8ToWide(std::string_view utf8) -> std::wstring
     {
-        if (utf8.empty()) return {};
+        if (utf8.empty())
+        {
+            return {};
+        }
         int desired = ::MultiByteToWideChar(CP_UTF8, 0, utf8.data(), static_cast<int>(utf8.length()), nullptr, 0);
-        if (desired == 0) return {};
+        if (desired == 0)
+        {
+            return {};
+        }
         std::wstring result(desired, 0);
         ::MultiByteToWideChar(CP_UTF8, 0, utf8.data(), static_cast<int>(utf8.length()), &result[0], desired);
         return result;
     }
+#ifdef _DEBUG
+    auto Device::DumpInstalledFonts() -> void
+    {
+        wil::com_ptr<IDWriteFontCollection> collection;
+        m_DWriteFactory->GetSystemFontCollection(&collection, FALSE);
 
+        const UINT32 count = collection->GetFontFamilyCount();
+        for (UINT32 i = 0; i < count; ++i)
+        {
+            wil::com_ptr<IDWriteFontFamily> family;
+            collection->GetFontFamily(i, &family);
+
+            wil::com_ptr<IDWriteLocalizedStrings> names;
+            family->GetFamilyNames(&names);
+
+            UINT32 index{};
+            BOOL found{};
+            names->FindLocaleName(L"ja-jp", &index, &found);
+            if (!found)
+            {
+                names->FindLocaleName(L"en-us", &index, &found);
+            }
+            if (!found)
+            {
+                index = 0;
+            }
+
+            wchar_t buf[256]{};
+            names->GetString(index, buf, 256);
+
+            OutputDebugStringW((std::wstring(buf) + L"\n").c_str());
+        }
+    }
+#endif
 } // namespace N503::Renderer2D::Canvas
