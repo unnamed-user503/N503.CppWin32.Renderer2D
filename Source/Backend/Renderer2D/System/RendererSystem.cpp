@@ -39,18 +39,30 @@ namespace N503::Renderer2D::System
 
             if (transform.IsDirty)
             {
-                m_TransformCache[entity] = D2D1::Matrix3x2F::Translation(-sprite.DestinationRect.right * 0.5f, -sprite.DestinationRect.bottom * 0.5f) *
-                                           D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y) * D2D1::Matrix3x2F::Rotation(transform.Rotation) *
+                // 1. 画像のサイズを取得 (SourceRectが切り出し範囲ならそれが一番正確)
+                float w = sprite.SourceRect.right - sprite.SourceRect.left;
+                float h = sprite.SourceRect.bottom - sprite.SourceRect.top;
+
+                // 2. 行列計算: 中心オフセット -> スケール -> 回転 -> 移動
+                // 32768個回すなら、ここの計算が Dirty フラグでスキップされるのは非常にデカい！
+                m_TransformCache[entity] = D2D1::Matrix3x2F::Translation(-w * 0.5f, -h * 0.5f) * D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y) *
+                                           D2D1::Matrix3x2F::Rotation(transform.Rotation) *
                                            D2D1::Matrix3x2F::Translation(transform.Position.X, transform.Position.Y);
+
                 transform.IsDirty = false;
             }
 
+            // 描画コマンドの作成
             renderGroups[static_cast<size_t>(sprite.Group)].emplace_back(DrawCommand{
-                .Bitmap          = sprite.Bitmap.get(),
-                .DestinationRect = sprite.DestinationRect,
+                .Bitmap = sprite.Bitmap.get(),
+                // Matrix側で座標が決まるので、ここは (0, 0, w, h) でOK
+                .DestinationRect = { 0.0f,
+                                     0.0f,
+                                     static_cast<float>(sprite.SourceRect.right - sprite.SourceRect.left),
+                                     static_cast<float>(sprite.SourceRect.bottom - sprite.SourceRect.top) },
                 .SourceRect      = sprite.SourceRect,
                 .Color           = D2D1::ColorF(color.Red, color.Green, color.Blue, color.Alpha),
-                .Matrix          = m_TransformCache[entity],
+                .Matrix          = m_TransformCache[entity], // これを D2D の pRenderTarget->SetTransform() に渡す
             });
         }
 

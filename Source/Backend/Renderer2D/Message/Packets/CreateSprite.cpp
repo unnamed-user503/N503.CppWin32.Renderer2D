@@ -51,11 +51,11 @@ namespace N503::Renderer2D::Message::Packets
             auto entity = context.Registry.CreateEntity();
 
             // Spriteコンポーネントを追加する
-            auto& sprite                  = context.Registry.AddComponent(entity, System::Component::Sprite{ handle });
-            sprite.DestinationRect.left   = 0.0f;
-            sprite.DestinationRect.top    = 0.0f;
-            sprite.DestinationRect.right  = static_cast<float>(resource->Pixels.Width);
-            sprite.DestinationRect.bottom = static_cast<float>(resource->Pixels.Height);
+            auto& sprite = context.Registry.AddComponent(entity, System::Component::Sprite{ handle });
+            // sprite.DestinationRect.left   = 0.0f;
+            // sprite.DestinationRect.top    = 0.0f;
+            // sprite.DestinationRect.right  = static_cast<float>(resource->Pixels.Width);
+            // sprite.DestinationRect.bottom = static_cast<float>(resource->Pixels.Height);
 
             sprite.SourceRect.left   = SourceRect.Left;
             sprite.SourceRect.top    = SourceRect.Top;

@@ -96,10 +96,9 @@ namespace N503::Renderer2D::System
             registry.AddComponent<Sprite>(
                 glyphEntity,
                 Sprite{
-                    .Bitmap          = text.Atlas->GetBitmap(),
-                    .Group           = RenderGroup::Text,
-                    .DestinationRect = D2D1::RectF(0.0f, 0.0f, glyphW, glyphH),
-                    .SourceRect      = D2D1::RectU(
+                    .Bitmap     = text.Atlas->GetBitmap(),
+                    .Group      = RenderGroup::Text,
+                    .SourceRect = D2D1::RectU(
                         static_cast<UINT32>(glyph->SourceRect.left),
                         static_cast<UINT32>(glyph->SourceRect.top),
                         static_cast<UINT32>(glyph->SourceRect.right),

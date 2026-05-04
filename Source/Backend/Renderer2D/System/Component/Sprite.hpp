@@ -26,17 +26,14 @@ namespace N503::Renderer2D::System::Component
 
         RenderGroup Group{ RenderGroup::Normal };
 
-        D2D1_RECT_F DestinationRect{};
-
         D2D1_RECT_U SourceRect{};
 
         auto Reset() noexcept -> void
         {
             ResourceHandle = { .ID = Handle::ResourceID::Invalid, .Type = Handle::ResourceType::None, .Generation = Handle::Generation::Default };
             Bitmap.reset();
-            Group           = RenderGroup::Normal;
-            DestinationRect = {};
-            SourceRect      = {};
+            Group      = RenderGroup::Normal;
+            SourceRect = {};
         }
     };
 
