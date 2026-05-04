@@ -1,41 +1,44 @@
-// FontAtlas.hpp
 #pragma once
+
+// 1. Project Headers
+#include "Glyph.hpp"
+
+// 2. Project Dependencies
+
+// 3. WIL (Windows Implementation Library)
+#include <wil/com.h>
+
+// 4. Third-party Libraries
+
+// 5. Windows Headers
 #include <d2d1_1.h>
 #include <d2d1_3.h>
 #include <dwrite_3.h>
 
-#include <wil/com.h>
-
+// 6. C++ Standard Libraries
 #include <cstdint>
 #include <memory>
 #include <string_view>
 #include <unordered_map>
 
-namespace N503::Renderer2D::Canvas
+// Declaration
+namespace N503::Renderer2D::Canvas::Font
 {
-    struct Glyph
-    {
-        D2D1_RECT_U SourceRect;
 
-        float AdvanceWidth;
-
-        float BearingX;
-
-        float BearingY;
-    };
-
-    class FontAtlas
+    class Atlas
     {
     public:
         static constexpr std::u32string_view BasicLatin = U" !\"#$%&'()*+,-./0123456789:;<=>?"
                                                           U"@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
                                                           U"`abcdefghijklmnopqrstuvwxyz{|}~";
 
-        static constexpr uint32_t AtlasWidth  = 1024;
+        static constexpr uint32_t AtlasWidth = 1024;
 
         static constexpr uint32_t AtlasHeight = 1024;
 
-        static auto Create(ID2D1DeviceContext3* deviceContext, IDWriteFactory3* dwriteFactory, IDWriteFontFace3* fontFace, float emSize, std::u32string_view charset) -> std::unique_ptr<FontAtlas>;
+        static auto Create() -> std::unique_ptr<Font::Atlas>;
+
+        Atlas(ID2D1DeviceContext3* deviceContext, IDWriteFactory3* dwriteFactory, IDWriteFontFace3* fontFace, float emSize, std::u32string_view charset);
 
         [[nodiscard]]
         auto GetGlyph(char32_t codePage) const -> const Glyph*;
@@ -59,4 +62,5 @@ namespace N503::Renderer2D::Canvas
 
         float m_LineHeight = 0.0f;
     };
-} // namespace N503::Renderer2D::Canvas
+
+} // namespace N503::Renderer2D::Canvas::Font

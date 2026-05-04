@@ -1,7 +1,7 @@
 #pragma once
 
 // 1. Project Headers
-#include "../../Canvas/FontAtlas.hpp"
+#include "../../Canvas/Font/Atlas.hpp"
 
 // 2. Project Dependencies
 
@@ -30,7 +30,7 @@ namespace N503::Renderer2D::System::Component
 
         RenderGroup Group{ RenderGroup::Text };
 
-        Canvas::FontAtlas* Atlas{ nullptr };
+        Canvas::Font::Atlas* Atlas{ nullptr };
 
         float LetterSpacing = 0.0f;
 

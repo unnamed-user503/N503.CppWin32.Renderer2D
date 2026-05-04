@@ -2,7 +2,7 @@
 #include "RendererSystem.hpp"
 
 // 1. Project Headers
-#include "../Canvas/FontAtlas.hpp"
+#include "../Canvas/Font/Atlas.hpp"
 #include "../Canvas/Session.hpp"
 #include "Entity.hpp"
 #include "Registry.hpp"
@@ -16,39 +16,32 @@ namespace N503::Renderer2D::System
     {
         std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)> renderGroups;
 
-        CollectSpriteCommands(registry, renderGroups);
-        CollectTextCommands(registry, renderGroups);
-        FlushRenderGroups(session, renderGroups);
-    }
-
-    // =========================================================
-    // Sprite コマンド収集
-    // =========================================================
-
-    auto RendererSystem::CollectSpriteCommands(
-        Registry&                                                                    registry,
-        std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups
-    ) -> void
-    {
         using namespace Component;
 
+        // ------------------------------------------------------------------
+        // 1. Sprite Draw
+        // ------------------------------------------------------------------
         for (auto entity : registry.GetView<Transform, Sprite, Color>())
         {
             auto& color = registry.GetComponent<Color>(entity);
-            if (color.Alpha <= 0.0f) continue;
+            if (color.Alpha <= 0.0f)
+            {
+                continue;
+            }
 
             auto& sprite = registry.GetComponent<Sprite>(entity);
-            if (!sprite.Bitmap) continue;
+            if (!sprite.Bitmap)
+            {
+                continue;
+            }
 
             auto& transform = registry.GetComponent<Transform>(entity);
 
             if (transform.IsDirty)
             {
-                m_TransformCache[entity] =
-                    D2D1::Matrix3x2F::Translation(-sprite.DestinationRect.right * 0.5f, -sprite.DestinationRect.bottom * 0.5f) *
-                    D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y)                                               *
-                    D2D1::Matrix3x2F::Rotation(transform.Rotation)                                                              *
-                    D2D1::Matrix3x2F::Translation(transform.Position.X, transform.Position.Y);
+                m_TransformCache[entity] = D2D1::Matrix3x2F::Translation(-sprite.DestinationRect.right * 0.5f, -sprite.DestinationRect.bottom * 0.5f) *
+                                           D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y) * D2D1::Matrix3x2F::Rotation(transform.Rotation) *
+                                           D2D1::Matrix3x2F::Translation(transform.Position.X, transform.Position.Y);
                 transform.IsDirty = false;
             }
 
@@ -60,90 +53,64 @@ namespace N503::Renderer2D::System
                 .Matrix          = m_TransformCache[entity],
             });
         }
-    }
 
-    // =========================================================
-    // Text コマンド収集
-    // グリフ子エンティティを生成せず、直接 DrawCommand に変換する
-    // =========================================================
-
-auto RendererSystem::CollectTextCommands(
-    Registry& registry,
-    std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups
-) -> void
-{
-    using namespace Component;
-
-    for (auto entity : registry.GetView<Transform, Text, Color>())
-    {
-        const auto& text = registry.GetComponent<Text>(entity);
-        if (!text.Atlas) continue;
-
-        const auto& transform = registry.GetComponent<Transform>(entity);
-
-        // ★ Group に応じて正しいバケツへ振り分け (Sprite と同じ扱い)
-        auto& targetGroup = renderGroups[static_cast<size_t>(text.Group)];
-
-        float penX = 0.0f;
-
-        const auto& color = registry.GetComponent<Color>(entity);
-
-        for (const wchar_t wc : text.Content)
+        // ------------------------------------------------------------------
+        // 2. Text Draw
+        // ------------------------------------------------------------------
+        for (auto entity : registry.GetView<Transform, Text, Color>())
         {
-            const auto* glyph = text.Atlas->GetGlyph(static_cast<char32_t>(wc));
-
-            // アトラスに存在しない文字 (スペース等) はフォントサイズの半分を送る
-            if (!glyph)
-            {
-                penX += text.FontSize * 0.5f + text.LetterSpacing;
-                continue;
-            }
-
-            // ゼロ幅文字 (結合文字等) はペン送りなし
-            if (glyph->AdvanceWidth <= 0.0f)
+            const auto& text = registry.GetComponent<Text>(entity);
+            if (!text.Atlas)
             {
                 continue;
             }
 
-            // SourceRect = advanceWidth 幅のセル全体 (BearingX 込み)
-            const float cellW = static_cast<float>(glyph->SourceRect.right  - glyph->SourceRect.left);
-            const float cellH = static_cast<float>(glyph->SourceRect.bottom - glyph->SourceRect.top);
+            const auto& transform = registry.GetComponent<Transform>(entity);
 
-            // 行列:
-            //   Step1: セル矩形の中心を原点へ
-            //   Step2: スケール・回転
-            //   Step3: ワールド座標へ移動 (penX のみ、BearingX は SourceRect に込み済み)
-            const D2D1_MATRIX_3X2_F matrix =
-                D2D1::Matrix3x2F::Translation(-cellW * 0.5f, -cellH * 0.5f)   *
-                D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y)  *
-                D2D1::Matrix3x2F::Rotation(transform.Rotation)                 *
-                D2D1::Matrix3x2F::Translation(
-                    transform.Position.X + penX + cellW * 0.5f,
-                    transform.Position.Y + cellH * 0.5f
-                );
+            auto& targetGroup = renderGroups[static_cast<std::size_t>(text.Group)];
 
-            targetGroup.emplace_back(DrawCommand{
-                .Bitmap          = text.Atlas->GetBitmap(),
-                .DestinationRect = D2D1::RectF(0.0f, 0.0f, cellW, cellH),
-                .SourceRect      = glyph->SourceRect,
-                .Color           = D2D1_COLOR_F{ color.Red, color.Green, color.Blue, color.Alpha },
-                .Matrix          = matrix,
-            });
+            float penX = 0.0f;
 
-            penX += cellW + text.LetterSpacing; // SourceRect 幅 (ceil 済み) でペンを送る
+            const auto& color = registry.GetComponent<Color>(entity);
+
+            for (const wchar_t wideChar : text.Content)
+            {
+                const auto* glyph = text.Atlas->GetGlyph(static_cast<char32_t>(wideChar));
+
+                if (!glyph)
+                {
+                    penX += text.FontSize * 0.5f + text.LetterSpacing;
+                    continue;
+                }
+
+                if (glyph->AdvanceWidth <= 0.0f)
+                {
+                    continue;
+                }
+
+                const float cellW = static_cast<float>(glyph->SourceRect.right - glyph->SourceRect.left);
+                const float cellH = static_cast<float>(glyph->SourceRect.bottom - glyph->SourceRect.top);
+
+                const D2D1_MATRIX_3X2_F matrix = D2D1::Matrix3x2F::Translation(-cellW * 0.5f, -cellH * 0.5f) *
+                                                 D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y) *
+                                                 D2D1::Matrix3x2F::Rotation(transform.Rotation) *
+                                                 D2D1::Matrix3x2F::Translation(transform.Position.X + penX + cellW * 0.5f, transform.Position.Y + cellH * 0.5f);
+
+                targetGroup.emplace_back(DrawCommand{
+                    .Bitmap          = text.Atlas->GetBitmap(),
+                    .DestinationRect = D2D1::RectF(0.0f, 0.0f, cellW, cellH),
+                    .SourceRect      = glyph->SourceRect,
+                    .Color           = D2D1_COLOR_F{ color.Red, color.Green, color.Blue, color.Alpha },
+                    .Matrix          = matrix,
+                });
+
+                penX += cellW + text.LetterSpacing;
+            }
         }
-    }
-}
 
-    // =========================================================
-    // RenderGroup をフラッシュして描画
-    // =========================================================
-
-    auto RendererSystem::FlushRenderGroups(
-        Canvas::Session& session,
-        std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups
-    ) -> void
-    {
+        // ------------------------------------------------------------------
+        // 3. Sprite Batch
+        // ------------------------------------------------------------------
         auto spriteBatch = session.GetDefaultSpriteBatch();
 
         const auto beforeAntialiasMode = session.GetAntialiasMode();
@@ -151,23 +118,24 @@ auto RendererSystem::CollectTextCommands(
 
         for (auto& commands : renderGroups)
         {
-            if (commands.empty()) continue;
-
-            // 同じ Bitmap を隣接させてバッチ効率を上げる
-            std::sort(commands.begin(), commands.end(),
-                [](const DrawCommand& a, const DrawCommand& b) { return a.Bitmap < b.Bitmap; });
-
-            for (size_t i = 0; i < commands.size();)
+            if (commands.empty())
             {
-                ID2D1Bitmap* currentBitmap = commands[i].Bitmap;
-                const size_t batchStart    = i;
+                continue;
+            }
+
+            std::sort(commands.begin(), commands.end(), [](const DrawCommand& a, const DrawCommand& b) { return a.Bitmap < b.Bitmap; });
+
+            for (std::size_t i = 0; i < commands.size();)
+            {
+                ID2D1Bitmap* currentBitmap   = commands[i].Bitmap;
+                const std::size_t batchStart = i;
 
                 while (i < commands.size() && commands[i].Bitmap == currentBitmap)
                 {
                     ++i;
                 }
 
-                const size_t batchSize = i - batchStart;
+                const std::size_t batchSize = i - batchStart;
 
                 spriteBatch->Clear();
 

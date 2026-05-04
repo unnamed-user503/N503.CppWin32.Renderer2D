@@ -25,11 +25,12 @@ namespace N503::Renderer2D::System
     class RendererSystem
     {
     public:
-        RendererSystem()  = default;
+        RendererSystem() = default;
+
         ~RendererSystem() = default;
 
-        // コピー禁止
-        RendererSystem(const RendererSystem&)                    = delete;
+        RendererSystem(const RendererSystem&) = delete;
+
         auto operator=(const RendererSystem&) -> RendererSystem& = delete;
 
         auto Update(Registry& registry, Canvas::Session& session) -> void;
@@ -44,15 +45,7 @@ namespace N503::Renderer2D::System
             D2D1_MATRIX_3X2_F Matrix;
         };
 
-        // Sprite エンティティ用トランスフォームキャッシュ
         std::array<D2D1_MATRIX_3X2_F, MaxEntities> m_TransformCache{};
-
-        auto CollectSpriteCommands(Registry& registry, std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups) -> void;
-
-        auto CollectTextCommands(Registry& registry, std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups) -> void;
-
-        auto FlushRenderGroups(Canvas::Session& session, std::array<std::vector<DrawCommand>, static_cast<size_t>(RenderGroup::Threshold)>& renderGroups)
-            -> void;
     };
 
 } // namespace N503::Renderer2D::System

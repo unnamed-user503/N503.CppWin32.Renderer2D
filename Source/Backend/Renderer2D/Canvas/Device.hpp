@@ -20,10 +20,18 @@ namespace N503::Renderer2D::Pixels
     struct Buffer;
 }
 
+namespace N503::Renderer2D::Canvas::Font
+{
+    class Atlas;
+}
+
 namespace N503::Renderer2D::Canvas
 {
     class Cache;
-    class FontAtlas;
+}
+
+namespace N503::Renderer2D::Canvas
+{
 
     class Device
     {
@@ -57,7 +65,7 @@ namespace N503::Renderer2D::Canvas
         auto GetOrCreateTextFormat(std::string_view fontName, float fontSize) -> wil::com_ptr<IDWriteTextFormat>;
         auto GetOrCreateTextLayout(std::wstring_view text, wil::com_ptr<IDWriteTextFormat> textFormat) -> wil::com_ptr<IDWriteTextLayout>;
         auto GetOrCreateTextLayout(std::string_view text, wil::com_ptr<IDWriteTextFormat> textFormat) -> wil::com_ptr<IDWriteTextLayout>;
-        auto GetOrCreateFontAtlas(std::wstring_view familyName, float emSize) -> FontAtlas*;
+        auto GetOrCreateFontAtlas(std::wstring_view familyName, float emSize) -> Font::Atlas*;
 
         // ---- SpriteBatch (キャッシュ対象外・単一インスタンス) ----
         auto GetDefaultSpriteBatch() -> ID2D1SpriteBatch&;
@@ -70,7 +78,7 @@ namespace N503::Renderer2D::Canvas
         auto CreateSolidColorBrush(const D2D1_COLOR_F& color) -> wil::com_ptr<ID2D1SolidColorBrush>;
         auto CreateTextFormat(std::wstring_view fontName, float fontSize) -> wil::com_ptr<IDWriteTextFormat>;
         auto CreateTextLayout(std::wstring_view text, IDWriteTextFormat* format) -> wil::com_ptr<IDWriteTextLayout>;
-        auto CreateFontAtlas(std::wstring_view familyName, float emSize) -> std::unique_ptr<FontAtlas>;
+        auto CreateFontAtlas(std::wstring_view familyName, float emSize) -> std::unique_ptr<Font::Atlas>;
 
         auto TranscodeUtf8ToWide(std::string_view utf8) -> std::wstring;
 

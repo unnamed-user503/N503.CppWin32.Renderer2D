@@ -25,8 +25,12 @@ namespace N503::Renderer2D::Pixels
 namespace N503::Renderer2D::Canvas
 {
     class Device;
-    class FontAtlas;
 } // namespace N503::Renderer2D::Canvas
+
+namespace N503::Renderer2D::Canvas::Font
+{
+    class Atlas;
+} // namespace N503::Renderer2D::Canvas::Font
 
 namespace N503::Renderer2D::Canvas
 {
@@ -59,8 +63,8 @@ namespace N503::Renderer2D::Canvas
         auto StoreTextLayout(std::wstring_view text, IDWriteTextFormat* format, wil::com_ptr<IDWriteTextLayout> layout) -> void;
 
         // ---- フォントアトラス ----
-        auto FindFontAtlas(std::wstring_view familyName, float emSize) -> FontAtlas*;
-        auto StoreFontAtlas(std::wstring_view familyName, float emSize, std::unique_ptr<FontAtlas> atlas) -> FontAtlas*;
+        auto FindFontAtlas(std::wstring_view familyName, float emSize) -> Font::Atlas*;
+        auto StoreFontAtlas(std::wstring_view familyName, float emSize, std::unique_ptr<Font::Atlas> atlas) -> Font::Atlas*;
 
         // ---- キャッシュのクリア ----
         auto Clear() -> void;
@@ -95,7 +99,7 @@ namespace N503::Renderer2D::Canvas
         std::unordered_map<std::uint32_t, wil::com_ptr<ID2D1SolidColorBrush>> m_Brushes;
         std::unordered_map<std::wstring, wil::com_ptr<IDWriteTextFormat>> m_TextFormats;
         std::unordered_map<std::wstring, wil::com_ptr<IDWriteTextLayout>> m_TextLayouts;
-        std::unordered_map<FontAtlasKey, std::unique_ptr<FontAtlas>, FontAtlasKeyHash> m_FontAtlases;
+        std::unordered_map<FontAtlasKey, std::unique_ptr<Font::Atlas>, FontAtlasKeyHash> m_FontAtlases;
     };
 
 } // namespace N503::Renderer2D::Canvas

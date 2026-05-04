@@ -5,12 +5,23 @@
 #include "../Engine.hpp"
 #include "../Pixels/Buffer.hpp"
 #include "Cache.hpp"
-#include "FontAtlas.hpp"
+#include "Font/Atlas.hpp"
 #include "Surface.hpp"
 
 // 3. WIL
 #include <wil/result_macros.h>
 
+// 1. Project Headers
+
+// 2. Project Dependencies
+
+// 3. WIL (Windows Implementation Library)
+
+// 4. Third-party Libraries
+
+// 5. Windows Headers
+
+// 6. C++ Standard Libraries
 #include <format>
 
 namespace N503::Renderer2D::Canvas
@@ -126,7 +137,7 @@ namespace N503::Renderer2D::Canvas
         return layout;
     }
 
-    auto Device::GetOrCreateFontAtlas(std::wstring_view familyName, float emSize) -> FontAtlas*
+    auto Device::GetOrCreateFontAtlas(std::wstring_view familyName, float emSize) -> Font::Atlas*
     {
         if (auto* cached = m_ResourceCache->FindFontAtlas(familyName, emSize))
         {
@@ -182,7 +193,7 @@ namespace N503::Renderer2D::Canvas
         return layout;
     }
 
-    auto Device::CreateFontAtlas(std::wstring_view familyName, float emSize) -> std::unique_ptr<FontAtlas>
+    auto Device::CreateFontAtlas(std::wstring_view familyName, float emSize) -> std::unique_ptr<Font::Atlas>
     {
         // 1. システムフォントコレクションを取得
         wil::com_ptr<IDWriteFontCollection> collection;
@@ -225,7 +236,7 @@ namespace N503::Renderer2D::Canvas
         fontFaceBase.query_to(&fontFace);
 
         // 4. FontAtlas を生成して返す
-        return FontAtlas::Create(m_D2DContext.get(), m_DWriteFactory.get(), fontFace.get(), emSize, FontAtlas::BasicLatin);
+        return std::make_unique<Font::Atlas>(m_D2DContext.get(), m_DWriteFactory.get(), fontFace.get(), emSize, Font::Atlas::BasicLatin);
     }
 
     auto Device::TranscodeUtf8ToWide(std::string_view utf8) -> std::wstring

@@ -4,7 +4,7 @@
 // 1. Project Headers
 #include "../Engine.hpp"
 #include "Device.hpp"
-#include "FontAtlas.hpp"
+#include "Font/Atlas.hpp"
 
 // 2. Project Dependencies
 #include <N503/Diagnostics/Reporter.hpp>
@@ -150,7 +150,7 @@ namespace N503::Renderer2D::Canvas
     // フォントアトラス
     // =========================================================
 
-    auto Cache::FindFontAtlas(std::wstring_view familyName, float emSize) -> FontAtlas*
+    auto Cache::FindFontAtlas(std::wstring_view familyName, float emSize) -> Font::Atlas*
     {
         const FontAtlasKey key{ std::wstring(familyName), emSize };
         if (auto it = m_FontAtlases.find(key); it != m_FontAtlases.end())
@@ -160,7 +160,7 @@ namespace N503::Renderer2D::Canvas
         return nullptr;
     }
 
-    auto Cache::StoreFontAtlas(std::wstring_view familyName, float emSize, std::unique_ptr<FontAtlas> atlas) -> FontAtlas*
+    auto Cache::StoreFontAtlas(std::wstring_view familyName, float emSize, std::unique_ptr<Font::Atlas> atlas) -> Font::Atlas*
     {
         const FontAtlasKey key{ std::wstring(familyName), emSize };
 #ifdef _DEBUG
