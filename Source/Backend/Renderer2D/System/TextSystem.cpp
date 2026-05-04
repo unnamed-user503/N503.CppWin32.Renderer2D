@@ -68,7 +68,7 @@ namespace N503::Renderer2D::System
 
         for (const char32_t cp : text.Content)
         {
-            const Canvas::GlyphInfo* glyph = text.Atlas->GetGlyph(static_cast<char32_t>(cp));
+            const Canvas::Glyph* glyph = text.Atlas->GetGlyph(static_cast<char32_t>(cp));
             if (!glyph)
             {
                 // アトラスに存在しない文字 (スペース等) は固定幅で送る

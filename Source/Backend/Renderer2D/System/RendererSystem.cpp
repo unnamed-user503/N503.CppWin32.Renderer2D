@@ -95,7 +95,7 @@ namespace N503::Renderer2D::System
 
             for (const wchar_t wc : text.Content)
             {
-                const Canvas::GlyphInfo* glyph = text.Atlas->GetGlyph(static_cast<char32_t>(wc));
+                const Canvas::Glyph* glyph = text.Atlas->GetGlyph(static_cast<char32_t>(wc));
                 if (!glyph)
                 {
                     continue;

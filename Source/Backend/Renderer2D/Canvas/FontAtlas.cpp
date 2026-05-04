@@ -77,7 +77,7 @@ namespace N503::Renderer2D::Canvas
             const D2D1_POINT_2F baseline{ cursorX + bearingX, cursorY + bearingY };
             dc->DrawGlyphRun(baseline, &run, brush.get());
 
-            atlas->m_Glyphs[cp] = GlyphInfo{
+            atlas->m_Glyphs[cp] = Glyph{
                 .SourceRect = D2D1::RectU(
                     static_cast<UINT32>(cursorX), // セル左端
                     static_cast<UINT32>(cursorY),
@@ -99,9 +99,9 @@ namespace N503::Renderer2D::Canvas
         return atlas;
     }
 
-    auto FontAtlas::GetGlyph(char32_t cp) const -> const GlyphInfo*
+    auto FontAtlas::GetGlyph(char32_t codePage) const -> const Glyph*
     {
-        const auto it = m_Glyphs.find(cp);
+        const auto it = m_Glyphs.find(codePage);
         return (it != m_Glyphs.end()) ? &it->second : nullptr;
     }
 

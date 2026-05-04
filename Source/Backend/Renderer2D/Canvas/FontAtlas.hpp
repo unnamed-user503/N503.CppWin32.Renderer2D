@@ -13,12 +13,15 @@
 
 namespace N503::Renderer2D::Canvas
 {
-    struct GlyphInfo
+    struct Glyph
     {
-        D2D1_RECT_U SourceRect; // アトラス上のUV矩形（ピクセル座標）
-        float AdvanceWidth;     // 次の文字までの水平距離
-        float BearingX;         // 左側ベアリング
-        float BearingY;         // ベースラインからの上端距離
+        D2D1_RECT_U SourceRect;
+
+        float AdvanceWidth;
+
+        float BearingX;
+
+        float BearingY;
     };
 
     class FontAtlas
@@ -28,32 +31,32 @@ namespace N503::Renderer2D::Canvas
                                                           U"@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
                                                           U"`abcdefghijklmnopqrstuvwxyz{|}~";
 
-        // アトラスサイズ・フォントサイズは用途に応じて調整
         static constexpr uint32_t AtlasWidth  = 1024;
+
         static constexpr uint32_t AtlasHeight = 1024;
 
-        // DirectWrite/Direct2D リソースから生成
-        static auto Create(
-            ID2D1DeviceContext3* dc,
-            IDWriteFactory3* dwFactory,
-            IDWriteFontFace3* fontFace,
-            float emSize,               // フォントサイズ (px)
-            std::u32string_view charset // 焼き込む文字セット
-        ) -> std::unique_ptr<FontAtlas>;
+        static auto Create(ID2D1DeviceContext3* deviceContext, IDWriteFactory3* dwriteFactory, IDWriteFontFace3* fontFace, float emSize, std::u32string_view charset) -> std::unique_ptr<FontAtlas>;
 
-        [[nodiscard]] auto GetBitmap() const -> ID2D1Bitmap1*
+        [[nodiscard]]
+        auto GetGlyph(char32_t codePage) const -> const Glyph*;
+
+        [[nodiscard]]
+        auto GetBitmap() const -> ID2D1Bitmap1*
         {
             return m_Bitmap.get();
         }
-        [[nodiscard]] auto GetGlyph(char32_t cp) const -> const GlyphInfo*;
-        [[nodiscard]] auto GetLineHeight() const -> float
+
+        [[nodiscard]]
+        auto GetLineHeight() const -> float
         {
             return m_LineHeight;
         }
 
     private:
         wil::com_ptr<ID2D1Bitmap1> m_Bitmap;
-        std::unordered_map<char32_t, GlyphInfo> m_Glyphs;
+
+        std::unordered_map<char32_t, Glyph> m_Glyphs;
+
         float m_LineHeight = 0.0f;
     };
 } // namespace N503::Renderer2D::Canvas
