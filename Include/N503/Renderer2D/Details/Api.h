@@ -7,81 +7,97 @@
 #define N503_API __declspec(dllimport)
 #endif
 
-typedef int32_t n503_result_t;
-
-static const int32_t N503_OK    = 0;
-static const int32_t N503_ERROR = -1;
-
-typedef struct n503_vector2_t
-{
-    float x;
-    float y;
-} n503_vector2_t;
-
-typedef struct n503_vector3_t
-{
-    float x;
-    float y;
-    float z;
-} n503_vector3_t;
-
-typedef struct n503_color_t
-{
-    float red;
-    float green;
-    float blue;
-    float alpha;
-} n503_color_t;
-
-typedef struct n503_rect_t
-{
-    uint32_t left;
-    uint32_t top;
-    uint32_t right;
-    uint32_t bottom;
-} n503_rect_t;
-
-typedef struct n503_transform_t
-{
-    n503_vector3_t position;
-    float rotation;
-    n503_vector2_t scale;
-} n503_transform_t;
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-    typedef struct n503_renderer2d_sprite_t* n503_renderer2d_sprite_h;
+    typedef struct N503Vector2F_t
+    {
+        float X;
+        float Y;
+    } N503Vector2F;
 
-    N503_API n503_renderer2d_sprite_h n503_renderer2d_sprite_create(const char* path, const n503_rect_t source);
+    typedef struct N503Vector3F_t
+    {
+        float X;
+        float Y;
+        float Z;
+    } N503Vector3F;
 
-    N503_API n503_result_t n503_renderer2d_sprite_destroy(n503_renderer2d_sprite_h instance);
+    typedef struct N503Color_t
+    {
+        float Red;
+        float Green;
+        float Blue;
+        float Alpha;
+    } N503Color;
 
-    N503_API n503_result_t n503_renderer2d_sprite_set_transform(n503_renderer2d_sprite_h instance, const n503_transform_t transform);
+    typedef struct N503RectU_t
+    {
+        uint32_t Left;
+        uint32_t Top;
+        uint32_t Right;
+        uint32_t Bottom;
+    } N503RectU;
 
-    N503_API n503_result_t n503_renderer2d_sprite_set_color(n503_renderer2d_sprite_h instance, const n503_color_t color);
+    typedef struct N503Transform2D_t
+    {
+        N503Vector2F Position;
+        float Rotation;
+        N503Vector2F Scale;
+    } N503Transform2D;
 
-    N503_API n503_result_t n503_renderer2d_sprite_set_render_group(n503_renderer2d_sprite_h instance, uint32_t group);
+    typedef struct N503Transform3D_t
+    {
+        N503Vector3F Position;
+        N503Vector3F Rotation;
+        N503Vector3F Scale;
+    } N503Transform3D;
 
-    N503_API n503_result_t n503_renderer2d_sprite_set_visible(n503_renderer2d_sprite_h instance, uint32_t visible);
+    typedef struct N503Sprite_t* N503Sprite;
 
-    typedef struct n503_renderer2d_sprite_group_t* n503_renderer2d_sprite_group_h;
-    typedef uint32_t (*n503_renderer2d_sprite_group_set_transform_delegate_t)(uint64_t index, n503_transform_t* out_transform, void* user_data);
-    typedef uint32_t (*n503_renderer2d_sprite_group_set_color_delegate_t)(uint64_t index, n503_color_t* out_color, void* user_data);
+    N503_API N503Sprite N503CreateSprite(const char* path, const N503RectU source);
 
-    __declspec(dllexport) n503_renderer2d_sprite_group_h n503_renderer2d_sprite_group_create(const char* path, uint32_t count, const n503_rect_t source);
+    N503_API int N503SpriteDestroy(N503Sprite sprite);
 
-    __declspec(dllexport) int n503_renderer2d_sprite_group_destroy(n503_renderer2d_sprite_group_h instance);
+    N503_API int N503SetSpriteTransform(N503Sprite sprite, const N503Transform2D transform);
 
-    __declspec(dllexport) int n503_renderer2d_sprite_group_set_transform(n503_renderer2d_sprite_group_h instance, n503_renderer2d_sprite_group_set_transform_delegate_t delegate, void* user_data);
+    N503_API int N503SetSpriteColor(N503Sprite sprite, const N503Color color);
 
-    __declspec(dllexport) int n503_renderer2d_sprite_group_set_color(n503_renderer2d_sprite_group_h instance, n503_renderer2d_sprite_group_set_color_delegate_t delegate, void* user_data);
+    N503_API int N503SetSpriteRenderGroup(N503Sprite sprite, uint32_t group);
 
-    __declspec(dllexport) int n503_renderer2d_sprite_group_set_render_group(n503_renderer2d_sprite_group_h instance, uint32_t group);
+    N503_API int N503SetSpriteVisible(N503Sprite sprite, uint32_t visible);
 
-    __declspec(dllexport) int n503_renderer2d_sprite_group_set_visible(n503_renderer2d_sprite_group_h instance, uint32_t visible);
+    //N503_API int N503SetSpriteAnchor(N503Sprite sprite, N503Vector2F pivot);
+
+
+    typedef struct N503SpriteGroup_t* N503SpriteGroup;
+    typedef uint32_t (*N503SetSpriteGroupTransformDelegate)(uint64_t index, N503Transform2D* transform, void* pfnDelegate);
+    typedef uint32_t (*N503SetSpriteGroupColorDelegate)(uint64_t index, N503Color* color, void* pfnDelegate);
+    typedef uint32_t (*N503SetSpriteGroupVisibleDelegate)(uint64_t index, bool visible, void* pfnDelegate);
+
+    N503_API N503SpriteGroup N503CreateSpriteGroup(const char* path, uint16_t count, const N503RectU source);
+
+    N503_API int N503DestroySpriteGroup(N503SpriteGroup spriteGroup);
+
+    //N503_API int N503SetSpriteGroupTransform(N503SpriteGroup spriteGroup, const uint16_t index, const N503Transform2D transform);
+
+    //N503_API int N503SetSpriteGroupColor(N503SpriteGroup spriteGroup, const uint16_t index, const N503Color color);
+
+    //N503_API int N503SetSpriteGroupVisible(N503SpriteGroup spriteGroup, const uint16_t index, const uint32_t visible);
+
+    N503_API int N503SetSpriteGroupTransformBatch(N503SpriteGroup spriteGroup, N503SetSpriteGroupTransformDelegate bridge, void* pfnDelegate);
+
+    N503_API int N503SetSpriteGroupColorBatch(N503SpriteGroup spriteGroup, N503SetSpriteGroupColorDelegate bridge, void* pfnDelegate);
+
+    //N503_API int N503SetSpriteGroupVisibleBatch(N503SpriteGroup spriteGroup, N503SetSpriteGroupVisibleDelegate bridge, void* pfnDelegate);
+
+    N503_API int N503SetSpriteGroupRenderGroupBatch(N503SpriteGroup spriteGroup, uint32_t group);
+
+
+
+
 
     typedef struct n503_renderer2d_text_t* n503_renderer2d_text_h;
 

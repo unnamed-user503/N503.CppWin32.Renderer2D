@@ -20,14 +20,14 @@ namespace N503::Renderer2D
     public:
         explicit SpriteGroup(const std::string_view path, std::size_t count, const Geometry::RectU sourceRect = {}) : m_Handle(nullptr)
         {
-            m_Handle = n503_renderer2d_sprite_group_create(path.data(), static_cast<uint32_t>(count), { sourceRect.Left, sourceRect.Top, sourceRect.Right, sourceRect.Bottom });
+            m_Handle = N503CreateSpriteGroup(path.data(), static_cast<uint32_t>(count), { sourceRect.Left, sourceRect.Top, sourceRect.Right, sourceRect.Bottom });
         }
 
         ~SpriteGroup()
         {
             if (m_Handle)
             {
-                n503_renderer2d_sprite_group_destroy(m_Handle);
+                N503DestroySpriteGroup(m_Handle);
                 m_Handle = nullptr;
             }
         }
@@ -46,7 +46,7 @@ namespace N503::Renderer2D
             {
                 if (m_Handle)
                 {
-                    n503_renderer2d_sprite_group_destroy(m_Handle);
+                    N503DestroySpriteGroup(m_Handle);
                 }
                 m_Handle = std::exchange(other.m_Handle, nullptr);
             }
@@ -54,56 +54,56 @@ namespace N503::Renderer2D
         }
 
     public:
-        auto SetTransform(std::function<bool(const std::uint64_t, Geometry::Transform&)> delegate) -> void
+        auto SetTransformBatch(std::function<bool(const std::uint64_t, Geometry::Transform&)> delegate) -> void
         {
             if (!m_Handle || !delegate)
             {
                 return;
             }
 
-            n503_renderer2d_sprite_group_set_transform(
+            N503SetSpriteGroupTransformBatch(
                 m_Handle,
-                [](uint64_t index, n503_transform_t* out_transform, void* userData) -> uint32_t
+                [](uint64_t index, N503Transform2D* out_transform, void* userData) -> uint32_t
                 {
                     auto& callback = *static_cast<std::function<bool(const std::uint64_t, Geometry::Transform&)>*>(userData);
 
                     Geometry::Transform transform;
                     if (callback(index, transform))
                     {
-                        out_transform->position.x = transform.Position.X;
-                        out_transform->position.y = transform.Position.Y;
-                        out_transform->rotation   = transform.Rotation;
-                        out_transform->scale.x    = transform.Scale.X;
-                        out_transform->scale.y    = transform.Scale.Y;
-                        return 1; // Dirty
+                        out_transform->Position.X = transform.Position.X;
+                        out_transform->Position.Y = transform.Position.Y;
+                        out_transform->Rotation   = transform.Rotation;
+                        out_transform->Scale.X    = transform.Scale.X;
+                        out_transform->Scale.Y    = transform.Scale.Y;
+                        return 1; // 変更あり
                     }
 
-                    return 0; // Clean
+                    return 0; // 変更なし
                 },
                 &delegate
             );
         }
 
-        auto SetColor(std::function<bool(const std::uint64_t, ColorF&)> delegate) -> void
+        auto SetColorBatch(std::function<bool(const std::uint64_t, ColorF&)> delegate) -> void
         {
             if (!m_Handle || !delegate)
             {
                 return;
             }
 
-            n503_renderer2d_sprite_group_set_color(
+            N503SetSpriteGroupColorBatch(
                 m_Handle,
-                [](uint64_t index, n503_color_t* out_color, void* userData) -> uint32_t
+                [](uint64_t index, N503Color* out_color, void* userData) -> uint32_t
                 {
                     auto& func = *static_cast<std::function<bool(const std::uint64_t, ColorF&)>*>(userData);
 
                     ColorF c;
                     if (func(index, c))
                     {
-                        out_color->red   = c.Red;
-                        out_color->green = c.Green;
-                        out_color->blue  = c.Blue;
-                        out_color->alpha = c.Alpha;
+                        out_color->Red   = c.Red;
+                        out_color->Green = c.Green;
+                        out_color->Blue  = c.Blue;
+                        out_color->Alpha = c.Alpha;
                         return 1;
                     }
                     return 0;
@@ -112,8 +112,45 @@ namespace N503::Renderer2D
             );
         }
 
+        // 一括可視性設定（Batch）[cite: 3]
+        /*
+        auto SetVisibleBatch(std::function<bool(const std::uint64_t, bool&)> delegate) -> void
+        {
+            if (!m_Handle || !delegate)
+            {
+                return;
+            }
+
+            N503SetSpriteGroupVisibleBatch(
+                m_Handle,
+                [](uint64_t index, uint32_t visible_val, void* userData) -> uint32_t
+                {
+                    auto& func = *static_cast<std::function<bool(const std::uint64_t, bool&)>*>(userData);
+                    
+                    bool visible;
+                    if (func(index, visible))
+                    {
+                        // 内部的な可視性フラグの更新ロジック
+                        return visible ? 1 : 0;
+                    }
+                    return visible_val; // 変更なしの場合は現在の状態を維持
+                },
+                &delegate
+            );
+        }*/
+
+        auto SetRenderGroupBatch(const RenderGroup group) -> void
+        {
+            if (m_Handle)
+            {
+                return;
+            }
+
+            N503SetSpriteGroupRenderGroupBatch(m_Handle, static_cast<uint32_t>(group));
+        }
+
     private:
-        n503_renderer2d_sprite_group_h m_Handle;
+        N503SpriteGroup m_Handle;
     };
 
 } // namespace N503::Renderer2D

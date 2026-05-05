@@ -18,14 +18,14 @@ namespace N503::Renderer2D
     public:
         explicit Sprite(const std::string_view path, const Geometry::RectU sourceRect = {}) : m_Handle(nullptr)
         {
-            m_Handle = n503_renderer2d_sprite_create(path.data(), { sourceRect.Left, sourceRect.Top, sourceRect.Right, sourceRect.Bottom });
+            m_Handle = N503CreateSprite(path.data(), { sourceRect.Left, sourceRect.Top, sourceRect.Right, sourceRect.Bottom });
         }
 
         ~Sprite()
         {
             if (m_Handle)
             {
-                n503_renderer2d_sprite_destroy(m_Handle);
+                N503SpriteDestroy(m_Handle);
                 m_Handle = nullptr;
             }
         }
@@ -44,7 +44,7 @@ namespace N503::Renderer2D
             {
                 if (m_Handle)
                 {
-                    n503_renderer2d_sprite_destroy(m_Handle);
+                    N503SpriteDestroy(m_Handle);
                 }
                 m_Handle = std::exchange(other.m_Handle, nullptr);
             }
@@ -56,12 +56,12 @@ namespace N503::Renderer2D
         {
             if (m_Handle)
             {
-                n503_renderer2d_sprite_set_transform(
+                N503SetSpriteTransform(
                     m_Handle,
                     {
-                        .position = { transform.Position.X, transform.Position.Y, transform.Position.Z, },
-                        .rotation = transform.Rotation,
-                        .scale    = { transform.Scale.X, transform.Scale.Y, },
+                        .Position = { transform.Position.X, transform.Position.Y, },
+                        .Rotation = transform.Rotation,
+                        .Scale    = { transform.Scale.X, transform.Scale.Y, },
                     }
                 );
             }
@@ -71,7 +71,7 @@ namespace N503::Renderer2D
         {
             if (m_Handle)
             {
-                n503_renderer2d_sprite_set_color(m_Handle, { color.Red, color.Green, color.Blue, color.Alpha });
+                N503SetSpriteColor(m_Handle, { color.Red, color.Green, color.Blue, color.Alpha });
             }
         }
 
@@ -79,7 +79,7 @@ namespace N503::Renderer2D
         {
             if (m_Handle)
             {
-                n503_renderer2d_sprite_set_render_group(m_Handle, static_cast<uint32_t>(group));
+                N503SetSpriteRenderGroup(m_Handle, static_cast<uint32_t>(group));
             }
         }
 
@@ -87,12 +87,12 @@ namespace N503::Renderer2D
         {
             if (m_Handle)
             {
-                n503_renderer2d_sprite_set_visible(m_Handle, visible ? 1 : 0);
+                N503SetSpriteVisible(m_Handle, visible ? 1 : 0);
             }
         }
 
     private:
-        n503_renderer2d_sprite_h m_Handle;
+        N503Sprite m_Handle;
     };
 
 } // namespace N503::Renderer2D

@@ -26,7 +26,7 @@
 
 extern "C"
 {
-    n503_renderer2d_sprite_h n503_renderer2d_sprite_create(const char* path, const n503_rect_t source)
+    N503Sprite N503CreateSprite(const char* path, const N503RectU source)
     {
         using namespace N503::Renderer2D;
 
@@ -37,25 +37,20 @@ extern "C"
             auto packet = Message::Packets::CreateSprite{
                 .Result     = &entity->EntityID,
                 .Path       = path,
-                .SourceRect = { source.left, source.top, source.right, source.bottom },
+                .SourceRect = { source.Left, source.Top, source.Right, source.Bottom },
             };
 
             Engine::GetInstance().Start();
             Engine::GetInstance().GetMessageQueue().EnqueueSync(std::move(packet));
-            /*
-            if (!entity->EntityID)
-            {
-                throw std::runtime_error("sprite creation failed.");
-            }
-            */
-            return reinterpret_cast<n503_renderer2d_sprite_h>(entity.release());
+
+            return reinterpret_cast<N503Sprite>(entity.release());
         }
         CATCH_LOG();
 
         return nullptr;
     }
 
-    n503_result_t n503_renderer2d_sprite_destroy(n503_renderer2d_sprite_h instance)
+    int N503SpriteDestroy(N503Sprite instance)
     {
         using namespace N503::Renderer2D;
 
@@ -70,14 +65,14 @@ extern "C"
             Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
 
             delete entity;
-            return N503_OK;
+            return 0;
         }
         CATCH_LOG();
 
-        return N503_ERROR;
+        return -1;
     }
 
-    n503_result_t n503_renderer2d_sprite_set_transform(n503_renderer2d_sprite_h instance, const n503_transform_t transform)
+    int N503SetSpriteTransform(N503Sprite instance, const N503Transform2D transform)
     {
         using namespace N503::Renderer2D;
 
@@ -87,19 +82,23 @@ extern "C"
 
             auto packet = Message::Packets::SetTransform{
                 .ID        = entity->EntityID,
-                .Transform = { .Position = { transform.position.x, transform.position.y, transform.position.z }, .Rotation = transform.rotation, .Scale = { transform.scale.x, transform.scale.y } },
+                .Transform = {
+                    .Position = { transform.Position.X, transform.Position.Y },
+                    .Rotation = transform.Rotation,
+                    .Scale    = { transform.Scale.X, transform.Scale.Y },
+                },
             };
 
             Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
 
-            return N503_OK;
+            return 0;
         }
         CATCH_LOG();
 
-        return N503_ERROR;
+        return -1;
     }
 
-    n503_result_t n503_renderer2d_sprite_set_color(n503_renderer2d_sprite_h instance, const n503_color_t color)
+    int N503SetSpriteColor(N503Sprite instance, const N503Color color)
     {
         using namespace N503::Renderer2D;
 
@@ -109,19 +108,19 @@ extern "C"
 
             auto packet = Message::Packets::SetColor{
                 .ID    = entity->EntityID,
-                .Color = { color.red, color.green, color.blue, color.alpha },
+                .Color = { color.Red, color.Green, color.Blue, color.Alpha },
             };
 
             Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
 
-            return N503_OK;
+            return 0;
         }
         CATCH_LOG();
 
-        return N503_ERROR;
+        return -1;
     }
 
-    n503_result_t n503_renderer2d_sprite_set_render_group(n503_renderer2d_sprite_h instance, uint32_t group)
+    int N503SetSpriteRenderGroup(N503Sprite instance, uint32_t group)
     {
         using namespace N503::Renderer2D;
 
@@ -136,24 +135,24 @@ extern "C"
 
             Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
 
-            return N503_OK;
+            return 0;
         }
         CATCH_LOG();
 
-        return N503_ERROR;
+        return -1;
     }
 
-    n503_result_t n503_renderer2d_sprite_set_visible(n503_renderer2d_sprite_h instance, uint32_t visible)
+    int N503SetSpriteVisible(N503Sprite instance, uint32_t visible)
     {
         using namespace N503::Renderer2D;
 
         try
         {
             // TODO;
-            return N503_OK;
+            return 0;
         }
         CATCH_LOG();
 
-        return N503_ERROR;
+        return -1;
     }
 }
