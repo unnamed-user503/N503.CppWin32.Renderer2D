@@ -71,8 +71,7 @@ extern "C"
     typedef uint32_t (*n503_renderer2d_sprite_group_set_transform_delegate_t)(uint64_t index, n503_transform_t* out_transform, void* user_data);
     typedef uint32_t (*n503_renderer2d_sprite_group_set_color_delegate_t)(uint64_t index, n503_color_t* out_color, void* user_data);
 
-    __declspec(dllexport) n503_renderer2d_sprite_group_h
-    n503_renderer2d_sprite_group_create(const char* path, uint32_t count, const n503_rect_t source);
+    __declspec(dllexport) n503_renderer2d_sprite_group_h n503_renderer2d_sprite_group_create(const char* path, uint32_t count, const n503_rect_t source);
 
     __declspec(dllexport) int n503_renderer2d_sprite_group_destroy(n503_renderer2d_sprite_group_h instance);
 

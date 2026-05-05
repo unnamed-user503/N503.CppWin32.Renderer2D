@@ -17,7 +17,9 @@ namespace N503::Renderer2D
     {
     public:
         /// @brief テキストオブジェクトを生成します。
-        explicit Text(const std::string_view text, const std::string_view font = "", const float size = 24.0f, ColorF color = { 1.0f, 1.0f, 1.0f, 1.0f })
+        explicit Text(
+            const std::string_view text, const std::string_view font = "BIZ UDゴシック", const float size = 24.0f, ColorF color = { 1.0f, 1.0f, 1.0f, 1.0f }
+        )
             : m_Handle(nullptr)
         {
             // C-API を呼び出し、初期プロパティを一括で渡す

@@ -26,9 +26,7 @@
 
 extern "C"
 {
-    n503_renderer2d_sprite_group_h n503_renderer2d_sprite_group_create(
-        const char* path, uint32_t count, const n503_rect_t source
-    )
+    n503_renderer2d_sprite_group_h n503_renderer2d_sprite_group_create(const char* path, uint32_t count, const n503_rect_t source)
     {
         using namespace N503::Renderer2D;
 
@@ -110,8 +108,7 @@ extern "C"
             {
                 n503_transform_t transform{};
 
-                auto
-                    isDirty = delegate(i, &transform, user_data);
+                auto isDirty = delegate(i, &transform, user_data);
 
                 if (!isDirty)
                 {

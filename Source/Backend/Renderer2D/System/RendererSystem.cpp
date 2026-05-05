@@ -69,6 +69,7 @@ namespace N503::Renderer2D::System
         // ------------------------------------------------------------------
         // 2. Text Draw
         // ------------------------------------------------------------------
+        // --- RendererSystem::Update 内の Text Draw ループ (RendererSystem.cpp) ---
         for (auto entity : registry.GetView<Transform, Text, Color>())
         {
             const auto& text = registry.GetComponent<Text>(entity);
@@ -78,17 +79,14 @@ namespace N503::Renderer2D::System
             }
 
             const auto& transform = registry.GetComponent<Transform>(entity);
-
-            auto& targetGroup = renderGroups[static_cast<std::size_t>(text.Group)];
+            auto& targetGroup     = renderGroups[static_cast<size_t>(text.Group)];
+            const auto& color     = registry.GetComponent<Color>(entity);
 
             float penX = 0.0f;
 
-            const auto& color = registry.GetComponent<Color>(entity);
-
-            for (const wchar_t wideChar : text.Content)
+            for (const wchar_t wc : text.Content)
             {
-                const auto* glyph = text.Atlas->GetGlyph(static_cast<char32_t>(wideChar));
-
+                const auto* glyph = text.Atlas->GetGlyph(static_cast<char32_t>(wc));
                 if (!glyph)
                 {
                     penX += text.FontSize * 0.5f + text.LetterSpacing;
@@ -103,10 +101,14 @@ namespace N503::Renderer2D::System
                 const float cellW = static_cast<float>(glyph->SourceRect.right - glyph->SourceRect.left);
                 const float cellH = static_cast<float>(glyph->SourceRect.bottom - glyph->SourceRect.top);
 
-                const D2D1_MATRIX_3X2_F matrix = D2D1::Matrix3x2F::Translation(-cellW * 0.5f, -cellH * 0.5f) *
-                                                 D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y) *
-                                                 D2D1::Matrix3x2F::Rotation(transform.Rotation) *
-                                                 D2D1::Matrix3x2F::Translation(transform.Position.X + penX + cellW * 0.5f, transform.Position.Y + cellH * 0.5f);
+                // 回転・スケーリングの軸 (文字インクの中央、かつベースライン上)[cite: 9]
+                const float pivotX = cellW * 0.5f;
+                const float pivotY = glyph->BearingY;
+
+                const D2D1_MATRIX_3X2_F
+                    matrix = D2D1::Matrix3x2F::Translation(-pivotX, -pivotY) * D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y) *
+                             D2D1::Matrix3x2F::Rotation(transform.Rotation) *
+                             D2D1::Matrix3x2F::Translation(transform.Position.X + (penX + glyph->BearingX + pivotX) * transform.Scale.X, transform.Position.Y);
 
                 targetGroup.emplace_back(DrawCommand{
                     .Bitmap          = text.Atlas->GetBitmap(),
@@ -116,7 +118,8 @@ namespace N503::Renderer2D::System
                     .Matrix          = matrix,
                 });
 
-                penX += cellW + text.LetterSpacing;
+                // ペン送りは「インクの幅」ではなく、フォント定義の「AdvanceWidth」を使う[cite: 9]
+                penX += glyph->AdvanceWidth + text.LetterSpacing;
             }
         }
 
