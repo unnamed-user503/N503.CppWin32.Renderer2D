@@ -80,8 +80,24 @@ extern "C"
 
     int N503SetTextVisible(N503Text instance, uint32_t visible)
     {
-        // 他のEntityと同様に、Backend側のVisibleフラグ更新パケットが必要[cite: 5, 6]
-        return 0;
+        using namespace N503::Renderer2D;
+
+        try
+        {
+            auto entity = reinterpret_cast<TextEntity*>(instance);
+
+            auto packet = Message::Packets::SetVisible{
+                .ID        = entity->EntityID,
+                .IsEnabled = visible ? true : false,
+            };
+
+            Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
+
+            return 0;
+        }
+        CATCH_LOG();
+
+        return -1;
     }
 
     int N503SetTextContent(N503Text instance, const char* content)

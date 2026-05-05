@@ -6,6 +6,7 @@
 #include "Packets/DestroyEntity.hpp"
 #include "Packets/SetColor.hpp"
 #include "Packets/SetContent.hpp"
+#include "Packets/SetDepth.hpp"
 #include "Packets/SetRenderGroup.hpp"
 #include "Packets/SetTransform.hpp"
 #include "Packets/SetVisible.hpp"
@@ -26,6 +27,18 @@ namespace N503::Renderer2D::Message
 
     using namespace Packets;
 
-    using Packet = std::variant<CreateSprite, CreateText, DestroyEntity, SetTransform, SetVisible, SetColor, SetRenderGroup, SetContent>;
+    // clang-format off
+    using Packet = std::variant<
+        CreateSprite,
+        CreateText,
+        DestroyEntity,
+        SetTransform,
+        SetDepth,
+        SetVisible,
+        SetColor,
+        SetRenderGroup,
+        SetContent
+    >;
+    // clang-format on
 
 } // namespace N503::Renderer2D::Message

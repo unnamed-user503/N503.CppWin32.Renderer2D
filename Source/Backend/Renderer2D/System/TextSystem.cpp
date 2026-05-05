@@ -108,7 +108,6 @@ namespace N503::Renderer2D::System
                     .Position = {
                         baseTransform.Position.X + penX + glyph->BearingX, // 基準位置 + 送り量 + 左ベアリング
                         baseTransform.Position.Y,
-                        baseTransform.Position.Z,
                     },
                     .Rotation = baseTransform.Rotation,
                     .Scale    = baseTransform.Scale,

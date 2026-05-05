@@ -25,7 +25,7 @@ namespace N503::Renderer2D::System::Component
         float Speed{ 20.0f };
 
         float Elapsed{ 0.0f };
-
+        
         bool IsDirty{ false };
 
         auto Reset() noexcept -> void

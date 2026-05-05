@@ -21,7 +21,7 @@ namespace N503::Renderer2D::System
         // ------------------------------------------------------------------
         // 1. Sprite Draw
         // ------------------------------------------------------------------
-        for (auto entity : registry.GetView<Transform, Sprite, Color, Visible>())
+        for (auto entity : registry.GetView<Transform, Sprite, Visible, Color>())
         {
             auto& visible = registry.GetComponent<Visible>(entity);
 
@@ -68,8 +68,15 @@ namespace N503::Renderer2D::System
         // ------------------------------------------------------------------
         // 2. Text Draw
         // ------------------------------------------------------------------
-        for (auto entity : registry.GetView<Transform, Text, Color>())
+        for (auto entity : registry.GetView<Transform, Text, Visible, Color>())
         {
+            auto& visible = registry.GetComponent<Visible>(entity);
+
+            if (!visible.IsEnabled)
+            {
+                continue;
+            }
+
             const auto& text = registry.GetComponent<Text>(entity);
 
             if (!text.Atlas)

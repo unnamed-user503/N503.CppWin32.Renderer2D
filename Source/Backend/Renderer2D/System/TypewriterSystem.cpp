@@ -28,10 +28,19 @@ namespace N503::Renderer2D::System
 
     auto TypewriterSystem::Update(Registry& registry, float deltaTime) -> void
     {
-        for (auto entity : registry.GetView<Component::Text, Component::Typewriter>())
+        using namespace Component;
+
+        for (auto entity : registry.GetView<Text, Visible, Typewriter>())
         {
-            auto& text       = registry.GetComponent<Component::Text>(entity);
-            auto& typewriter = registry.GetComponent<Component::Typewriter>(entity);
+            auto& visible = registry.GetComponent<Visible>(entity);
+
+            if (!visible.IsEnabled)
+            {
+                continue;
+            }
+
+            auto& text       = registry.GetComponent<Text>(entity);
+            auto& typewriter = registry.GetComponent<Typewriter>(entity);
 
             if (!typewriter.IsDirty)
             {

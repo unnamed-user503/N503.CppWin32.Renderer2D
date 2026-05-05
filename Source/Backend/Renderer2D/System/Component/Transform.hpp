@@ -17,7 +17,7 @@ namespace N503::Renderer2D::System::Component
 
     struct Transform
     {
-        Geometry::Vector3F Position{ 0.0f, 0.0f, 0.0f };
+        Geometry::Vector2F Position{ 0.0f, 0.0f };
 
         float Rotation{ 0.0f };
 
@@ -29,7 +29,6 @@ namespace N503::Renderer2D::System::Component
         {
             Position.X = 0.0f;
             Position.Y = 0.0f;
-            Position.Z = 0.0f;
 
             Rotation = 0.0f;
 
