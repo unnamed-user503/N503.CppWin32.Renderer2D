@@ -99,19 +99,19 @@ extern "C"
 
 
 
-    typedef struct n503_renderer2d_text_t* n503_renderer2d_text_h;
+    typedef struct N503Text_t* N503Text;
 
-    __declspec(dllexport) n503_renderer2d_text_h n503_renderer2d_text_create(const char* text, const char* font, float size, float r, float g, float b, float a);
+    __declspec(dllexport) N503Text N503CreateText(const char* content, const char* font, float size);
 
-    __declspec(dllexport) int n503_renderer2d_text_destroy(n503_renderer2d_text_h instance);
+    __declspec(dllexport) int N503DestroyText(N503Text instance);
 
-    __declspec(dllexport) int n503_renderer2d_text_set_transform(n503_renderer2d_text_h instance, float x, float y, float scaleX, float scaleY, float rotation);
+    __declspec(dllexport) int N503SetTextTransform(N503Text instance, const N503Transform2D transform);
 
-    __declspec(dllexport) int n503_renderer2d_text_set_color(n503_renderer2d_text_h instance, float r, float g, float b, float a);
+    __declspec(dllexport) int N503SetTextColor(N503Text instance, const N503Color color);
 
-    __declspec(dllexport) int n503_renderer2d_text_set_visible(n503_renderer2d_text_h instance, uint32_t visible);
+    __declspec(dllexport) int N503SetTextVisible(N503Text instance, uint32_t visible);
 
-    __declspec(dllexport) int n503_renderer2d_text_set_content(n503_renderer2d_text_h instance, const char* content);
+    __declspec(dllexport) int N503SetTextContent(N503Text instance, const char* content);
 
 #ifdef __cplusplus
 }

@@ -5,47 +5,40 @@
 #include <N503/Renderer2D/Details/Api.h>
 #include <N503/Renderer2D/Types.hpp>
 
-// 2. Project Dependencies
-
 // 6. C++ Standard Libraries
 #include <string_view>
-#include <utility> // std::exchange
+#include <utility>
 
 namespace N503::Renderer2D
 {
     class Text final
     {
     public:
-        explicit Text(const std::string_view text, const std::string_view font = "ＭＳ ゴシック", const float size = 24.0f, ColorF color = { 1.0f, 1.0f, 1.0f, 1.0f }) : m_Handle(nullptr)
+        explicit Text(const std::string_view content, const std::string_view font = "ＭＳ ゴシック", const float size = 24.0f) : m_Handle(nullptr)
         {
-            m_Handle = n503_renderer2d_text_create(text.data(), font.data(), size, color.Red, color.Green, color.Blue, color.Alpha);
+            m_Handle = N503CreateText(content.data(), font.data(), size);
         }
 
         ~Text()
         {
             if (m_Handle)
             {
-                n503_renderer2d_text_destroy(m_Handle);
+                N503DestroyText(m_Handle);
                 m_Handle = nullptr;
             }
         }
 
-        Text(const Text&)                    = delete;
+        Text(const Text&) = delete;
 
         auto operator=(const Text&) -> Text& = delete;
 
-        Text(Text&& other) noexcept : m_Handle(std::exchange(other.m_Handle, nullptr))
-        {
-        }
+        Text(Text&& other) noexcept : m_Handle(std::exchange(other.m_Handle, nullptr)) {}
 
         auto operator=(Text&& other) noexcept -> Text&
         {
             if (this != &other)
             {
-                if (m_Handle)
-                {
-                    n503_renderer2d_text_destroy(m_Handle);
-                }
+                if (m_Handle) N503DestroyText(m_Handle);
                 m_Handle = std::exchange(other.m_Handle, nullptr);
             }
             return *this;
@@ -56,7 +49,12 @@ namespace N503::Renderer2D
         {
             if (m_Handle)
             {
-                n503_renderer2d_text_set_transform(m_Handle, transform.Position.X, transform.Position.Y, transform.Scale.X, transform.Scale.Y, transform.Rotation);
+                N503Transform2D t = {
+                    .Position = { transform.Position.X, transform.Position.Y },
+                    .Rotation = transform.Rotation,
+                    .Scale    = { transform.Scale.X, transform.Scale.Y }
+                };
+                N503SetTextTransform(m_Handle, t);
             }
         }
 
@@ -64,7 +62,8 @@ namespace N503::Renderer2D
         {
             if (m_Handle)
             {
-                n503_renderer2d_text_set_color(m_Handle, color.Red, color.Green, color.Blue, color.Alpha);
+                N503Color c = { color.Red, color.Green, color.Blue, color.Alpha };
+                N503SetTextColor(m_Handle, c);
             }
         }
 
@@ -72,7 +71,7 @@ namespace N503::Renderer2D
         {
             if (m_Handle)
             {
-                n503_renderer2d_text_set_visible(m_Handle, visible ? 1 : 0);
+                N503SetTextVisible(m_Handle, visible ? 1 : 0);
             }
         }
 
@@ -80,12 +79,11 @@ namespace N503::Renderer2D
         {
             if (m_Handle)
             {
-                n503_renderer2d_text_set_content(m_Handle, content.data());
+                N503SetTextContent(m_Handle, content.data());
             }
         }
 
     private:
-        n503_renderer2d_text_h m_Handle;
+        N503Text m_Handle;
     };
-
-} // namespace N503::Renderer2D
+}

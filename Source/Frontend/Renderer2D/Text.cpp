@@ -2,7 +2,9 @@
 
 // 1. Project Headers
 #include "../../Backend/Renderer2D/Engine.hpp"
+#include "../../Backend/Renderer2D/Message/Packets/CreateText.hpp" // CreateTextパケットが必要
 #include "../../Backend/Renderer2D/Message/Packets/DestroyEntity.hpp"
+#include "../../Backend/Renderer2D/Message/Packets/SetColor.hpp"
 #include "../../Backend/Renderer2D/Message/Packets/SetTransform.hpp"
 #include "../../Backend/Renderer2D/Message/Packets/SetContent.hpp"
 #include "../../Backend/Renderer2D/Message/Queue.hpp"
@@ -11,139 +13,104 @@
 // 2. Project Dependencies
 #include <N503/Renderer2D/Details/Api.h>
 
-// 3. WIL (Windows Implementation Library)
-
-// 4. Third-party Libraries
-
-// 5. Windows Headers
-
-// 6. C++ Standard Libraries
-#include <utility>
-
 extern "C"
 {
-    n503_renderer2d_text_h n503_renderer2d_text_create(const char* text, const char* font, float size, float r, float g, float b, float a)
+    N503Text N503CreateText(const char* content, const char* font, float size)
     {
         using namespace N503::Renderer2D;
-
         try
         {
             auto entity = std::make_unique<TextEntity>();
-
             auto packet = Message::Packets::CreateText{
                 .Result   = &entity->EntityID,
-                .Text     = text,
+                .Text     = content,
                 .FontName = font,
                 .FontSize = size,
-                .Color    = { r, g, b, a },
+                // 色は初期値として白を設定するか、パケット側で対応
             };
 
             Engine::GetInstance().Start();
             Engine::GetInstance().GetMessageQueue().EnqueueSync(std::move(packet));
 
-            if (!entity->EntityID)
-            {
-                throw std::runtime_error("text creation failed.");
-            }
-
-            return reinterpret_cast<n503_renderer2d_text_h>(entity.release());
+            return reinterpret_cast<N503Text>(entity.release());
         }
         CATCH_LOG();
-
         return nullptr;
     }
 
-    int n503_renderer2d_text_destroy(n503_renderer2d_text_h instance)
+    int N503DestroyText(N503Text instance)
     {
         using namespace N503::Renderer2D;
-
         try
         {
             auto entity = reinterpret_cast<TextEntity*>(instance);
-
-            auto packet = Message::Packets::DestroyEntity{
-                .ID = entity->EntityID,
-            };
-
+            auto packet = Message::Packets::DestroyEntity{ .ID = entity->EntityID };
             Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
-
             delete entity;
             return 0;
         }
         CATCH_LOG();
-
         return -1;
     }
 
-    int n503_renderer2d_text_set_transform(n503_renderer2d_text_h instance, float x, float y, float scaleX, float scaleY, float rotation)
+    int N503SetTextTransform(N503Text instance, const N503Transform2D transform)
     {
         using namespace N503::Renderer2D;
-
         try
         {
             auto entity = reinterpret_cast<TextEntity*>(instance);
-
             auto packet = Message::Packets::SetTransform{
-                .ID        = entity->EntityID,
-                .Transform = { .Position = { x, y, 0.0f }, .Rotation = rotation, .Scale = { scaleX, scaleY } },
+                .ID = entity->EntityID,
+                .Transform = {
+                    .Position = { transform.Position.X, transform.Position.Y, 0.0f },
+                    .Rotation = transform.Rotation,
+                    .Scale    = { transform.Scale.X, transform.Scale.Y }
+                }
             };
-
             Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
-
             return 0;
         }
         CATCH_LOG();
-
         return -1;
     }
 
-    int n503_renderer2d_text_set_color(n503_renderer2d_text_h instance, float r, float g, float b, float a)
+    int N503SetTextColor(N503Text instance, const N503Color color)
     {
         using namespace N503::Renderer2D;
-
-        try
-        {
-            // TODO;
-            return 0;
-        }
-        CATCH_LOG();
-
-        return -1;
-    }
-
-    int n503_renderer2d_text_set_visible(n503_renderer2d_text_h instance, uint32_t visible)
-    {
-        using namespace N503::Renderer2D;
-
-        try
-        {
-            // TODO;
-            return 0;
-        }
-        CATCH_LOG();
-
-        return -1;
-    }
-
-    int n503_renderer2d_text_set_content(n503_renderer2d_text_h instance, const char* content)
-    {
-        using namespace N503::Renderer2D;
-
         try
         {
             auto entity = reinterpret_cast<TextEntity*>(instance);
-
-            auto packet = Message::Packets::SetContent{
-                .ID        = entity->EntityID,
-                .Content = std::string(content),
+            auto packet = Message::Packets::SetColor{
+                .ID = entity->EntityID,
+                .Color = { color.Red, color.Green, color.Blue, color.Alpha }
             };
-
             Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
-
             return 0;
         }
         CATCH_LOG();
+        return -1;
+    }
 
+    int N503SetTextVisible(N503Text instance, uint32_t visible)
+    {
+        // 他のEntityと同様に、Backend側のVisibleフラグ更新パケットが必要[cite: 5, 6]
+        return 0; 
+    }
+
+    int N503SetTextContent(N503Text instance, const char* content)
+    {
+        using namespace N503::Renderer2D;
+        try
+        {
+            auto entity = reinterpret_cast<TextEntity*>(instance);
+            auto packet = Message::Packets::SetContent{
+                .ID = entity->EntityID,
+                .Content = std::string(content)
+            };
+            Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
+            return 0;
+        }
+        CATCH_LOG();
         return -1;
     }
 }
