@@ -21,15 +21,24 @@ namespace N503::Renderer2D::System
         // ------------------------------------------------------------------
         // 1. Sprite Draw
         // ------------------------------------------------------------------
-        for (auto entity : registry.GetView<Transform, Sprite, Color>())
+        for (auto entity : registry.GetView<Transform, Sprite, Color, Visible>())
         {
+            auto& visible = registry.GetComponent<Visible>(entity);
+
+            if (!visible.IsEnabled)
+            {
+                continue;
+            }
+
             auto& color = registry.GetComponent<Color>(entity);
+
             if (color.Alpha <= 0.0f)
             {
                 continue;
             }
 
             auto& sprite = registry.GetComponent<Sprite>(entity);
+
             if (!sprite.Bitmap)
             {
                 continue;

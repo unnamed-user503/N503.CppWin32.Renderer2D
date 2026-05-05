@@ -2,10 +2,12 @@
 
 // 1. Project Headers
 #include "Component/Color.hpp"
+#include "Component/Depth.hpp"
 #include "Component/Sprite.hpp"
 #include "Component/Text.hpp"
 #include "Component/Transform.hpp"
 #include "Component/Typewriter.hpp"
+#include "Component/Visible.hpp"
 
 // 2. Project Dependencies
 
@@ -25,7 +27,7 @@ namespace N503::Renderer2D::System
 
     static constexpr std::size_t MaxEntities = 32768;
 
-    static constexpr std::size_t MaxComponents = 5;
+    static constexpr std::size_t MaxComponents = 7;
 
     using Entity = std::uint16_t;
 
@@ -37,11 +39,13 @@ namespace N503::Renderer2D::System
 
     enum class ComponentType : std::size_t
     {
-        Transform  = 0,
-        Sprite     = 1,
-        Text       = 2,
-        Color      = 3,
-        Typewriter = 4,
+        Transform = 0,
+        Visible,
+        Depth,
+        Color,
+        Sprite,
+        Text,
+        Typewriter,
     };
 
     // require:
@@ -54,11 +58,15 @@ namespace N503::Renderer2D::System
 
         std::array<Component::Transform, MaxEntities> Transforms;
 
+        std::array<Component::Visible, MaxEntities> Visibles;
+
+        std::array<Component::Depth, MaxEntities> Depths;
+
+        std::array<Component::Color, MaxEntities> Colors;
+
         std::array<Component::Sprite, MaxEntities> Sprites;
 
         std::array<Component::Text, MaxEntities> Texts;
-
-        std::array<Component::Color, MaxEntities> Colors;
 
         std::array<Component::Typewriter, MaxEntities> Typewriters;
     };

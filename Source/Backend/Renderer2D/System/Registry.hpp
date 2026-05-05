@@ -37,6 +37,33 @@ namespace N503::Renderer2D::System
         }
     };
 
+    template <> struct ComponentTraits<Component::Visible>
+    {
+        static constexpr ComponentType Type = ComponentType::Color;
+        static auto& Get(World& world, std::size_t index)
+        {
+            return world.Visibles[index];
+        }
+    };
+
+    template <> struct ComponentTraits<Component::Depth>
+    {
+        static constexpr ComponentType Type = ComponentType::Color;
+        static auto& Get(World& world, std::size_t index)
+        {
+            return world.Depths[index];
+        }
+    };
+
+    template <> struct ComponentTraits<Component::Color>
+    {
+        static constexpr ComponentType Type = ComponentType::Color;
+        static auto& Get(World& world, std::size_t index)
+        {
+            return world.Colors[index];
+        }
+    };
+
     template <> struct ComponentTraits<Component::Sprite>
     {
         static constexpr ComponentType Type = ComponentType::Sprite;
@@ -52,15 +79,6 @@ namespace N503::Renderer2D::System
         static auto& Get(World& world, std::size_t index)
         {
             return world.Texts[index];
-        }
-    };
-
-    template <> struct ComponentTraits<Component::Color>
-    {
-        static constexpr ComponentType Type = ComponentType::Color;
-        static auto& Get(World& world, std::size_t index)
-        {
-            return world.Colors[index];
         }
     };
 

@@ -7,6 +7,7 @@
 #include "../../Backend/Renderer2D/Message/Packets/SetColor.hpp"
 #include "../../Backend/Renderer2D/Message/Packets/SetRenderGroup.hpp"
 #include "../../Backend/Renderer2D/Message/Packets/SetTransform.hpp"
+#include "../../Backend/Renderer2D/Message/Packets/SetVisible.hpp"
 #include "../../Backend/Renderer2D/Message/Queue.hpp"
 #include "SpriteEntity.hpp"
 
@@ -148,7 +149,15 @@ extern "C"
 
         try
         {
-            // TODO;
+            auto entity = reinterpret_cast<SpriteEntity*>(instance);
+
+            auto packet = Message::Packets::SetVisible{
+                .ID        = entity->EntityID,
+                .IsEnabled = visible ? true : false,
+            };
+
+            Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
+
             return 0;
         }
         CATCH_LOG();
