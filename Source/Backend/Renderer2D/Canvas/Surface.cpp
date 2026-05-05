@@ -67,9 +67,7 @@ namespace N503::Renderer2D::Canvas
         wil::com_ptr<IDXGISurface> backBuffer;
         THROW_IF_FAILED(m_SwapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.put())));
 
-        const auto props = D2D1::BitmapProperties1(
-            D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW, D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED)
-        );
+        const auto props = D2D1::BitmapProperties1(D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW, D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED));
 
         THROW_IF_FAILED(m_Device.GetD2D1DeviceContext().CreateBitmapFromDxgiSurface(backBuffer.get(), &props, m_TargetBitmap.put()));
 

@@ -21,12 +21,7 @@ namespace N503::Renderer2D::Geometry
         // Aを適用した後にBを適用する「左から右」の合成
         Matrix3x2 operator*(const Matrix3x2& other) const
         {
-            return { _11 * other._11 + _12 * other._21,
-                     _11 * other._12 + _12 * other._22,
-                     _21 * other._11 + _22 * other._21,
-                     _21 * other._12 + _22 * other._22,
-                     _31 * other._11 + _32 * other._21 + other._31,
-                     _31 * other._12 + _32 * other._22 + other._32 };
+            return { _11 * other._11 + _12 * other._21, _11 * other._12 + _12 * other._22, _21 * other._11 + _22 * other._21, _21 * other._12 + _22 * other._22, _31 * other._11 + _32 * other._21 + other._31, _31 * other._12 + _32 * other._22 + other._32 };
         }
 
         // 基本的な静的ファクトリ

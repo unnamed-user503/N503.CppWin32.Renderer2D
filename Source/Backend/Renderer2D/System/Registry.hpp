@@ -1,9 +1,11 @@
 #pragma once
 
 // 1. Project Headers
+#include "Component/Color.hpp"
 #include "Component/Sprite.hpp"
 #include "Component/Text.hpp"
 #include "Component/Transform.hpp"
+#include "Component/Typewriter.hpp"
 #include "Entity.hpp"
 
 // 2. Project Dependencies
@@ -59,6 +61,15 @@ namespace N503::Renderer2D::System
         static auto& Get(World& world, std::size_t index)
         {
             return world.Colors[index];
+        }
+    };
+
+    template <> struct ComponentTraits<Component::Typewriter>
+    {
+        static constexpr ComponentType Type = ComponentType::Typewriter;
+        static auto& Get(World& world, std::size_t index)
+        {
+            return world.Typewriters[index];
         }
     };
 

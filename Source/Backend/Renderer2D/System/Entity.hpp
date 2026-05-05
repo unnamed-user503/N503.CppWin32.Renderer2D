@@ -5,6 +5,7 @@
 #include "Component/Sprite.hpp"
 #include "Component/Text.hpp"
 #include "Component/Transform.hpp"
+#include "Component/Typewriter.hpp"
 
 // 2. Project Dependencies
 
@@ -17,7 +18,6 @@
 // 6. C++ Standard Libraries
 #include <array>
 #include <bitset>
-#include <cstddef>
 #include <cstdint>
 
 namespace N503::Renderer2D::System
@@ -25,7 +25,7 @@ namespace N503::Renderer2D::System
 
     static constexpr std::size_t MaxEntities = 32768;
 
-    static constexpr std::size_t MaxComponents = 4;
+    static constexpr std::size_t MaxComponents = 5;
 
     using Entity = std::uint16_t;
 
@@ -37,10 +37,11 @@ namespace N503::Renderer2D::System
 
     enum class ComponentType : std::size_t
     {
-        Transform = 0,
-        Sprite    = 1,
-        Text      = 2,
-        Color     = 3,
+        Transform  = 0,
+        Sprite     = 1,
+        Text       = 2,
+        Color      = 3,
+        Typewriter = 4,
     };
 
     // require:
@@ -49,7 +50,7 @@ namespace N503::Renderer2D::System
     {
         std::bitset<MaxEntities> AliveBits;
 
-        std::array<std::bitset<4>, MaxEntities> ComponentMasks;
+        std::array<std::bitset<MaxComponents>, MaxEntities> ComponentMasks;
 
         std::array<Component::Transform, MaxEntities> Transforms;
 
@@ -58,6 +59,8 @@ namespace N503::Renderer2D::System
         std::array<Component::Text, MaxEntities> Texts;
 
         std::array<Component::Color, MaxEntities> Colors;
+
+        std::array<Component::Typewriter, MaxEntities> Typewriters;
     };
 
 } // namespace N503::Renderer2D::System

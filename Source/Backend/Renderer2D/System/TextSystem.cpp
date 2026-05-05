@@ -98,13 +98,8 @@ namespace N503::Renderer2D::System
                     glyphEntity,
                     Component::Sprite{
                         .Bitmap     = text.Atlas->GetBitmap(),
-                        .SourceRect = D2D1::RectU(
-                            static_cast<UINT32>(glyph->SourceRect.left),
-                            static_cast<UINT32>(glyph->SourceRect.top),
-                            static_cast<UINT32>(glyph->SourceRect.right),
-                            static_cast<UINT32>(glyph->SourceRect.bottom)
-                        ),
-                        .Group = RenderGroup::Text,
+                        .SourceRect = D2D1::RectU(static_cast<UINT32>(glyph->SourceRect.left), static_cast<UINT32>(glyph->SourceRect.top), static_cast<UINT32>(glyph->SourceRect.right), static_cast<UINT32>(glyph->SourceRect.bottom)),
+                        .Group      = RenderGroup::Text,
                     }
                 );
 

@@ -91,9 +91,7 @@ extern "C"
         return -1;
     }
 
-    int n503_renderer2d_sprite_group_set_transform(
-        n503_renderer2d_sprite_group_h instance, n503_renderer2d_sprite_group_set_transform_delegate_t delegate, void* user_data
-    )
+    int n503_renderer2d_sprite_group_set_transform(n503_renderer2d_sprite_group_h instance, n503_renderer2d_sprite_group_set_transform_delegate_t delegate, void* user_data)
     {
         using namespace N503::Renderer2D;
 
@@ -134,9 +132,7 @@ extern "C"
         return -1;
     }
 
-    int n503_renderer2d_sprite_group_set_color(
-        n503_renderer2d_sprite_group_h instance, n503_renderer2d_sprite_group_set_color_delegate_t delegate, void* user_data
-    )
+    int n503_renderer2d_sprite_group_set_color(n503_renderer2d_sprite_group_h instance, n503_renderer2d_sprite_group_set_color_delegate_t delegate, void* user_data)
     {
         using namespace N503::Renderer2D;
 

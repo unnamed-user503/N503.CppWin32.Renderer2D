@@ -167,9 +167,7 @@ namespace N503::Renderer2D::Message
 
         if (isCongested)
         {
-            Engine::GetInstance().GetDiagnosticsReporter().Warning(
-                std::format("EventQueue is congesting: CurrentSize={}, Capacity={}\n", currentSize, capacity).data()
-            );
+            Engine::GetInstance().GetDiagnosticsReporter().Warning(std::format("EventQueue is congesting: CurrentSize={}, Capacity={}\n", currentSize, capacity).data());
         }
 #endif
         return isCongested;

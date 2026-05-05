@@ -82,18 +82,8 @@ namespace N503::Renderer2D::Canvas
         return &m_Device->GetDefaultSpriteBatch();
     }
 
-    auto Session::AddSprites(
-        ID2D1SpriteBatch* spriteBatch,
-        UINT32 spriteCount,
-        const D2D1_RECT_F* destinationRects,
-        const D2D1_RECT_U* sourceRects,
-        const D2D1_COLOR_F* colors,
-        const D2D1_MATRIX_3X2_F* transforms,
-        UINT32 destinationRectsStride,
-        UINT32 sourceRectsStride,
-        UINT32 colorsStride,
-        UINT32 transformsStride
-    ) -> void
+    auto Session::AddSprites(ID2D1SpriteBatch* spriteBatch, UINT32 spriteCount, const D2D1_RECT_F* destinationRects, const D2D1_RECT_U* sourceRects, const D2D1_COLOR_F* colors, const D2D1_MATRIX_3X2_F* transforms, UINT32 destinationRectsStride, UINT32 sourceRectsStride, UINT32 colorsStride, UINT32 transformsStride)
+        -> void
     {
         if (!spriteBatch)
         {
@@ -101,14 +91,10 @@ namespace N503::Renderer2D::Canvas
         }
 
         // ID2D1SpriteBatch::AddSprites の呼び出し
-        spriteBatch->AddSprites(
-            spriteCount, destinationRects, sourceRects, colors, transforms, destinationRectsStride, sourceRectsStride, colorsStride, transformsStride
-        );
+        spriteBatch->AddSprites(spriteCount, destinationRects, sourceRects, colors, transforms, destinationRectsStride, sourceRectsStride, colorsStride, transformsStride);
     }
 
-    auto Session::DrawSpriteBatch(
-        ID2D1SpriteBatch* spriteBatch, ID2D1Bitmap* bitmap, D2D1_BITMAP_INTERPOLATION_MODE interpolationMode, D2D1_SPRITE_OPTIONS spriteOptions
-    ) -> void
+    auto Session::DrawSpriteBatch(ID2D1SpriteBatch* spriteBatch, ID2D1Bitmap* bitmap, D2D1_BITMAP_INTERPOLATION_MODE interpolationMode, D2D1_SPRITE_OPTIONS spriteOptions) -> void
     {
         if (!spriteBatch || !bitmap || !m_Device)
         {

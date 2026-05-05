@@ -44,12 +44,7 @@ namespace N503::Renderer2D::Canvas
         auto DrawRect(const D2D1_RECT_F& rect, const D2D1_COLOR_F& color, float strokeWidth = 1.0f) -> void;
 
         // 指定したビットマップを描画する[cite: 7]
-        auto DrawBitmap(
-            ID2D1Bitmap* bitmap,
-            const D2D1_RECT_F* destination                   = nullptr,
-            float opacity                                    = 1.0f,
-            D2D1_BITMAP_INTERPOLATION_MODE interpolationMode = D2D1_BITMAP_INTERPOLATION_MODE_LINEAR
-        ) -> void;
+        auto DrawBitmap(ID2D1Bitmap* bitmap, const D2D1_RECT_F* destination = nullptr, float opacity = 1.0f, D2D1_BITMAP_INTERPOLATION_MODE interpolationMode = D2D1_BITMAP_INTERPOLATION_MODE_LINEAR) -> void;
 
         // デバイスが所有するデフォルトのスプライトバッチを取得する
         auto GetDefaultSpriteBatch() -> ID2D1SpriteBatch*;
@@ -68,12 +63,7 @@ namespace N503::Renderer2D::Canvas
         ) -> void;
 
         // ID2D1DeviceContext3 の機能を利用した SpriteBatch 描画[cite: 7]
-        auto DrawSpriteBatch(
-            ID2D1SpriteBatch* spriteBatch,
-            ID2D1Bitmap* bitmap,
-            D2D1_BITMAP_INTERPOLATION_MODE interpolationMode = D2D1_BITMAP_INTERPOLATION_MODE_LINEAR,
-            D2D1_SPRITE_OPTIONS spriteOptions                = D2D1_SPRITE_OPTIONS_NONE
-        ) -> void;
+        auto DrawSpriteBatch(ID2D1SpriteBatch* spriteBatch, ID2D1Bitmap* bitmap, D2D1_BITMAP_INTERPOLATION_MODE interpolationMode = D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, D2D1_SPRITE_OPTIONS spriteOptions = D2D1_SPRITE_OPTIONS_NONE) -> void;
 
         // キャッシュされたテキスト形式とレイアウトを使用してテキストを描画する[cite: 7]
         auto DrawString(std::wstring_view text, std::wstring_view fontName, float fontSize, const D2D1_POINT_2F& origin, const D2D1_COLOR_F& color) -> void;

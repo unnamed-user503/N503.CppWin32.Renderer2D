@@ -4,6 +4,7 @@
 #include "../../Backend/Renderer2D/Engine.hpp"
 #include "../../Backend/Renderer2D/Message/Packets/DestroyEntity.hpp"
 #include "../../Backend/Renderer2D/Message/Packets/SetTransform.hpp"
+#include "../../Backend/Renderer2D/Message/Packets/SetContent.hpp"
 #include "../../Backend/Renderer2D/Message/Queue.hpp"
 #include "TextEntity.hpp"
 
@@ -117,6 +118,28 @@ extern "C"
         try
         {
             // TODO;
+            return 0;
+        }
+        CATCH_LOG();
+
+        return -1;
+    }
+
+    int n503_renderer2d_text_set_content(n503_renderer2d_text_h instance, const char* content)
+    {
+        using namespace N503::Renderer2D;
+
+        try
+        {
+            auto entity = reinterpret_cast<TextEntity*>(instance);
+
+            auto packet = Message::Packets::SetContent{
+                .ID        = entity->EntityID,
+                .Content = std::string(content),
+            };
+
+            Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
+
             return 0;
         }
         CATCH_LOG();

@@ -35,7 +35,7 @@ namespace N503::Renderer2D::Canvas::Font
         Atlas(ID2D1DeviceContext3* deviceContext, IDWriteFactory3* dwriteFactory, IDWriteFontFace3* fontFace, float emSize, std::u32string_view charset = U"");
 
         [[nodiscard]]
-        auto GetGlyph(char32_t codePage) const -> const Glyph*;
+        auto GetGlyph(char32_t codePoint) const -> const Glyph*;
 
         [[nodiscard]]
         auto GetBitmap() const -> ID2D1Bitmap1*

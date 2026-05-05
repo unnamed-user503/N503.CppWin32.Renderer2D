@@ -55,8 +55,7 @@ namespace N503::Renderer2D::Codec
         auto factory = wil::CoCreateInstance<IWICImagingFactory>(CLSID_WICImagingFactory);
 
         // デコーダーを作成して、画像ファイルを読み込む
-        THROW_IF_FAILED(factory->CreateDecoderFromFilename(TranscodeUtf8ToWide(path).c_str(), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &m_Decoder)
-        );
+        THROW_IF_FAILED(factory->CreateDecoderFromFilename(TranscodeUtf8ToWide(path).c_str(), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &m_Decoder));
     }
 
     auto WicImageDecoder::Decode(std::function<std::span<std::byte>(std::size_t)> allocate) -> Pixels::Buffer

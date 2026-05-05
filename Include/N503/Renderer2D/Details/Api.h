@@ -75,13 +75,9 @@ extern "C"
 
     __declspec(dllexport) int n503_renderer2d_sprite_group_destroy(n503_renderer2d_sprite_group_h instance);
 
-    __declspec(dllexport) int n503_renderer2d_sprite_group_set_transform(
-        n503_renderer2d_sprite_group_h instance, n503_renderer2d_sprite_group_set_transform_delegate_t delegate, void* user_data
-    );
+    __declspec(dllexport) int n503_renderer2d_sprite_group_set_transform(n503_renderer2d_sprite_group_h instance, n503_renderer2d_sprite_group_set_transform_delegate_t delegate, void* user_data);
 
-    __declspec(dllexport) int n503_renderer2d_sprite_group_set_color(
-        n503_renderer2d_sprite_group_h instance, n503_renderer2d_sprite_group_set_color_delegate_t delegate, void* user_data
-    );
+    __declspec(dllexport) int n503_renderer2d_sprite_group_set_color(n503_renderer2d_sprite_group_h instance, n503_renderer2d_sprite_group_set_color_delegate_t delegate, void* user_data);
 
     __declspec(dllexport) int n503_renderer2d_sprite_group_set_render_group(n503_renderer2d_sprite_group_h instance, uint32_t group);
 
@@ -89,8 +85,7 @@ extern "C"
 
     typedef struct n503_renderer2d_text_t* n503_renderer2d_text_h;
 
-    __declspec(dllexport) n503_renderer2d_text_h
-    n503_renderer2d_text_create(const char* text, const char* font, float size, float r, float g, float b, float a);
+    __declspec(dllexport) n503_renderer2d_text_h n503_renderer2d_text_create(const char* text, const char* font, float size, float r, float g, float b, float a);
 
     __declspec(dllexport) int n503_renderer2d_text_destroy(n503_renderer2d_text_h instance);
 
@@ -99,6 +94,8 @@ extern "C"
     __declspec(dllexport) int n503_renderer2d_text_set_color(n503_renderer2d_text_h instance, float r, float g, float b, float a);
 
     __declspec(dllexport) int n503_renderer2d_text_set_visible(n503_renderer2d_text_h instance, uint32_t visible);
+
+    __declspec(dllexport) int n503_renderer2d_text_set_content(n503_renderer2d_text_h instance, const char* content);
 
 #ifdef __cplusplus
 }

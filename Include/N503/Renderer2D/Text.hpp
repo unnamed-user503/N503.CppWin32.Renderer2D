@@ -16,32 +16,24 @@ namespace N503::Renderer2D
     class Text final
     {
     public:
-        /// @brief テキストオブジェクトを生成します。
-        explicit Text(
-            const std::string_view text, const std::string_view font = "BIZ UDゴシック", const float size = 24.0f, ColorF color = { 1.0f, 1.0f, 1.0f, 1.0f }
-        )
-            : m_Handle(nullptr)
+        explicit Text(const std::string_view text, const std::string_view font = "ＭＳ ゴシック", const float size = 24.0f, ColorF color = { 1.0f, 1.0f, 1.0f, 1.0f }) : m_Handle(nullptr)
         {
-            // C-API を呼び出し、初期プロパティを一括で渡す
             m_Handle = n503_renderer2d_text_create(text.data(), font.data(), size, color.Red, color.Green, color.Blue, color.Alpha);
         }
 
-        /// @brief リソースを解放します。
         ~Text()
         {
             if (m_Handle)
             {
-                // 先ほど定義した destroy API を呼び出す
                 n503_renderer2d_text_destroy(m_Handle);
                 m_Handle = nullptr;
             }
         }
 
-        // コピー禁止
         Text(const Text&)                    = delete;
+
         auto operator=(const Text&) -> Text& = delete;
 
-        // ムーブ許可
         Text(Text&& other) noexcept : m_Handle(std::exchange(other.m_Handle, nullptr))
         {
         }
@@ -60,18 +52,14 @@ namespace N503::Renderer2D
         }
 
     public:
-        /// @brief 配置、スケール、回転を設定します。
         auto SetTransform(const Geometry::Transform& transform) -> void
         {
             if (m_Handle)
             {
-                n503_renderer2d_text_set_transform(
-                    m_Handle, transform.Position.X, transform.Position.Y, transform.Scale.X, transform.Scale.Y, transform.Rotation
-                );
+                n503_renderer2d_text_set_transform(m_Handle, transform.Position.X, transform.Position.Y, transform.Scale.X, transform.Scale.Y, transform.Rotation);
             }
         }
 
-        /// @brief テキストの色を設定します。
         auto SetColor(const ColorF color) -> void
         {
             if (m_Handle)
@@ -80,7 +68,6 @@ namespace N503::Renderer2D
             }
         }
 
-        /// @brief 表示・非表示を切り替えます。
         auto SetVisible(bool visible) -> void
         {
             if (m_Handle)
@@ -89,11 +76,15 @@ namespace N503::Renderer2D
             }
         }
 
-        // 必要に応じて将来的に追加可能なメソッド例：
-        // auto SetString(const std::string_view text) -> void;
+        auto SetContent(const std::string_view content) -> void
+        {
+            if (m_Handle)
+            {
+                n503_renderer2d_text_set_content(m_Handle, content.data());
+            }
+        }
 
     private:
-        /// @brief DLL 内部で管理されるテキストエンティティへのハンドル
         n503_renderer2d_text_h m_Handle;
     };
 

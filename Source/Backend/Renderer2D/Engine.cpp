@@ -15,6 +15,8 @@
 #include "System/RendererSystem.hpp"
 #include "System/SpriteSystem.hpp"
 #include "System/TextSystem.hpp"
+#include "System/TimeSystem.hpp"
+#include "System/TypewriterSystem.hpp"
 
 // 2. Project Dependencies
 #include <N503/Diagnostics/Reporter.hpp>
@@ -103,9 +105,7 @@ namespace N503::Renderer2D
     {
         if (!::PostThreadMessage(::GetThreadId(m_RendererThread.native_handle()), WM_QUIT, 0, 0))
         {
-            m_DiagnosticsReporter->Error(
-                std::format(L"PostThreadMessage failed: Reason={}, Handle={}\n", ::GetLastError(), m_RendererThread.native_handle()).data()
-            );
+            m_DiagnosticsReporter->Error(std::format(L"PostThreadMessage failed: Reason={}, Handle={}\n", ::GetLastError(), m_RendererThread.native_handle()).data());
         }
     }
 
@@ -122,9 +122,11 @@ namespace N503::Renderer2D
         auto resources    = std::make_unique<Resource::Container>();
         auto canvasDevice = std::make_unique<Canvas::Device>();
 
-        auto spriteSystem   = std::make_unique<System::SpriteSystem>();
-        auto textSystem     = std::make_unique<System::TextSystem>();
-        auto rendererSystem = std::make_unique<System::RendererSystem>();
+        auto typewriterSystem = std::make_unique<System::TypewriterSystem>();
+        auto timeSystem       = std::make_unique<System::TimeSystem>();
+        auto spriteSystem     = std::make_unique<System::SpriteSystem>();
+        auto textSystem       = std::make_unique<System::TextSystem>();
+        auto rendererSystem   = std::make_unique<System::RendererSystem>();
 
         std::unique_ptr<Canvas::Surface> canvasSurface = nullptr;
 
@@ -212,9 +214,12 @@ namespace N503::Renderer2D
 
                 auto start = std::chrono::steady_clock::now();
 
+                auto deltaTime = timeSystem->Update();
                 spriteSystem->Update(*m_SystemRegistry, *canvasDevice, *resources);
                 textSystem->Update(*m_SystemRegistry);
+                typewriterSystem->Update(*m_SystemRegistry, deltaTime);
                 rendererSystem->Update(*m_SystemRegistry, canvasSession);
+                timeSystem->Reset();
 
                 auto end = std::chrono::steady_clock::now();
 

@@ -43,8 +43,7 @@ namespace N503::Renderer2D::Canvas
 
     auto Cache::MakeBrushKey(const ColorF color) -> std::uint32_t
     {
-        return (static_cast<uint32_t>(color.Red * 255.0f) << 24) | (static_cast<uint32_t>(color.Green * 255.0f) << 16) |
-               (static_cast<uint32_t>(color.Blue * 255.0f) << 8) | static_cast<uint32_t>(color.Alpha * 255.0f);
+        return (static_cast<uint32_t>(color.Red * 255.0f) << 24) | (static_cast<uint32_t>(color.Green * 255.0f) << 16) | (static_cast<uint32_t>(color.Blue * 255.0f) << 8) | static_cast<uint32_t>(color.Alpha * 255.0f);
     }
 
     auto Cache::MakeTextFormatKey(std::wstring_view fontName, float fontSize) -> std::wstring
@@ -73,9 +72,7 @@ namespace N503::Renderer2D::Canvas
     auto Cache::StoreBitmap(ResourceHandle handle, wil::com_ptr<ID2D1Bitmap1> bitmap) -> void
     {
 #ifdef _DEBUG
-        Engine::GetInstance().GetDiagnosticsReporter().Verbose(
-            std::format("[Renderer2D] <Canvas::Cache>: StoreBitmap for ResourceID={}", static_cast<std::uint64_t>(handle.ID))
-        );
+        Engine::GetInstance().GetDiagnosticsReporter().Verbose(std::format("[Renderer2D] <Canvas::Cache>: StoreBitmap for ResourceID={}", static_cast<std::uint64_t>(handle.ID)));
 #endif
         m_Bitmaps[handle.ID] = std::move(bitmap);
     }
@@ -118,9 +115,7 @@ namespace N503::Renderer2D::Canvas
     auto Cache::StoreTextFormat(std::wstring_view fontName, float fontSize, wil::com_ptr<IDWriteTextFormat> format) -> void
     {
 #ifdef _DEBUG
-        Engine::GetInstance().GetDiagnosticsReporter().Verbose(
-            std::format(L"[Renderer2D] <Canvas::Cache>: StoreTextFormat for Font={}, Size={}", fontName, fontSize)
-        );
+        Engine::GetInstance().GetDiagnosticsReporter().Verbose(std::format(L"[Renderer2D] <Canvas::Cache>: StoreTextFormat for Font={}, Size={}", fontName, fontSize));
 #endif
         m_TextFormats[MakeTextFormatKey(fontName, fontSize)] = std::move(format);
     }
@@ -164,9 +159,7 @@ namespace N503::Renderer2D::Canvas
     {
         const FontAtlasKey key{ std::wstring(familyName), emSize };
 #ifdef _DEBUG
-        Engine::GetInstance().GetDiagnosticsReporter().Verbose(
-            std::format(L"[Renderer2D] <Canvas::Cache>: StoreFontAtlas for Font={}, Size={}", familyName, emSize)
-        );
+        Engine::GetInstance().GetDiagnosticsReporter().Verbose(std::format(L"[Renderer2D] <Canvas::Cache>: StoreFontAtlas for Font={}, Size={}", familyName, emSize));
 #endif
         auto* raw          = atlas.get();
         m_FontAtlases[key] = std::move(atlas);

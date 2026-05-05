@@ -51,18 +51,7 @@ namespace N503::Renderer2D::Canvas
 #endif
         D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0 };
 
-        THROW_IF_FAILED(::D3D11CreateDevice(
-            nullptr,
-            D3D_DRIVER_TYPE_HARDWARE,
-            nullptr,
-            creationFlags,
-            featureLevels,
-            ARRAYSIZE(featureLevels),
-            D3D11_SDK_VERSION,
-            m_D3DDevice.put(),
-            nullptr,
-            m_D3DContext.put()
-        ));
+        THROW_IF_FAILED(::D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, creationFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, m_D3DDevice.put(), nullptr, m_D3DContext.put()));
 
         // 3. DXGI デバイス経由で Direct2D デバイスを作成
         auto dxgiDevice = m_D3DDevice.query<IDXGIDevice>();
@@ -182,9 +171,7 @@ namespace N503::Renderer2D::Canvas
     auto Device::CreateTextFormat(std::wstring_view fontName, float fontSize) -> wil::com_ptr<IDWriteTextFormat>
     {
         wil::com_ptr<IDWriteTextFormat> format;
-        THROW_IF_FAILED(m_DWriteFactory->CreateTextFormat(
-            fontName.data(), nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja-jp", format.put()
-        ));
+        THROW_IF_FAILED(m_DWriteFactory->CreateTextFormat(fontName.data(), nullptr, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"ja-jp", format.put()));
         return format;
     }
 
@@ -213,9 +200,7 @@ namespace N503::Renderer2D::Canvas
             collection->FindFamilyName(FallbackFont.data(), &familyIndex, &exists);
 
 #ifdef _DEBUG
-            Engine::GetInstance().GetDiagnosticsReporter().Verbose(
-                std::format(L"[Renderer2D] FontAtlas: '{}' not found, falling back to '{}'", familyName, FallbackFont)
-            );
+            Engine::GetInstance().GetDiagnosticsReporter().Verbose(std::format(L"[Renderer2D] FontAtlas: '{}' not found, falling back to '{}'", familyName, FallbackFont));
 #endif
 
             if (!exists)

@@ -61,9 +61,13 @@ namespace N503::Renderer2D::Message::Packets
             text.FontName = TranscodeUtf8ToWide(FontName);
             text.FontSize = FontSize;
             text.Atlas    = context.CanvasDevice.GetOrCreateFontAtlas(text.FontName, text.FontSize);
+            text.VisibleCount = 0;
             text.IsDirty  = true;
 
             auto& color = context.Registry.AddComponent(entity, System::Component::Color{ 1.0f, 1.0f, 1.0f, 1.0f });
+
+            auto& typewriter = context.Registry.AddComponent(entity, System::Component::Typewriter{ .Speed = 20.0f });
+            typewriter.IsDirty = true;
 
             *Result = entity;
         }

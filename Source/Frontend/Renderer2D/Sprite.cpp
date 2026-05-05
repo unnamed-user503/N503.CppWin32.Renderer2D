@@ -87,9 +87,7 @@ extern "C"
 
             auto packet = Message::Packets::SetTransform{
                 .ID        = entity->EntityID,
-                .Transform = { .Position = { transform.position.x, transform.position.y, transform.position.z },
-                               .Rotation = transform.rotation,
-                               .Scale    = { transform.scale.x, transform.scale.y } },
+                .Transform = { .Position = { transform.position.x, transform.position.y, transform.position.z }, .Rotation = transform.rotation, .Scale = { transform.scale.x, transform.scale.y } },
             };
 
             Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
