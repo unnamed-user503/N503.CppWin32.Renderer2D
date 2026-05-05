@@ -62,7 +62,7 @@ extern "C"
             auto packet = Message::Packets::SetTransform{
                 .ID = entity->EntityID,
                 .Transform = {
-                    .Position = { transform.Position.X, transform.Position.Y, 0.0f },
+                    .Position = { transform.Position.X, transform.Position.Y },
                     .Rotation = transform.Rotation,
                     .Scale    = { transform.Scale.X, transform.Scale.Y }
                 }

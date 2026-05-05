@@ -33,6 +33,14 @@ extern "C"
         float Alpha;
     } N503Color;
 
+    typedef struct N503RectF_t
+    {
+        float Left;
+        float Top;
+        float Right;
+        float Bottom;
+    } N503RectF;
+
     typedef struct N503RectU_t
     {
         uint32_t Left;

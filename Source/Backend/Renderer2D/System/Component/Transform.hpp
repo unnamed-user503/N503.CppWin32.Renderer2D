@@ -17,11 +17,11 @@ namespace N503::Renderer2D::System::Component
 
     struct Transform
     {
-        Geometry::Point3F Position{ 0.0f, 0.0f, 0.0f };
+        Geometry::Vector3F Position{ 0.0f, 0.0f, 0.0f };
 
         float Rotation{ 0.0f };
 
-        Geometry::Point2F Scale{ 1.0f, 1.0f };
+        Geometry::Vector2F Scale{ 1.0f, 1.0f };
 
         bool IsDirty{ false };
 

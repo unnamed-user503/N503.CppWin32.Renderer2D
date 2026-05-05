@@ -1,13 +1,9 @@
 #pragma once
 
 // 1. Project Headers
-#include <N503/Renderer2D/Geometry/Matrix.hpp>
-#include <N503/Renderer2D/Geometry/Point.hpp>
-#include <N503/Renderer2D/Geometry/Rect.hpp>
-#include <N503/Renderer2D/Geometry/Size.hpp>
-#include <N503/Renderer2D/Geometry/Transform.hpp>
 
 // 2. Project Dependencies
+#include <N503/Renderer2D/Details/Api.h>
 
 // 3. WIL (Windows Implementation Library)
 
@@ -21,16 +17,17 @@
 namespace N503::Renderer2D
 {
 
-    struct ColorF
+    namespace Geometry
     {
-        float Red{ 0.0f };
+        using Vector2F    = N503Vector2F;
+        using Vector3F    = N503Vector3F;
+        using RectF       = N503RectF;
+        using RectU       = N503RectU;
+        using Transform2D = N503Transform2D;
+        using Transform3D = N503Transform3D;
+    }
 
-        float Green{ 0.0f };
-
-        float Blue{ 0.0f };
-
-        float Alpha{ 0.0f };
-    };
+    using ColorF = N503Color_t;
 
     enum class PixelFormat
     {

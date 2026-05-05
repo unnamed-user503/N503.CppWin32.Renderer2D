@@ -30,7 +30,6 @@ namespace N503::Renderer2D::Message::Packets
 
         transform.Position.X = Transform.Position.X;
         transform.Position.Y = Transform.Position.Y;
-        transform.Position.Z = Transform.Position.Z;
         transform.Rotation   = Transform.Rotation;
         transform.Scale.X    = Transform.Scale.X;
         transform.Scale.Y    = Transform.Scale.Y;
