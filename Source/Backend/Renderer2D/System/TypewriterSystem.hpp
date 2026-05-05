@@ -28,4 +28,4 @@ namespace N503::Renderer2D::System
     private:
     };
 
-}
+} // namespace N503::Renderer2D::System

@@ -30,7 +30,7 @@ namespace N503::Renderer2D::System::Component
 
         auto Reset() noexcept -> void
         {
-            Speed = 20.0f;
+            Speed   = 20.0f;
             Elapsed = 0.0f;
         }
     };

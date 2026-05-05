@@ -28,30 +28,33 @@ namespace N503::Renderer2D::System
 
     auto TypewriterSystem::Update(Registry& registry, float deltaTime) -> void
     {
-        for (auto entity : registry.GetView<Component::Text, Component::Typewriter>()) 
+        for (auto entity : registry.GetView<Component::Text, Component::Typewriter>())
         {
-            auto& text = registry.GetComponent<Component::Text>(entity);
-            auto& typewriter   = registry.GetComponent<Component::Typewriter>(entity);
+            auto& text       = registry.GetComponent<Component::Text>(entity);
+            auto& typewriter = registry.GetComponent<Component::Typewriter>(entity);
 
-            if (!typewriter.IsDirty) continue;
+            if (!typewriter.IsDirty)
+            {
+                continue;
+            }
 
             typewriter.Elapsed += deltaTime;
-            float interval = 1.0f / typewriter.Speed;
+            float interval      = 1.0f / typewriter.Speed;
 
-            if (typewriter.Elapsed >= interval) 
+            if (typewriter.Elapsed >= interval)
             {
                 // 蓄積時間から進めるべき文字数を計算
-                int32_t advance = static_cast<int32_t>(typewriter.Elapsed / interval);
-                text.VisibleCount += advance;
+                int32_t advance     = static_cast<int32_t>(typewriter.Elapsed / interval);
+                text.VisibleCount  += advance;
                 typewriter.Elapsed -= advance * interval;
 
                 // 文字数上限に達したら停止
-                if (text.VisibleCount >= static_cast<int32_t>(text.Content.size())) 
+                if (text.VisibleCount >= static_cast<int32_t>(text.Content.size()))
                 {
-                    text.VisibleCount = static_cast<int32_t>(text.Content.size());
-                    typewriter.IsDirty = false; 
+                    text.VisibleCount  = static_cast<int32_t>(text.Content.size());
+                    typewriter.IsDirty = false;
                 }
             }
         }
     }
-}
+} // namespace N503::Renderer2D::System

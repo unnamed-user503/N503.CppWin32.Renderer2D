@@ -78,7 +78,7 @@ namespace N503::Renderer2D::System
             const auto& color     = registry.GetComponent<Color>(entity);
 
             const float lineHeight = text.Atlas->GetLineHeight() * text.LineHeightScale;
-            const bool  doWrap     = text.WrapWidth > 0.0f;
+            const bool doWrap      = text.WrapWidth > 0.0f;
 
             float penX = 0.0f;
             float penY = 0.0f;
@@ -94,14 +94,13 @@ namespace N503::Renderer2D::System
                 {
                     const wchar_t wc = text.Content[i];
                     // スペース・改行・CJK文字は折り返し可能位置
-                    if (wc == L' ' || wc == L'\n' || wc == L'\t' ||
-                        (wc >= 0x3000 && wc <= 0x9FFF) || // CJK
-                        (wc >= 0xFF00 && wc <= 0xFFEF))   // 全角
+                    if (wc == L' ' || wc == L'\n' || wc == L'\t' || (wc >= 0x3000 && wc <= 0x9FFF) || // CJK
+                        (wc >= 0xFF00 && wc <= 0xFFEF))                                               // 全角
                     {
                         break;
                     }
-                    const auto* g = text.Atlas->GetGlyph(static_cast<char32_t>(wc));
-                    w += g ? g->AdvanceWidth + text.LetterSpacing : text.FontSize * 0.5f + text.LetterSpacing;
+                    const auto* g  = text.Atlas->GetGlyph(static_cast<char32_t>(wc));
+                    w             += g ? g->AdvanceWidth + text.LetterSpacing : text.FontSize * 0.5f + text.LetterSpacing;
                 }
                 return w;
             };
@@ -118,7 +117,7 @@ namespace N503::Renderer2D::System
                 // 明示的改行
                 if (wc == L'\n')
                 {
-                    penX = 0.0f;
+                    penX  = 0.0f;
                     penY += lineHeight;
                     continue;
                 }
@@ -126,13 +125,13 @@ namespace N503::Renderer2D::System
                 // タブ (スペース4文字分)
                 if (wc == L'\t')
                 {
-                    const auto* spGlyph = text.Atlas->GetGlyph(U' ');
-                    const float spW     = spGlyph ? spGlyph->AdvanceWidth : text.FontSize * 0.5f;
-                    penX += spW * 4.0f + text.LetterSpacing;
+                    const auto* spGlyph  = text.Atlas->GetGlyph(U' ');
+                    const float spW      = spGlyph ? spGlyph->AdvanceWidth : text.FontSize * 0.5f;
+                    penX                += spW * 4.0f + text.LetterSpacing;
 
                     if (doWrap && penX > text.WrapWidth)
                     {
-                        penX = 0.0f;
+                        penX  = 0.0f;
                         penY += lineHeight;
                     }
                     continue;
@@ -146,7 +145,7 @@ namespace N503::Renderer2D::System
                     penX += text.FontSize * 0.5f + text.LetterSpacing;
                     if (doWrap && penX > text.WrapWidth)
                     {
-                        penX = 0.0f;
+                        penX  = 0.0f;
                         penY += lineHeight;
                     }
                     continue;
@@ -166,7 +165,7 @@ namespace N503::Renderer2D::System
                         const float nextWordW = measureToNextBreak(idx + 1);
                         if (penX + glyph->AdvanceWidth + nextWordW > text.WrapWidth)
                         {
-                            penX = 0.0f;
+                            penX  = 0.0f;
                             penY += lineHeight;
                             continue; // スペース自体は行頭に出力しない
                         }
@@ -176,31 +175,25 @@ namespace N503::Renderer2D::System
                     {
                         if (penX + glyph->AdvanceWidth > text.WrapWidth)
                         {
-                            penX = 0.0f;
+                            penX  = 0.0f;
                             penY += lineHeight;
                         }
                     }
                     // ASCII 単語: 行頭でもなく次の文字まで収まらない場合
                     else if (penX > 0.0f && penX + glyph->AdvanceWidth > text.WrapWidth)
                     {
-                        penX = 0.0f;
+                        penX  = 0.0f;
                         penY += lineHeight;
                     }
                 }
 
-                const float cellW  = static_cast<float>(glyph->SourceRect.right  - glyph->SourceRect.left);
+                const float cellW  = static_cast<float>(glyph->SourceRect.right - glyph->SourceRect.left);
                 const float cellH  = static_cast<float>(glyph->SourceRect.bottom - glyph->SourceRect.top);
                 const float pivotX = cellW * 0.5f;
                 const float pivotY = glyph->BearingY;
 
-                const D2D1_MATRIX_3X2_F matrix =
-                    D2D1::Matrix3x2F::Translation(-pivotX, -pivotY)                                                                                  *
-                    D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y)                                                                    *
-                    D2D1::Matrix3x2F::Rotation(transform.Rotation)                                                                                   *
-                    D2D1::Matrix3x2F::Translation(
-                        transform.Position.X + (penX + glyph->BearingX + pivotX) * transform.Scale.X,
-                        transform.Position.Y  + penY * transform.Scale.Y
-                    );
+                const D2D1_MATRIX_3X2_F matrix = D2D1::Matrix3x2F::Translation(-pivotX, -pivotY) * D2D1::Matrix3x2F::Scale(transform.Scale.X, transform.Scale.Y) * D2D1::Matrix3x2F::Rotation(transform.Rotation) *
+                                                 D2D1::Matrix3x2F::Translation(transform.Position.X + (penX + glyph->BearingX + pivotX) * transform.Scale.X, transform.Position.Y + penY * transform.Scale.Y);
 
                 targetGroup.emplace_back(DrawCommand{
                     .Bitmap          = text.Atlas->GetBitmap(),

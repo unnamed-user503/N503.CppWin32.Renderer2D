@@ -28,17 +28,17 @@ namespace N503::Renderer2D::System
         auto Update() -> float;
 
     private:
-        using Clock     = std::chrono::high_resolution_clock;
+        using Clock = std::chrono::high_resolution_clock;
 
         using TimePoint = std::chrono::time_point<Clock>;
 
         TimePoint m_BaseTime{};
 
         TimePoint m_PrevTime{};
-        
+
         float m_DeltaTime{};
 
         float m_TotalTime{};
     };
 
-}
+} // namespace N503::Renderer2D::System

@@ -126,7 +126,7 @@ namespace N503::Renderer2D
                 [](uint64_t index, uint32_t visible_val, void* userData) -> uint32_t
                 {
                     auto& func = *static_cast<std::function<bool(const std::uint64_t, bool&)>*>(userData);
-                    
+
                     bool visible;
                     if (func(index, visible))
                     {

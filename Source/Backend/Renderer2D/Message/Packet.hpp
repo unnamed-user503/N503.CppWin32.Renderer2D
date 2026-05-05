@@ -5,9 +5,9 @@
 #include "Packets/CreateText.hpp"
 #include "Packets/DestroyEntity.hpp"
 #include "Packets/SetColor.hpp"
+#include "Packets/SetContent.hpp"
 #include "Packets/SetRenderGroup.hpp"
 #include "Packets/SetTransform.hpp"
-#include "Packets/SetContent.hpp"
 
 // 2. Project Dependencies
 

@@ -5,8 +5,8 @@
 #include "../../Backend/Renderer2D/Message/Packets/CreateText.hpp" // CreateTextパケットが必要
 #include "../../Backend/Renderer2D/Message/Packets/DestroyEntity.hpp"
 #include "../../Backend/Renderer2D/Message/Packets/SetColor.hpp"
-#include "../../Backend/Renderer2D/Message/Packets/SetTransform.hpp"
 #include "../../Backend/Renderer2D/Message/Packets/SetContent.hpp"
+#include "../../Backend/Renderer2D/Message/Packets/SetTransform.hpp"
 #include "../../Backend/Renderer2D/Message/Queue.hpp"
 #include "TextEntity.hpp"
 
@@ -22,10 +22,7 @@ extern "C"
         {
             auto entity = std::make_unique<TextEntity>();
             auto packet = Message::Packets::CreateText{
-                .Result   = &entity->EntityID,
-                .Text     = content,
-                .FontName = font,
-                .FontSize = size,
+                .Result = &entity->EntityID, .Text = content, .FontName = font, .FontSize = size,
                 // 色は初期値として白を設定するか、パケット側で対応
             };
 
@@ -59,14 +56,7 @@ extern "C"
         try
         {
             auto entity = reinterpret_cast<TextEntity*>(instance);
-            auto packet = Message::Packets::SetTransform{
-                .ID = entity->EntityID,
-                .Transform = {
-                    .Position = { transform.Position.X, transform.Position.Y },
-                    .Rotation = transform.Rotation,
-                    .Scale    = { transform.Scale.X, transform.Scale.Y }
-                }
-            };
+            auto packet = Message::Packets::SetTransform{ .ID = entity->EntityID, .Transform = { .Position = { transform.Position.X, transform.Position.Y }, .Rotation = transform.Rotation, .Scale = { transform.Scale.X, transform.Scale.Y } } };
             Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
             return 0;
         }
@@ -80,10 +70,7 @@ extern "C"
         try
         {
             auto entity = reinterpret_cast<TextEntity*>(instance);
-            auto packet = Message::Packets::SetColor{
-                .ID = entity->EntityID,
-                .Color = { color.Red, color.Green, color.Blue, color.Alpha }
-            };
+            auto packet = Message::Packets::SetColor{ .ID = entity->EntityID, .Color = { color.Red, color.Green, color.Blue, color.Alpha } };
             Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
             return 0;
         }
@@ -94,7 +81,7 @@ extern "C"
     int N503SetTextVisible(N503Text instance, uint32_t visible)
     {
         // 他のEntityと同様に、Backend側のVisibleフラグ更新パケットが必要[cite: 5, 6]
-        return 0; 
+        return 0;
     }
 
     int N503SetTextContent(N503Text instance, const char* content)
@@ -103,10 +90,7 @@ extern "C"
         try
         {
             auto entity = reinterpret_cast<TextEntity*>(instance);
-            auto packet = Message::Packets::SetContent{
-                .ID = entity->EntityID,
-                .Content = std::string(content)
-            };
+            auto packet = Message::Packets::SetContent{ .ID = entity->EntityID, .Content = std::string(content) };
             Engine::GetInstance().GetMessageQueue().Enqueue(std::move(packet));
             return 0;
         }

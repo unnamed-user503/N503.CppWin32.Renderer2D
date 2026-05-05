@@ -70,7 +70,10 @@ extern "C"
         try
         {
             auto group = reinterpret_cast<SpriteGroupEntity*>(instance);
-            if (!group) return -1;
+            if (!group)
+            {
+                return -1;
+            }
 
             std::vector<Message::Packet> packets;
             packets.reserve(group->Entities.size());
@@ -100,7 +103,10 @@ extern "C"
         try
         {
             auto group = reinterpret_cast<SpriteGroupEntity*>(instance);
-            if (!group || !delegate) return -1;
+            if (!group || !delegate)
+            {
+                return -1;
+            }
 
             std::vector<Message::Packet> packets;
             packets.reserve(group->Entities.size());
@@ -142,7 +148,10 @@ extern "C"
         try
         {
             auto group = reinterpret_cast<SpriteGroupEntity*>(instance);
-            if (!group || !delegate) return -1;
+            if (!group || !delegate)
+            {
+                return -1;
+            }
 
             std::vector<Message::Packet> packets;
             packets.reserve(group->Entities.size());
@@ -179,7 +188,10 @@ extern "C"
         try
         {
             auto group = reinterpret_cast<SpriteGroupEntity*>(instance);
-            if (!group || !delegate) return -1;
+            if (!group || !delegate)
+            {
+                return -1;
+            }
 
             // TODO: BackendにSetVisibleパケットがある前提で実装
             // 現状のSprite.cpp(source 5)でもTODOのため、構造のみ提供[cite: 5]
@@ -198,7 +210,10 @@ extern "C"
         try
         {
             auto group = reinterpret_cast<SpriteGroupEntity*>(instance);
-            if (!group) return -1;
+            if (!group)
+            {
+                return -1;
+            }
 
             std::vector<Message::Packet> packets;
             packets.reserve(group->Entities.size());

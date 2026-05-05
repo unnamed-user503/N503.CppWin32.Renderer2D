@@ -49,7 +49,7 @@ namespace N503::Renderer2D::Message::Packets
             return;
         }
 
-        auto& text = context.Registry.GetComponent<System::Component::Text>(ID);
+        auto& text   = context.Registry.GetComponent<System::Component::Text>(ID);
         text.Content = TranscodeUtf8ToWide(Content);
         text.IsDirty = true;
     }

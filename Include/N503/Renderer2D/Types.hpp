@@ -25,7 +25,7 @@ namespace N503::Renderer2D
         using RectU       = N503RectU;
         using Transform2D = N503Transform2D;
         using Transform3D = N503Transform3D;
-    }
+    } // namespace Geometry
 
     using ColorF = N503Color_t;
 
